@@ -39,5 +39,10 @@ import AppFooter from './components/layout/AppFooter.vue'
   .app-body {
     flex-direction: row;
   }
+
+  /* 右側留白與 navbar 同寬 */
+  .app-main {
+    padding-right: var(--navbar-width);
+  }
 }
 </style>

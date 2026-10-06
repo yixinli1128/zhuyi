@@ -1,5 +1,5 @@
 <script setup>
-// Figma：Navbar（桌機左側直欄 240px）＋ Mobile Header（手機／平板頂部 64px ＋ 漢堡選單）
+// Figma：Navbar（桌機左側直欄 240px）＋ Mobile Header（手機／平板頂部 64px ＋ ☰ 選單）
 import { ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import NavProfile from './NavProfile.vue'
@@ -59,7 +59,7 @@ watch(
       :aria-label="menuOpen ? '關閉選單' : '開啟選單'"
       @click="menuOpen = !menuOpen"
     >
-      <i class="fa-solid fa-bars" aria-hidden="true"></i>
+      ☰
     </button>
   </header>
 

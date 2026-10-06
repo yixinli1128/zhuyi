@@ -8,6 +8,7 @@
   --brand-secondary: #e9e1d9;
   --brand-secondary-hover: #ddd2c7;
   --brand-secondary-active: #cfc2b5;
+  --brand-secondary-disabled: #f2efec;
   --brand-secondary-light: #f8f5f2;
   --brand-special: #b0bfd2;
   --brand-greige: #716c6c;
@@ -46,7 +47,9 @@
   --fs-caption-2: 12px;
 
   /* layout */
-  --navbar-width: 240px;
+  /* 桌機 navbar 寬 = 頁面寬的 12.5%（Figma 1920 中佔 240），最小 160px 避免選單文字被擠壓；
+     內容區右側也留同樣寬度，內容置中在兩側之間 */
+  --navbar-width: max(160px, 12.5vw);
   --mobile-header-height: 64px;
   --page-padding-x: var(--space-16);
   --page-padding-y: var(--space-20);
@@ -70,7 +73,8 @@
 
 @media (min-width: 1024px) {
   :root {
-    --page-padding-x: var(--space-40);
+    /* 桌機左右留白改由 navbar 與 .app-main 右側的 --navbar-width 負責 */
+    --page-padding-x: 0px;
     --page-padding-y: var(--space-60);
   }
 }
