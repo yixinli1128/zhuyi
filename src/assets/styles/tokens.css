@@ -1,0 +1,76 @@
+/* 煮意 ZHUYI 設計變數：對應 Figma 的 Variables（brand / text / 間距） */
+:root {
+  /* brand */
+  --brand-primary: #7a6350;
+  --brand-primary-hover: #6a5646;
+  --brand-primary-active: #5a4a3b;
+  --brand-primary-disabled: #e2ddd9;
+  --brand-secondary: #e9e1d9;
+  --brand-secondary-hover: #ddd2c7;
+  --brand-secondary-active: #cfc2b5;
+  --brand-secondary-light: #f8f5f2;
+  --brand-special: #b0bfd2;
+  --brand-greige: #716c6c;
+  --brand-primary-border: #cbc4be;
+
+  /* text */
+  --text-title: #34261c;
+  --text-body: #5a4a3b;
+  --text-secondary: #716c6c;
+  --text-placeholder: #a39d9a;
+  --text-on-primary: #ffffff;
+  --text-on-secondary: #5a4a3b;
+
+  /* background */
+  --bg-default: #faf8f6;
+  --bg-surface: #ffffff;
+
+  /* spacing */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-28: 28px;
+  --space-40: 40px;
+  --space-60: 60px;
+
+  /* typography（Figma: wirfeframe 文字樣式） */
+  --font-family: 'LXGW WenKai TC', 'PingFang TC', 'Noto Serif TC', serif;
+  --fs-h2: 36px;
+  --fs-subtitle-1: 24px;
+  --fs-subtitle-2: 20px;
+  --fs-body-1: 16px;
+  --fs-body-2: 14px;
+  --fs-caption-2: 12px;
+
+  /* layout */
+  --navbar-width: 240px;
+  --mobile-header-height: 64px;
+  --page-padding-x: var(--space-16);
+  --page-padding-y: var(--space-20);
+}
+
+/*
+ * RWD 斷點（mobile-first：先寫手機樣式，再用 min-width 往上加）
+ *   手機   < 768px   Figma Mobile 390
+ *   平板   ≥ 768px
+ *   桌機   ≥ 1024px  左側 navbar 出現；Figma Desktop 1920
+ * CSS 變數不能用在 @media 裡，所以斷點直接寫數字：
+ *   @media (min-width: 768px) { ... }
+ *   @media (min-width: 1024px) { ... }
+ */
+@media (min-width: 768px) {
+  :root {
+    --page-padding-x: var(--space-28);
+    --page-padding-y: var(--space-40);
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --page-padding-x: var(--space-40);
+    --page-padding-y: var(--space-60);
+  }
+}
