@@ -4,7 +4,7 @@
 // 儲存到餐桌日誌成功／失敗）
 // 用餐設定和建立好的餐單都存在瀏覽器（menuDraft），重新整理不會不見
 import { computed, nextTick, reactive, ref, toRaw, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useFamilyStore } from '@/stores/family'
 import { useFridgeStore } from '@/stores/fridge'
 import { useRecipeStore } from '@/stores/recipes'
@@ -47,6 +47,7 @@ const recipeStore = useRecipeStore()
 const mealPlanStore = useMealPlanStore()
 const toast = useToastStore()
 const router = useRouter()
+const route = useRoute()
 
 const today = toDateKey()
 const MEAL_TYPE = '晚餐'
@@ -67,7 +68,10 @@ function defaultSettings() {
 }
 
 const draft = load('menuDraft', null)
-const settings = reactive({ ...defaultSettings(), ...draft?.settings })
+const requestedDate = typeof route.query.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(route.query.date)
+  ? route.query.date
+  : null
+const settings = reactive({ ...defaultSettings(), ...draft?.settings, ...(requestedDate ? { date: requestedDate } : {}) })
 const menu = ref(draft?.menu ?? null) // { dishes, servings, shortage, settingsKey }
 
 watch([settings, menu], () => save('menuDraft', { settings, menu: menu.value }), { deep: true })

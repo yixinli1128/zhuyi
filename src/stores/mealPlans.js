@@ -25,5 +25,12 @@ export const useMealPlanStore = defineStore('mealPlans', () => {
     return { ok: true, plan: saved }
   }
 
-  return { plans, getPlan, savePlan }
+  function removePlan(id) {
+    const plan = plans.value.find((item) => item.id === id)
+    if (!plan) return null
+    plans.value = plans.value.filter((item) => item.id !== id)
+    return plan
+  }
+
+  return { plans, getPlan, savePlan, removePlan }
 })
