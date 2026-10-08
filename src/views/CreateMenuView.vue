@@ -723,7 +723,7 @@ function chooseOtherDate() {
 }
 
 .actions__buttons :deep(.btn) {
-  min-width: 132px;
+  min-width: 150px;
 }
 
 .is-loading {
@@ -746,10 +746,10 @@ function chooseOtherDate() {
   align-items: center;
   justify-content: center;
   gap: var(--space-12);
-  min-height: 300px;
+  min-height: 354px;
   padding: var(--space-40) var(--space-20);
   border: 1px dashed var(--brand-primary-border);
-  border-radius: 4px;
+  border-radius: 12px 0 12px 0;
   text-align: center;
 }
 

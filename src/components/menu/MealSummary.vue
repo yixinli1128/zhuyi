@@ -41,8 +41,8 @@ defineProps({
 .summary__item {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-16);
+  gap: 0;
+  padding: var(--space-20);
   line-height: normal;
 }
 
@@ -73,7 +73,7 @@ defineProps({
   }
 
   .summary__item {
-    padding: var(--space-16) var(--space-20);
+    padding: var(--space-20);
   }
 
   .summary__item:nth-child(-n + 2) {

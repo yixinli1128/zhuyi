@@ -29,9 +29,11 @@ defineProps({
   align-items: center;
   gap: var(--space-12);
   min-width: 0;
-  padding: var(--space-12) var(--space-16);
+  min-height: 93px;
+  padding: var(--space-16) var(--space-20);
   border: 1px solid var(--brand-secondary);
-  border-radius: 0 12px 12px;
+  /* Figma menu/family_check：只保留左上、右下的圓角。 */
+  border-radius: 12px 0 12px 0;
   background: var(--bg-surface);
   cursor: pointer;
   transition:
@@ -56,8 +58,8 @@ defineProps({
 
 .member-card__box {
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -106,7 +108,8 @@ defineProps({
 @media (min-width: 1024px) {
   .member-card {
     gap: var(--space-24);
-    padding: var(--space-24) var(--space-20);
+    min-height: 93px;
+    padding: var(--space-16) var(--space-20);
   }
 
   .member-card__avatar {
