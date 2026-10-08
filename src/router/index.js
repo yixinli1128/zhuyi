@@ -18,6 +18,12 @@ const routes = [
     meta: { title: '餐食日誌' },
   },
   {
+    path: '/journal/recipe/:recipeId',
+    name: 'journal-recipe',
+    component: () => import('@/views/JournalRecipeView.vue'),
+    meta: { title: '食譜步驟' },
+  },
+  {
     path: '/fridge',
     name: 'fridge',
     component: () => import('@/views/FridgeView.vue'),

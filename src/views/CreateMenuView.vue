@@ -71,7 +71,27 @@ function defaultSettings() {
 const requestedDate = typeof route.query.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(route.query.date)
   ? route.query.date
   : null
-const settings = reactive({ ...defaultSettings(), ...(requestedDate ? { date: requestedDate } : {}) })
+const requestedPlan = typeof route.query.planId === 'string'
+  ? mealPlanStore.plans.find((plan) => plan.id === route.query.planId) ?? null
+  : null
+
+function restoreSettings(plan) {
+  if (!plan) return {}
+  const dishes = plan.dishes ?? []
+  return {
+    memberIds: [...(plan.memberIds ?? [])],
+    date: plan.date,
+    people: plan.people ?? plan.servings ?? '',
+    size: plan.size ?? 'normal',
+    dishCount: plan.dishCount ?? dishes.filter((dish) => dish.type === 'dish').length,
+    soupCount: plan.soupCount ?? dishes.filter((dish) => dish.type === 'soup').length,
+    guest: structuredClone(plan.guest ?? emptyGuest()),
+    needs: structuredClone(plan.needs ?? emptyNeeds()),
+    useFridge: Boolean(plan.useFridge),
+  }
+}
+
+const settings = reactive({ ...defaultSettings(), ...restoreSettings(requestedPlan), ...(requestedPlan ? {} : requestedDate ? { date: requestedDate } : {}) })
 const menu = ref(null) // { dishes, servings, shortage, settingsKey }
 
 const guestOpen = ref(false)
@@ -138,6 +158,15 @@ function clearSettings() {
 // 設定改過但還沒重新建立 → 標題變「修改用餐設定」
 const settingsKey = computed(() => JSON.stringify(settings))
 const isEditing = computed(() => !!menu.value && menu.value.settingsKey !== settingsKey.value)
+
+if (requestedPlan) {
+  menu.value = {
+    dishes: requestedPlan.dishes.map((dish) => ({ ...dish })),
+    servings: requestedPlan.servings,
+    shortage: false,
+    settingsKey: settingsKey.value,
+  }
+}
 
 // ---------- 建立餐單 ----------
 const status = ref('idle') // idle → loading → idle；失敗時 error
@@ -351,11 +380,16 @@ function buildPlan() {
     date: settings.date,
     mealType: MEAL_TYPE,
     servings: menu.value.servings,
+    people: settings.people,
+    size: settings.size,
+    dishCount: settings.dishCount,
+    soupCount: settings.soupCount,
     memberIds: [...settings.memberIds],
     guest: structuredClone(toRaw(settings.guest)),
     needs: structuredClone(toRaw(settings.needs)),
     useFridge: settings.useFridge,
     dishes: menu.value.dishes.map((dish) => ({ ...dish })),
+    status: 'planned',
   }
 }
 
