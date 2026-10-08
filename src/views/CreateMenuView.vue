@@ -914,6 +914,42 @@ function chooseOtherDate() {
     padding: var(--space-40);
   }
 
+  /* Figma Desktop - 來點煮意：主標題維持共用 29px，內容層級比其他頁面更精緻。 */
+  .block__title {
+    font-size: 20px;
+  }
+
+  :deep(.member-card__name) {
+    font-size: 16px;
+  }
+
+  :deep(.select-field__label),
+  .field-label,
+  :deep(.summary dt) {
+    font-size: 13px;
+  }
+
+  :deep(.select-field__control),
+  :deep(.select-field__date-placeholder) {
+    font-size: 13px;
+  }
+
+  :deep(.panel__title) {
+    font-size: 16px;
+  }
+
+  :deep(.panel__subtitle) {
+    font-size: 11px;
+  }
+
+  :deep(.panel__toggle) {
+    font-size: 18px;
+  }
+
+  :deep(.summary dd) {
+    font-size: 20px;
+  }
+
   .members {
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
