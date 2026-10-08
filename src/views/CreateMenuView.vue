@@ -2,15 +2,15 @@
 // 來點煮意（Figma Desktop - 來點煮意：空畫面、本次訪客／本次用餐需求-設定中、錯誤-設定未完成、
 // 建立中、錯誤-餐單生成失敗、結果畫面、修改畫面、更換一道、查看食譜、錯誤-當日已有餐單、
 // 儲存到餐桌日誌成功／失敗）
-// 用餐設定和建立好的餐單都存在瀏覽器（menuDraft），重新整理不會不見
-import { computed, nextTick, reactive, ref, toRaw, watch } from 'vue'
+// 直接進入「來點煮意」時，永遠從 Figma 的每日空狀態開始。
+// 已儲存的餐單則由餐食日誌管理；未來從日誌編輯時會以明確的編輯參數帶入。
+import { computed, nextTick, reactive, ref, toRaw } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFamilyStore } from '@/stores/family'
 import { useFridgeStore } from '@/stores/fridge'
 import { useRecipeStore } from '@/stores/recipes'
 import { useMealPlanStore } from '@/stores/mealPlans'
 import { useToastStore } from '@/stores/toast'
-import { load, save } from '@/stores/storage'
 import { formatMonthDay, formatShort, formatWeekday, toDateKey } from '@/utils/date'
 import {
   FLAVOR_OPTIONS,
@@ -56,25 +56,23 @@ const MEAL_TYPE = '晚餐'
 function defaultSettings() {
   return {
     memberIds: [],
-    date: today, // 網站架構：日期預設今天，可選未來
+    date: '',
     people: '',
-    size: '',
+    // 份量仍供配餐計算使用，但不列在 Figma 空狀態的四個欄位中。
+    size: 'normal',
     dishCount: '',
     soupCount: '',
     guest: emptyGuest(),
     needs: emptyNeeds(),
-    useFridge: true,
+    useFridge: false,
   }
 }
 
-const draft = load('menuDraft', null)
 const requestedDate = typeof route.query.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(route.query.date)
   ? route.query.date
   : null
-const settings = reactive({ ...defaultSettings(), ...draft?.settings, ...(requestedDate ? { date: requestedDate } : {}) })
-const menu = ref(draft?.menu ?? null) // { dishes, servings, shortage, settingsKey }
-
-watch([settings, menu], () => save('menuDraft', { settings, menu: menu.value }), { deep: true })
+const settings = reactive({ ...defaultSettings(), ...(requestedDate ? { date: requestedDate } : {}) })
+const menu = ref(null) // { dishes, servings, shortage, settingsKey }
 
 const guestOpen = ref(false)
 const needsOpen = ref(false)
@@ -99,7 +97,6 @@ function toggleMember(id, checked) {
 }
 
 const peopleOptions = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: `${i + 1} 人` }))
-const sizeOptions = SIZE_OPTIONS.map(({ value, label }) => ({ value, label }))
 const dishOptions = Array.from({ length: 5 }, (_, i) => ({ value: i + 1, label: `${i + 1} 道` }))
 const soupOptions = [0, 1, 2].map((n) => ({ value: n, label: n ? `${n} 湯` : '不要湯' }))
 
@@ -132,6 +129,7 @@ const errorCount = computed(() => Object.values(errors.value).filter(Boolean).le
 
 function clearSettings() {
   Object.assign(settings, defaultSettings())
+  clearMenu()
   submitted.value = false
   guestOpen.value = false
   needsOpen.value = false
@@ -363,6 +361,10 @@ function buildPlan() {
 
 async function saveToJournal({ replace = false } = {}) {
   if (saving.value) return
+  if (isEditing.value) {
+    toast.show('用餐設定已變更，請先重新建立餐單再儲存。', { variant: 'error' })
+    return
+  }
   conflictOpen.value = false
 
   if (!replace) {
@@ -446,7 +448,6 @@ function chooseOtherDate() {
           class="fields__date"
         />
         <BaseSelect v-model="settings.people" label="人數" :options="peopleOptions" :error="shownErrors.people" />
-        <BaseSelect v-model="settings.size" label="份量" :options="sizeOptions" />
         <BaseSelect v-model="settings.dishCount" label="菜數" :options="dishOptions" />
         <BaseSelect v-model="settings.soupCount" label="湯數" :options="soupOptions" />
       </div>
@@ -554,8 +555,8 @@ function chooseOtherDate() {
 
         <div class="actions__buttons">
           <BaseButton variant="secondary" @click="clearMenu">清空本次餐單</BaseButton>
-          <BaseButton :class="{ 'is-loading': saving }" @click="saveToJournal()">
-            {{ saving ? '儲存中…' : '儲存到餐食日誌' }}
+          <BaseButton :disabled="isEditing" :class="{ 'is-loading': saving }" @click="saveToJournal()">
+            {{ saving ? '儲存中…' : isEditing ? '請先重新建立餐單' : '儲存到餐食日誌' }}
           </BaseButton>
         </div>
 
@@ -919,7 +920,7 @@ function chooseOtherDate() {
   }
 
   .fields {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: var(--space-40);
   }
 
