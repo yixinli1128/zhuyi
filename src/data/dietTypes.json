@@ -1,0 +1,7 @@
+[
+  { "id": "vegan", "name": "全素", "excludes": ["meat", "seafood", "egg", "dairy", "pungent"] },
+  { "id": "ovo", "name": "蛋素", "excludes": ["meat", "seafood", "dairy", "pungent"] },
+  { "id": "lacto", "name": "奶素", "excludes": ["meat", "seafood", "egg", "pungent"] },
+  { "id": "lacto-ovo", "name": "奶蛋素", "excludes": ["meat", "seafood", "pungent"] },
+  { "id": "pungent-veg", "name": "植物五辛素", "excludes": ["meat", "seafood", "egg", "dairy"] }
+]

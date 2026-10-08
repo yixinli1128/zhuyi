@@ -3,6 +3,7 @@
 //   variant  primary   咖啡底白字（Button/pri、Type=Primary、Button/add/big/mc）
 //            secondary 淺咖啡底（Button/sec、Type=Secondary、Button/add/small/mc）
 //            outline   白底細框（Button/outline，例：Google／LINE 登入）
+//            danger    紅底白字（刪除帳號彈窗的「永久刪除」）
 //   size     md 16px 字、padding 12（大按鈕）；sm 12px 字、padding 4/8（小膠囊 Button/add/small）
 //   block    滿版寬度（例：登入按鈕）
 //   icon / iconRight  Font Awesome class，例：'fa-solid fa-plus'、'fa-solid fa-chevron-right'
@@ -14,7 +15,7 @@ const props = defineProps({
   variant: {
     type: String,
     default: 'primary',
-    validator: (v) => ['primary', 'secondary', 'outline'].includes(v),
+    validator: (v) => ['primary', 'secondary', 'outline', 'danger'].includes(v),
   },
   size: {
     type: String,
@@ -149,6 +150,20 @@ const classes = computed(() => [
   background-color: var(--brand-secondary);
 }
 
+/* ---------- danger ---------- */
+.btn--danger {
+  background-color: var(--status-error);
+  color: var(--text-on-primary);
+}
+
+.btn--danger:hover {
+  background-color: var(--status-error-hover);
+}
+
+.btn--danger:active {
+  background-color: var(--status-error-active);
+}
+
 /* ---------- disabled（Figma State=Disabled） ---------- */
 .btn:disabled,
 .btn.is-disabled {
@@ -165,6 +180,11 @@ const classes = computed(() => [
 .btn--secondary:disabled,
 .btn--secondary.is-disabled {
   background-color: var(--brand-secondary-disabled);
+}
+
+.btn--danger:disabled,
+.btn--danger.is-disabled {
+  background-color: var(--brand-primary-disabled);
 }
 
 .btn--outline:disabled,

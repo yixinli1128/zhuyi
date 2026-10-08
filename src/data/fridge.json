@@ -1,0 +1,10 @@
+[
+  { "id": "f1", "name": "溫體黑豬梅花肉", "zone": "fridge", "qty": 300, "unit": "g", "addedDaysAgo": 1, "expiresInDays": 2 },
+  { "id": "f2", "name": "鮭魚", "zone": "freezer", "qty": 2, "unit": "片", "addedDaysAgo": 6, "expiresInDays": 24 },
+  { "id": "f3", "name": "嫩豆腐", "zone": "fridge", "qty": 1, "unit": "盒", "addedDaysAgo": 2, "expiresInDays": 3 },
+  { "id": "f4", "name": "高麗菜", "zone": "produce", "qty": 1, "unit": "顆", "addedDaysAgo": 3, "expiresInDays": 4 },
+  { "id": "f5", "name": "番茄", "zone": "produce", "qty": 4, "unit": "顆", "addedDaysAgo": 2, "expiresInDays": 3 },
+  { "id": "f6", "name": "雞蛋", "zone": "fridge", "qty": 10, "unit": "顆", "addedDaysAgo": 4, "expiresInDays": 10 },
+  { "id": "f7", "name": "水餃", "zone": "freezer", "qty": 1, "unit": "包", "addedDaysAgo": 11, "expiresInDays": 19 },
+  { "id": "f8", "name": "白味噌", "zone": "pantry", "qty": 1, "unit": "盒", "addedDaysAgo": 20, "expiresInDays": 70 }
+]
