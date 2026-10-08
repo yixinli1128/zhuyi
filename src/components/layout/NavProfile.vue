@@ -24,13 +24,13 @@ const avatar = computed(() => userStore.user?.avatar || '')
 .nav-profile {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-12);
+  gap: var(--nav-profile-gap, var(--space-12));
 }
 
 .nav-profile__avatar {
   flex-shrink: 0;
-  width: 60px;
-  height: 60px;
+  width: var(--nav-profile-avatar, 60px);
+  height: var(--nav-profile-avatar, 60px);
   border-radius: 50%;
   overflow: hidden;
   background: var(--brand-secondary);
@@ -45,7 +45,7 @@ const avatar = computed(() => userStore.user?.avatar || '')
 }
 
 .nav-profile__name {
-  font-size: var(--fs-body-1);
+  font-size: var(--nav-profile-size, var(--fs-body-1));
   line-height: 1;
   color: var(--text-body);
   white-space: nowrap;

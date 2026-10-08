@@ -63,4 +63,23 @@ defineProps({
   flex-shrink: 0;
   gap: var(--space-12);
 }
+
+/* 所有桌面頁面統一採家庭管理頁的主標題比例。 */
+@media (min-width: 1024px) {
+  .page-title {
+    padding: 48px 32px 33px;
+  }
+
+  .page-title__heading {
+    font-size: 29px;
+  }
+
+  .page-title__text {
+    gap: 10px;
+  }
+
+  .page-title__desc {
+    font-size: 13px;
+  }
+}
 </style>

@@ -47,9 +47,8 @@
   --fs-caption-2: 12px;
 
   /* layout */
-  /* 桌機 navbar 寬 = 頁面寬的 12.5%（Figma 1920 中佔 240），最小 160px 避免選單文字被擠壓；
-     內容區右側也留同樣寬度，內容置中在兩側之間 */
-  --navbar-width: max(160px, 12.5vw);
+  /* Figma Desktop 1920 的欄位比例：240 navbar / 1440 內容 / 240 留白 */
+  --navbar-width: 12.5vw;
   --mobile-header-height: 64px;
   --page-padding-x: var(--space-16);
   --page-padding-y: var(--space-20);
@@ -73,8 +72,14 @@
 
 @media (min-width: 1024px) {
   :root {
-    /* 桌機左右留白改由 navbar 與 .app-main 右側的 --navbar-width 負責 */
+    /* 桌機頁面的垂直起點由共用 PageTitle 控制，避免每頁再疊 60px 留白。 */
     --page-padding-x: 0px;
-    --page-padding-y: var(--space-60);
+    --page-padding-y: 0px;
+  }
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --navbar-width: 240px;
   }
 }

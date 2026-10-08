@@ -144,8 +144,8 @@ watch(
   color: var(--brand-primary);
 }
 
-/* 目前頁面：文字下方 120px 細線（Figma 1037:11279） */
-.navbar__item.is-active::after {
+/* 目前頁面：底線由左向右展開 */
+.navbar__item::after {
   content: '';
   position: absolute;
   left: 50%;
@@ -153,7 +153,15 @@ watch(
   width: 120px;
   height: 1px;
   background: var(--brand-special);
-  transform: translateX(-50%);
+  opacity: 0;
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.28s ease-out, opacity 0.12s ease-out;
+}
+
+.navbar__item.is-active::after {
+  opacity: 1;
+  transform: translateX(-50%) scaleX(1);
 }
 
 /* ---------- 桌機 ---------- */
@@ -164,22 +172,24 @@ watch(
   }
 
   .navbar {
-    position: sticky;
+    /* Figma scroll behavior: Fixed (stay in place). */
+    position: fixed;
     top: 0;
-    flex-shrink: 0;
-    width: var(--navbar-width);
+    left: 0;
+    width: 12.5vw;
     height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-60);
-    padding: var(--space-60) 0;
+    /* Figma 的 240px 側欄以 1920px 畫布為基準等比縮放。 */
+    gap: 2.5vw;
+    padding: 2.5vw 0;
   }
 
   .navbar__logo img {
     display: block;
-    width: 101px;
-    height: 202px;
+    width: 4.2083vw;
+    height: 8.4167vw;
     object-fit: contain;
   }
 
@@ -187,10 +197,18 @@ watch(
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-40);
+    gap: 1.6667vw;
+  }
+
+  .navbar__item {
+    /* 1920px 寬畫面為 19.2px，與 Figma prototype 的視覺尺寸一致。 */
+    font-size: 1vw;
   }
 
   .navbar__profile {
+    --nav-profile-avatar: 2.5vw;
+    --nav-profile-gap: 0.5vw;
+    --nav-profile-size: 0.6667vw;
     margin-top: auto;
   }
 }
