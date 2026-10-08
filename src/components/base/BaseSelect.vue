@@ -102,6 +102,12 @@ const id = useId()
   color: var(--text-placeholder);
 }
 
+/* Chrome 的 date 欄位本身會畫出 yyyy/mm/dd；空值時隱藏它，避免和中文提示重疊。 */
+.select-field__control.is-empty::-webkit-datetime-edit,
+.select-field__control.is-empty::-webkit-datetime-edit-fields-wrapper {
+  color: transparent;
+}
+
 .select-field__control:hover {
   border-color: var(--brand-primary);
 }
