@@ -1,19 +1,23 @@
 <script setup>
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import PageTitle from '@/components/layout/PageTitle.vue'
 import { useMealPlanStore } from '@/stores/mealPlans'
 import { useRecipeStore } from '@/stores/recipes'
 import { fromDateKey, toDateKey } from '@/utils/date'
 
 const router = useRouter()
+const route = useRoute()
 const mealPlans = useMealPlanStore()
 const recipes = useRecipeStore()
 const view = ref('calendar')
 const historyFilter = ref('all')
 const today = toDateKey()
-const month = ref(new Date(new Date().getFullYear(), new Date().getMonth(), 1))
-const selectedDate = ref(today)
+const requestedDate = typeof route.query.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(route.query.date)
+  ? route.query.date
+  : today
+const month = ref(new Date(fromDateKey(requestedDate).getFullYear(), fromDateKey(requestedDate).getMonth(), 1))
+const selectedDate = ref(requestedDate)
 const weekdays = ['日', '一', '二', '三', '四', '五', '六']
 
 const monthLabel = computed(() => `${month.value.getFullYear()} 年 ${month.value.getMonth() + 1} 月`)
@@ -62,6 +66,14 @@ function selectDay(day) {
   if (!day.inMonth) { const date = fromDateKey(day.key); month.value = new Date(date.getFullYear(), date.getMonth(), 1) }
 }
 function openCreate() { router.push({ path: '/create', query: { date: selectedDate.value } }) }
+
+// 「來點煮意」儲存後以 /journal?date=YYYY-MM-DD 導入，月曆直接聚焦該日的已存餐單。
+watch(() => route.query.date, (date) => {
+  if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return
+  selectedDate.value = date
+  const target = fromDateKey(date)
+  month.value = new Date(target.getFullYear(), target.getMonth(), 1)
+})
 </script>
 
 <template>
