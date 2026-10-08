@@ -120,9 +120,9 @@ function openCreate() { router.push({ path: '/create', query: { date: selectedDa
 
 <style scoped>
 .journal-page { width: min(1240px, 100%); }
-.view-switch { display: inline-flex; padding: 4px; border-radius: 8px 0 8px; background: var(--brand-secondary-light); }
-.view-switch button { min-width: 66px; padding: 7px 10px; border-radius: 6px 0 6px; color: var(--text-secondary); font-size: 11px; }
-.view-switch button.is-active { background: var(--brand-primary); color: #fff; }
+.view-switch { display: inline-flex; gap: 4px; padding: 4px; border-radius: 12px; background: #f4f0ec; }
+.view-switch button { padding: 8px; border-radius: 12px; color: var(--text-body); font-size: 14px; line-height: 1; white-space: nowrap; }
+.view-switch button.is-active { background: var(--brand-primary); color: var(--text-on-primary); }
 .journal-layout { display: grid; grid-template-columns: minmax(0, 800px) minmax(0, 378px); grid-template-rows: 308px 306px; gap: 36px 38px; padding: 34px 12px 88px; }
 .selected-meal { display: flex; min-width: 0; flex-direction: column; }
 .meal-banner { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 39px; padding: 0 15px; }
