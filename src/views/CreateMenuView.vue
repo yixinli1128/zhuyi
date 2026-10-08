@@ -924,8 +924,7 @@ function chooseOtherDate() {
   }
 
   :deep(.select-field__label),
-  .field-label,
-  :deep(.summary dt) {
+  .field-label {
     font-size: 13px;
   }
 
@@ -946,8 +945,13 @@ function chooseOtherDate() {
     font-size: 18px;
   }
 
+  /* 本次餐單摘要依 Figma 保留較明確的資訊層級。 */
+  :deep(.summary dt) {
+    font-size: 16px;
+  }
+
   :deep(.summary dd) {
-    font-size: 20px;
+    font-size: 24px;
   }
 
   .members {
