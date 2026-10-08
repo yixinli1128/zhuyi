@@ -44,7 +44,8 @@ function setSpicy(level) {
 
 <template>
   <div class="guest">
-    <OptionGroup title="忌口的食物" hint="可複選">
+    <!-- 與家庭管理的新增成員共用相同的欄位命名與選取視覺；資料只暫存於本次訪客。 -->
+    <OptionGroup title="過敏與忌口食材" hint="點擊選擇">
       <BaseChip
         v-for="item in allergens"
         :key="item.id"
@@ -71,7 +72,7 @@ function setSpicy(level) {
       <p v-if="customError" class="guest__error">{{ customError }}</p>
     </OptionGroup>
 
-    <OptionGroup title="特殊飲食需求" hint="可複選">
+    <OptionGroup title="特殊飲食需求" hint="點擊選擇">
       <BaseChip
         v-for="type in dietTypes"
         :key="type.id"
@@ -105,14 +106,46 @@ function setSpicy(level) {
 .guest {
   display: flex;
   flex-direction: column;
-  gap: var(--space-24);
+  gap: var(--space-16);
+}
+
+/* 對齊家庭管理的新增成員彈窗選項區。 */
+.guest :deep(.option-group__head) {
+  margin-bottom: 5px;
+}
+
+.guest :deep(.option-group__title) {
+  font-size: 16px;
+  color: var(--text-body);
+}
+
+.guest :deep(.option-group__hint) {
+  font-size: 12px;
+  color: var(--text-placeholder);
+}
+
+.guest :deep(.option-group__body) {
+  gap: 6px;
+}
+
+.guest :deep(.chip) {
+  padding: 5px 8px;
+  border-color: var(--brand-primary-border);
+  background: transparent;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.guest :deep(.chip.is-selected) {
+  border-color: var(--brand-primary);
+  background: var(--brand-secondary);
 }
 
 .guest__custom {
   display: flex;
   gap: var(--space-8);
   width: 100%;
-  margin-top: var(--space-4);
+  margin-top: 5px;
 }
 
 .guest__input {
@@ -121,7 +154,7 @@ function setSpicy(level) {
   height: 36px;
   padding: 0 var(--space-12);
   border: 1px solid var(--brand-secondary);
-  border-radius: 8px;
+  border-radius: 10px;
   font: inherit;
   font-size: var(--fs-caption-2);
   color: var(--text-body);
@@ -144,7 +177,7 @@ function setSpicy(level) {
   flex-shrink: 0;
   padding: 0 var(--space-12);
   border: 1px solid var(--brand-secondary);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--brand-secondary-light);
   font-size: var(--fs-caption-2);
   color: var(--text-body);
@@ -165,17 +198,18 @@ function setSpicy(level) {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   width: 100%;
+  height: 29px;
   padding: 3px;
-  border-radius: 8px;
+  border: 0;
+  border-radius: 10px;
   background: var(--brand-secondary-light);
-  border: 1px solid var(--brand-secondary);
 }
 
 .spicy__option {
-  padding: 4px 0;
-  border-radius: 6px;
-  font-size: var(--fs-caption-2);
-  color: var(--text-secondary);
+  padding: 3px 2px;
+  border-radius: 7px;
+  font-size: 12px;
+  color: var(--text-body);
 }
 
 .spicy__option.is-active {
