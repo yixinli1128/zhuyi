@@ -70,7 +70,14 @@ export const useFridgeStore = defineStore('fridge', () => {
     return ingredient
   }
 
+  // 供「來點煮意」計算庫存符合度使用；名稱互相包含即視為對應。
+  function findMatches(ingredientNames) {
+    return activeIngredients.value.filter((item) =>
+      ingredientNames.some((name) => name.includes(item.name) || item.name.includes(name)),
+    )
+  }
+
   watch(ingredients, (value) => save(STORAGE_KEY, value), { deep: true })
 
-  return { ingredients, activeIngredients, addIngredient, updateIngredient, removeIngredient, restoreIngredient }
+  return { ingredients, activeIngredients, addIngredient, updateIngredient, removeIngredient, restoreIngredient, findMatches }
 })

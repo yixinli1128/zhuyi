@@ -2,16 +2,32 @@
   {
     "id": "R01",
     "name": "家常番茄炒蛋",
+    "type": "dish",
     "servings": 3,
     "cookTime": 15,
     "kcal": 190,
-    "image": "",
+    "image": "家常番茄炒蛋.png",
     "imageAlt": "家常番茄炒蛋成品照：白色淺盤盛裝紅亮番茄與金黃嫩蛋，表面點綴蔥綠，呈現少量自然湯汁。",
     "mainIngredients": [
       "番茄",
       "雞蛋",
       "青蔥"
     ],
+    "categories": [
+      "蔬菜"
+    ],
+    "allergens": [
+      "蛋類"
+    ],
+    "dietFlags": [
+      "egg",
+      "pungent"
+    ],
+    "spicy": 0,
+    "flavors": [
+      "酸甜開胃"
+    ],
+    "texture": "軟嫩好咬",
     "recommendLabel": "目前推薦",
     "intro": "酸甜番茄炒出自然湯汁，裹住蓬鬆嫩蛋，滋味清爽又下飯。",
     "tip": "雞蛋先炒後盛出，番茄炒軟出汁再回鍋拌勻，保留滑嫩口感。",
@@ -139,16 +155,29 @@
   {
     "id": "R02",
     "name": "蒜炒高麗菜",
+    "type": "dish",
     "servings": 3,
     "cookTime": 10,
     "kcal": 80,
-    "image": "",
+    "image": "蒜炒高麗菜.png",
     "imageAlt": "蒜炒高麗菜成品照：白盤盛裝翠綠高麗菜，穿插淡金色蒜片與少量紅辣椒，菜葉油亮清脆。",
     "mainIngredients": [
       "高麗菜",
       "大蒜",
       "紅辣椒"
     ],
+    "categories": [
+      "蔬菜"
+    ],
+    "allergens": [],
+    "dietFlags": [
+      "pungent"
+    ],
+    "spicy": 1,
+    "flavors": [
+      "鮮香順口"
+    ],
+    "texture": "保留嚼勁",
     "recommendLabel": "目前推薦",
     "intro": "蒜片煸出香氣後快炒高麗菜，清脆菜葉帶著濃郁蒜香，簡單耐吃。",
     "tip": "菜梗先炒、菜葉後下，沿鍋邊加少量水短燜，保留爽脆口感。",
@@ -265,10 +294,11 @@
   {
     "id": "R03",
     "name": "開陽白菜",
+    "type": "dish",
     "servings": 4,
     "cookTime": 25,
     "kcal": 100,
-    "image": "",
+    "image": "開陽白菜.png",
     "imageAlt": "開陽白菜成品照：深盤裝盛柔嫩白菜，表面可見蝦米與香菇絲，盤底保留清亮鮮香湯汁。",
     "mainIngredients": [
       "大白菜",
@@ -276,6 +306,23 @@
       "乾香菇",
       "大蒜"
     ],
+    "categories": [
+      "蔬菜",
+      "海鮮"
+    ],
+    "allergens": [
+      "甲殼類",
+      "大豆"
+    ],
+    "dietFlags": [
+      "seafood",
+      "pungent"
+    ],
+    "spicy": 0,
+    "flavors": [
+      "鮮香順口"
+    ],
+    "texture": "軟嫩好咬",
     "recommendLabel": "目前推薦",
     "intro": "蝦米與香菇炒出鮮香，慢燜白菜至柔嫩甘甜，湯汁濃而不膩。",
     "tip": "蝦米先泡軟再炒香，白菜梗先燜、菜葉後放，讓口感柔嫩且層次分明。",
@@ -425,10 +472,11 @@
   {
     "id": "R04",
     "name": "香菇剝皮辣椒雞湯",
+    "type": "soup",
     "servings": 4,
     "cookTime": 45,
     "kcal": 300,
-    "image": "",
+    "image": "香菇剝皮辣椒雞湯.png",
     "imageAlt": "香菇剝皮辣椒雞湯成品照：陶湯碗盛裝清亮雞湯，帶骨雞腿、完整香菇與長條剝皮辣椒清楚可見。",
     "mainIngredients": [
       "帶骨雞腿",
@@ -436,6 +484,18 @@
       "剝皮辣椒",
       "老薑"
     ],
+    "categories": [
+      "雞肉"
+    ],
+    "allergens": [],
+    "dietFlags": [
+      "meat"
+    ],
+    "spicy": 0,
+    "flavors": [
+      "鮮香順口"
+    ],
+    "texture": "軟嫩好咬",
     "recommendLabel": "目前推薦",
     "intro": "雞腿與香菇慢煮出清甜湯底，加入剝皮辣椒，微辣回甘、暖胃順口。",
     "tip": "雞肉汆燙後換水燉煮，剝皮辣椒與罐汁後段加入，試味後再補鹽。",
@@ -573,10 +633,11 @@
   {
     "id": "R05",
     "name": "家常蒜泥白肉",
+    "type": "dish",
     "servings": 3,
     "cookTime": 15,
     "kcal": 400,
-    "image": "",
+    "image": "家常蒜泥白肉.png",
     "imageAlt": "家常蒜泥白肉成品照：白盤整齊鋪開薄切白肉，中央淋上褐色蒜泥醬並點綴少量蔥綠。",
     "mainIngredients": [
       "薄切五花肉",
@@ -584,6 +645,22 @@
       "青蔥",
       "老薑"
     ],
+    "categories": [
+      "豬肉"
+    ],
+    "allergens": [
+      "大豆",
+      "芝麻"
+    ],
+    "dietFlags": [
+      "meat",
+      "pungent"
+    ],
+    "spicy": 0,
+    "flavors": [
+      "濃郁一點"
+    ],
+    "texture": "軟嫩好咬",
     "recommendLabel": "目前推薦",
     "intro": "薄切五花肉汆燙至熟，搭配現磨蒜泥醬汁，肉香濃郁、做法俐落。",
     "tip": "薄肉片逐片下鍋煮熟，瀝乾後再淋蒜泥醬，避免醬汁被水分沖淡。",
@@ -732,16 +809,34 @@
   {
     "id": "R06",
     "name": "清蒸嫩豆腐配溫泉蛋",
+    "type": "dish",
     "servings": 2,
     "cookTime": 15,
     "kcal": 190,
-    "image": "",
+    "image": "清蒸嫩豆腐配溫泉蛋.png",
     "imageAlt": "清蒸嫩豆腐配溫泉蛋成品照：淺碗中放整齊嫩豆腐，上覆一顆溫泉蛋，周圍少量醬汁，點綴細蔥花。",
     "mainIngredients": [
       "嫩豆腐",
       "即食溫泉蛋",
       "青蔥"
     ],
+    "categories": [
+      "蔬菜"
+    ],
+    "allergens": [
+      "大豆",
+      "蛋類",
+      "芝麻"
+    ],
+    "dietFlags": [
+      "egg",
+      "pungent"
+    ],
+    "spicy": 0,
+    "flavors": [
+      "清淡一點"
+    ],
+    "texture": "軟嫩好咬",
     "recommendLabel": "目前推薦",
     "intro": "溫熱嫩豆腐搭配柔滑溫泉蛋，淋上淡雅醬汁，每一口都細緻順口。",
     "tip": "豆腐蒸熱後倒掉盤中多餘水分，起鍋再放溫泉蛋，維持細嫩口感。",
@@ -869,15 +964,26 @@
   {
     "id": "R07",
     "name": "清炒當季高麗菜",
+    "type": "dish",
     "servings": 3,
     "cookTime": 10,
     "kcal": 70,
-    "image": "",
+    "image": "清炒當季高麗菜.png",
     "imageAlt": "清炒當季高麗菜成品照：素白淺盤盛裝淡綠高麗菜與少量薑絲，呈現清爽、自然的季節家常菜。",
     "mainIngredients": [
       "當季高麗菜",
       "嫩薑"
     ],
+    "categories": [
+      "蔬菜"
+    ],
+    "allergens": [],
+    "dietFlags": [],
+    "spicy": 0,
+    "flavors": [
+      "清淡一點"
+    ],
+    "texture": "保留嚼勁",
     "recommendLabel": "目前推薦",
     "intro": "以少量嫩薑襯出當季高麗菜的自然甜味，清炒後依然脆嫩爽口。",
     "tip": "厚梗切薄並先下鍋，少量加水短燜，最後才加鹽帶出蔬菜甘甜。",
@@ -983,10 +1089,11 @@
   {
     "id": "R08",
     "name": "鮮菇蕃茄蛋花湯",
+    "type": "soup",
     "servings": 4,
     "cookTime": 20,
     "kcal": 90,
-    "image": "",
+    "image": "鮮菇蕃茄蛋花湯.png",
     "imageAlt": "鮮菇蕃茄蛋花湯成品照：白色湯碗盛裝淡紅湯底，可見番茄塊、完整鮮菇與薄片蛋花，撒少量蔥花。",
     "mainIngredients": [
       "番茄",
@@ -994,6 +1101,22 @@
       "雞蛋",
       "青蔥"
     ],
+    "categories": [
+      "蔬菜"
+    ],
+    "allergens": [
+      "蛋類"
+    ],
+    "dietFlags": [
+      "egg",
+      "pungent"
+    ],
+    "spicy": 0,
+    "flavors": [
+      "清淡一點",
+      "酸甜開胃"
+    ],
+    "texture": "軟嫩好咬",
     "recommendLabel": "目前推薦",
     "intro": "番茄微酸湯底融合鮮菇清甜，細緻蛋花輕盈滑口，適合搭配家常飯菜。",
     "tip": "番茄先炒軟再加水煮湯，蛋液沿鍋邊緩緩倒入，稍定型後再輕推。",
@@ -1132,10 +1255,11 @@
   {
     "id": "R09",
     "name": "香菇栗子燒雞",
+    "type": "dish",
     "servings": 4,
     "cookTime": 40,
     "kcal": 390,
-    "image": "",
+    "image": "香菇栗子燒雞.png",
     "imageAlt": "香菇栗子燒雞成品照：深色陶盤裝盛醬色雞腿塊、完整栗子與香菇，醬汁薄薄包覆食材。",
     "mainIngredients": [
       "去骨雞腿",
@@ -1143,6 +1267,22 @@
       "熟栗子",
       "老薑"
     ],
+    "categories": [
+      "雞肉"
+    ],
+    "allergens": [
+      "大豆",
+      "堅果類"
+    ],
+    "dietFlags": [
+      "meat",
+      "pungent"
+    ],
+    "spicy": 0,
+    "flavors": [
+      "濃郁一點"
+    ],
+    "texture": "軟嫩好咬",
     "recommendLabel": "目前推薦",
     "intro": "雞腿燒至醬香入味，搭配綿甜栗子與飽滿香菇，口感豐富又溫潤。",
     "tip": "雞皮先煎出香氣，香菇與醬汁慢燒，熟栗子後下並輕翻，保持完整。",
@@ -1311,10 +1451,11 @@
   {
     "id": "R10",
     "name": "蔥爆牛肉片",
+    "type": "dish",
     "servings": 3,
     "cookTime": 20,
     "kcal": 260,
-    "image": "",
+    "image": "蔥爆牛肉片.png",
     "imageAlt": "蔥爆牛肉片成品照：深色淺盤盛裝褐亮牛肉片，搭配長段翠綠青蔥與半透明洋蔥，醬汁收得俐落。",
     "mainIngredients": [
       "牛肉片",
@@ -1322,6 +1463,21 @@
       "洋蔥",
       "大蒜"
     ],
+    "categories": [
+      "牛肉"
+    ],
+    "allergens": [
+      "大豆"
+    ],
+    "dietFlags": [
+      "meat",
+      "pungent"
+    ],
+    "spicy": 0,
+    "flavors": [
+      "鮮香順口"
+    ],
+    "texture": "保留嚼勁",
     "recommendLabel": "目前推薦",
     "intro": "嫩牛肉以大火快炒，吸附濃郁蔥香與鹹甜醬汁，香氣鮮明又下飯。",
     "tip": "牛肉先抓醃後分批快炒，蔥白炒香、蔥綠最後下，縮短肉片受熱時間。",
@@ -1482,16 +1638,32 @@
   {
     "id": "R11",
     "name": "古法台式滷肉",
+    "type": "dish",
     "servings": 6,
     "cookTime": 90,
     "kcal": 450,
-    "image": "",
+    "image": "古法台式滷肉.png",
     "imageAlt": "古法台式滷肉成品照：小陶碗盛裝油亮細切滷肉與深褐色滷汁，可見柔軟肉皮與紅蔥碎，不搭配白飯入鏡。",
     "mainIngredients": [
       "帶皮五花肉",
       "紅蔥頭",
       "蒜頭"
     ],
+    "categories": [
+      "豬肉"
+    ],
+    "allergens": [
+      "大豆"
+    ],
+    "dietFlags": [
+      "meat",
+      "pungent"
+    ],
+    "spicy": 0,
+    "flavors": [
+      "濃郁一點"
+    ],
+    "texture": "軟嫩好咬",
     "recommendLabel": "目前推薦",
     "intro": "帶皮五花肉細切慢滷，融合紅蔥酥香與醬油甘醇，膠潤濃香、拌飯合拍。",
     "tip": "先煸出豬油再炒紅蔥頭，小火慢滷至皮肉柔軟，保留可拌飯的滷汁。",

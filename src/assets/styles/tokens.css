@@ -21,6 +21,17 @@
   --text-placeholder: #a39d9a;
   --text-on-primary: #ffffff;
   --text-on-secondary: #5a4a3b;
+  --text-danger: #b8433a;
+  --text-success: #6d8e76;
+  --text-special: #4a5c78;
+
+  /* status */
+  --status-error: #b8433a;
+  --status-error-hover: #a03a32;
+  --status-error-active: #88312a;
+  --status-error-subtle: #fdf2f0;
+  --status-success: #6d8e76;
+  --status-success-subtle: #ebf2ed;
 
   /* background */
   --bg-default: #faf8f6;

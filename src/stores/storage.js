@@ -17,3 +17,15 @@ export function save(key, value) {
     // 無痕模式或空間不足時略過
   }
 }
+
+// 清除煮意存在這個瀏覽器的資料（刪除帳號時用），keep 內的 key 保留
+export function clearAppData(keep = []) {
+  try {
+    const keepKeys = keep.map((key) => PREFIX + key)
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith(PREFIX) && !keepKeys.includes(key))
+      .forEach((key) => localStorage.removeItem(key))
+  } catch {
+    // 無法存取時略過
+  }
+}

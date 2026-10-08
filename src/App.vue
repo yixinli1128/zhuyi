@@ -1,18 +1,25 @@
 <script setup>
-import { RouterView } from 'vue-router'
+import { computed } from 'vue'
+import { RouterView, useRoute } from 'vue-router'
 import AppNavbar from './components/layout/AppNavbar.vue'
 import AppFooter from './components/layout/AppFooter.vue'
+import AppToast from './components/layout/AppToast.vue'
+
+const route = useRoute()
+// 登入、註冊等頁面：桌機不顯示左側 navbar，內容滿版
+const isAuthLayout = computed(() => route.meta.layout === 'auth')
 </script>
 
 <template>
   <div class="app-layout">
     <div class="app-body">
-      <AppNavbar />
-      <main class="app-main">
+      <AppNavbar :hide-sidebar="isAuthLayout" />
+      <main class="app-main" :class="{ 'is-full': isAuthLayout }">
         <RouterView />
       </main>
     </div>
     <AppFooter />
+    <AppToast />
   </div>
 </template>
 
@@ -55,6 +62,10 @@ import AppFooter from './components/layout/AppFooter.vue'
 
   .app-main {
     width: 1440px;
+  }
+
+  .app-main.is-full {
+    padding-right: 0;
   }
 }
 </style>
