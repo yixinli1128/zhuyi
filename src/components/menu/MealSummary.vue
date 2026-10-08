@@ -42,7 +42,7 @@ defineProps({
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: var(--space-20);
+  padding: var(--space-12) var(--space-20);
   line-height: normal;
 }
 
@@ -73,7 +73,7 @@ defineProps({
   }
 
   .summary__item {
-    padding: var(--space-20);
+    padding: var(--space-12) var(--space-20);
   }
 
   .summary__item:nth-child(-n + 2) {

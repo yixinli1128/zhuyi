@@ -42,7 +42,7 @@ const bodyId = useId()
 <style scoped>
 .panel {
   align-self: start;
-  min-height: 98px;
+  min-height: 76px;
   border: 1px solid var(--brand-secondary);
   /* Figma menu/guest_setting、menu/need_setting。 */
   border-radius: 12px 0 12px 0;
@@ -55,8 +55,8 @@ const bodyId = useId()
   justify-content: space-between;
   gap: var(--space-16);
   width: 100%;
-  min-height: 96px;
-  padding: var(--space-12) var(--space-20);
+  min-height: 74px;
+  padding: var(--space-8) var(--space-20);
   text-align: left;
 }
 
