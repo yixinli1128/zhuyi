@@ -951,7 +951,7 @@ function chooseOtherDate() {
   }
 
   :deep(.summary dd) {
-    font-size: 24px;
+    font-size: 20px;
   }
 
   .members {

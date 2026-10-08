@@ -81,7 +81,22 @@ defineProps({
   }
 
   .summary__item:not(:last-child) {
-    border-right: 1px solid var(--brand-secondary);
+    border-right: 0;
+  }
+
+  /* Figma 的欄位分隔線不碰到上下框線，讓摘要列更輕盈。 */
+  .summary__item:not(:last-child)::after {
+    position: absolute;
+    top: var(--space-16);
+    right: 0;
+    bottom: var(--space-16);
+    width: 1px;
+    background: var(--brand-secondary);
+    content: '';
+  }
+
+  .summary__item {
+    position: relative;
   }
 
   .summary dd {
