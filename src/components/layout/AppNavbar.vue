@@ -13,6 +13,11 @@ const items = [
   { label: '家庭管理', to: '/family' },
 ]
 
+defineProps({
+  // 桌機不顯示左側直欄（登入頁等滿版頁面）
+  hideSidebar: Boolean,
+})
+
 const route = useRoute()
 const menuOpen = ref(false)
 
@@ -27,7 +32,7 @@ watch(
 
 <template>
   <!-- 桌機：左側直欄 -->
-  <aside class="navbar">
+  <aside v-if="!hideSidebar" class="navbar">
     <RouterLink to="/" class="navbar__logo" aria-label="煮意 ZHUYI 首頁">
       <img :src="logoUrl" alt="煮意 ZHUYI" />
     </RouterLink>
@@ -74,7 +79,7 @@ watch(
       >
         {{ item.label }}
       </RouterLink>
-      <NavProfile />
+      <NavProfile placement="inline" />
     </nav>
   </div>
 </template>

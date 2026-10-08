@@ -32,6 +32,7 @@ export const useFamilyStore = defineStore('family', () => {
 
   const activeMembers = computed(() => members.value.filter((member) => !member.deletedAt))
   const totalPortionFactor = computed(() => activeMembers.value.reduce((total, member) => total + member.portionFactor, 0))
+  const byId = computed(() => Object.fromEntries(activeMembers.value.map((member) => [member.id, member])))
 
   function validate(input, id = null) {
     const name = input.name?.trim() ?? ''
@@ -78,7 +79,11 @@ export const useFamilyStore = defineStore('family', () => {
     return member
   }
 
+  function getMember(id) {
+    return byId.value[id] ?? null
+  }
+
   watch(members, (value) => save(STORAGE_KEY, value), { deep: true })
 
-  return { members, activeMembers, totalPortionFactor, addMember, updateMember, removeMember, restoreMember }
+  return { members, activeMembers, totalPortionFactor, addMember, updateMember, removeMember, restoreMember, getMember }
 })
