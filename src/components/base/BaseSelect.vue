@@ -42,6 +42,7 @@ const id = useId()
         :min="min"
         :aria-invalid="!!error"
       />
+      <span v-if="type === 'date' && !model" class="select-field__date-placeholder">年 / 月 / 日</span>
       <select
         v-else
         :id="id"
@@ -86,7 +87,8 @@ const id = useId()
   padding: 0 40px 0 var(--space-12);
   border: 1px solid var(--brand-primary-border);
   border-radius: 12px;
-  background: var(--bg-surface);
+  /* 來點煮意空狀態的欄位沿用頁面底色，不使用白色填滿。 */
+  background: transparent;
   font: inherit;
   font-size: var(--fs-body-2);
   color: var(--text-body);
@@ -127,6 +129,16 @@ const id = useId()
   transform: translateY(-50%);
   font-size: 14px;
   color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.select-field__date-placeholder {
+  position: absolute;
+  top: 50%;
+  left: var(--space-12);
+  transform: translateY(-50%);
+  font-size: var(--fs-body-2);
+  color: var(--text-placeholder);
   pointer-events: none;
 }
 
