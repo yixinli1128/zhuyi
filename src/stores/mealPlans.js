@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { load, save } from './storage'
 
 // 餐食日誌：每天一筆晚餐餐單（來點煮意按「儲存到餐桌日誌」時寫入）
-// { id, date, mealType, servings, memberIds, guest, needs, useFridge, dishes: [{ recipeId, type }], status, savedAt }
+// { id, date, mealType, servings, memberIds, guest, needs, useFridge, dishes, groceryChecked, status, savedAt }
 export const useMealPlanStore = defineStore('mealPlans', () => {
   const plans = ref(load('mealPlans', []))
 
@@ -33,13 +33,24 @@ export const useMealPlanStore = defineStore('mealPlans', () => {
   }
 
   // 餐單先是「已排定」，真正完成烹飪後才出現在歷史紀錄。
-  function markCooked(id) {
+  function markCooked(id, inventoryConsumption = []) {
     const plan = plans.value.find((item) => item.id === id)
     if (!plan) return null
     plan.status = 'cooked'
     plan.cookedAt = new Date().toISOString()
+    plan.inventoryConsumption = inventoryConsumption
     return plan
   }
 
-  return { plans, getPlan, savePlan, removePlan, markCooked }
+  function toggleGroceryItem(id, itemKey) {
+    const plan = plans.value.find((item) => item.id === id)
+    if (!plan) return null
+    const checked = new Set(plan.groceryChecked ?? [])
+    if (checked.has(itemKey)) checked.delete(itemKey)
+    else checked.add(itemKey)
+    plan.groceryChecked = [...checked]
+    return plan.groceryChecked
+  }
+
+  return { plans, getPlan, savePlan, removePlan, markCooked, toggleGroceryItem }
 })
