@@ -203,7 +203,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .toast button { margin-left: 12px; color: #fff; text-decoration: underline; font-weight: 700; }
 
 @media (max-width: 900px) { .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 767px) {
+@media (max-width: 640px) {
   .content { padding: 28px var(--page-padding-x) 48px; }
   .summary, .member-grid { grid-template-columns: 1fr; gap: 16px; }
   .member-card, .add-card { height: auto; min-height: 260px; }
@@ -214,7 +214,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 }
 
 /* 全站頁首比例由 PageTitle 統一處理；此頁只保留家庭管理按鈕尺寸。 */
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .page { padding-top: 0; }
   .page :deep(.page-title__actions .btn) { padding: 8px 10px; font-size: 13px; }
 }

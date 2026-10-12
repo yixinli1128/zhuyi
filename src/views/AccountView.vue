@@ -119,17 +119,13 @@ function setNotification(key, value) {
 }
 
 // ---------- 刪除帳號 ----------
-const CONFIRM_WORD = '刪除'
 const deleteOpen = ref(false)
-const deleteInput = ref('')
 
 function openDelete() {
-  deleteInput.value = ''
   deleteOpen.value = true
 }
 
 function confirmDelete() {
-  if (deleteInput.value.trim() !== CONFIRM_WORD) return
   deleteOpen.value = false
   userStore.deleteAccount()
   toast.show('帳號已刪除')
@@ -268,11 +264,10 @@ function confirmDelete() {
         <p>・冰箱庫存食材</p>
         <p>・餐食日誌與歷史紀錄</p>
       </div>
-      <BaseInput v-model="deleteInput" :label="`請輸入「${CONFIRM_WORD}」以確認`" :placeholder="CONFIRM_WORD" />
 
       <template #footer>
         <BaseButton variant="secondary" @click="deleteOpen = false">取消</BaseButton>
-        <BaseButton variant="danger" :disabled="deleteInput.trim() !== CONFIRM_WORD" @click="confirmDelete">
+        <BaseButton variant="danger" @click="confirmDelete">
           永久刪除
         </BaseButton>
       </template>
@@ -494,7 +489,7 @@ function confirmDelete() {
 }
 
 /* ---------- 平板以上 ---------- */
-@media (min-width: 768px) {
+@media (min-width: 641px) {
   .card {
     padding: var(--space-28) 32px;
   }
@@ -516,7 +511,7 @@ function confirmDelete() {
 }
 
 /* ---------- 桌機：跟 PageTitle 一樣左右留 40px ---------- */
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .page {
     padding-top: 0;
   }

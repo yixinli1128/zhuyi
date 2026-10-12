@@ -170,7 +170,7 @@ watch(
 }
 
 /* ---------- 桌機 ---------- */
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .mobile-header,
   .mobile-menu {
     display: none;
@@ -181,6 +181,8 @@ watch(
     position: fixed;
     top: 0;
     left: 0;
+    /* 疊在頁面內容上面，帳號選單往右超出側欄時才不會被圖片蓋住 */
+    z-index: 10;
     width: 12.5vw;
     height: 100vh;
     display: flex;

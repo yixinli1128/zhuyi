@@ -71,9 +71,11 @@ export const useFridgeStore = defineStore('fridge', () => {
   }
 
   // 供「來點煮意」計算庫存符合度使用；名稱互相包含即視為對應。
+  // 食材名稱先去掉括號說明；單字食材（水、鹽）不反向比對，免得「水」對到「水餃」
   function findMatches(ingredientNames) {
+    const names = ingredientNames.map((name) => name.replace(/（.*）/, ''))
     return activeIngredients.value.filter((item) =>
-      ingredientNames.some((name) => name.includes(item.name) || item.name.includes(name)),
+      names.some((name) => name.includes(item.name) || (name.length > 1 && item.name.includes(name))),
     )
   }
 

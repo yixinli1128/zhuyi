@@ -108,7 +108,7 @@ defineProps({
   color: var(--text-secondary);
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .reasons__list {
     grid-template-columns: repeat(3, 1fr);
   }

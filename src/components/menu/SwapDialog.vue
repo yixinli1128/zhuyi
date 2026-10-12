@@ -1,6 +1,6 @@
 <script setup>
-// Figma menu/changeDish：更換菜色彈窗，列出同類型、符合家人限制的其他菜色
-import { ref, watch } from 'vue'
+// Figma menu/changeDish：更換菜色彈窗，列出同一類（肉類、蔬菜類、蛋類、湯品類）、符合家人限制的其他菜色
+import { computed, ref, watch } from 'vue'
 import BaseDialog from '@/components/base/BaseDialog.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import RecipeMeta from './RecipeMeta.vue'
@@ -19,6 +19,8 @@ const emit = defineEmits(['confirm'])
 
 const selectedId = ref('')
 
+const groupName = computed(() => props.current?.group ?? (props.current?.type === 'soup' ? '湯品' : '菜色'))
+
 // 每次打開都預選分數最高的那道（標「目前推薦」）
 watch(open, (value) => {
   if (value) selectedId.value = props.candidates[0]?.id ?? ''
@@ -34,7 +36,7 @@ function confirm() {
   <BaseDialog
     v-model:open="open"
     title="更換菜色"
-    :description="current ? `換掉「${current.name}」，以下都符合這次家人與訪客的飲食限制。` : ''"
+    :description="current ? `換掉「${current.name}」，以下都是${groupName}，也符合這次家人與訪客的飲食限制。` : ''"
     :width="620"
   >
     <div v-if="candidates.length" class="swap-list" role="radiogroup" aria-label="可更換的菜色">
@@ -56,7 +58,7 @@ function confirm() {
       </label>
     </div>
     <p v-else class="swap-empty">
-      目前沒有其他符合條件的{{ current?.type === 'soup' ? '湯品' : '菜色' }}可以替換。<br />
+      目前沒有其他符合條件的{{ groupName }}可以替換。<br />
       可以調整本次訪客或用餐需求後，再重新建立餐單。
     </p>
 

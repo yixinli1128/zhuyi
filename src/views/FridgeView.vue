@@ -212,8 +212,8 @@ function remove() { const item = store.removeIngredient(deletingId.value); dialo
 .search-actions{height:45px;align-items:center}.search{box-sizing:border-box;min-height:45px;height:45px;padding:0 12px}.search-actions :deep(.inventory-add){display:inline-flex;flex:0 0 auto;min-height:39px;height:39px;padding:8px 10px;gap:4px;font-size:13px;line-height:19px}.search-actions :deep(.inventory-add .btn__label){display:inline-flex;align-items:center;gap:4px}.search-actions :deep(.inventory-add .button-icon){width:16px;height:16px}.view-switch button.active img{filter:brightness(0) invert(1)}
 .metrics article{min-height:106px;padding:16px;gap:6px}.metrics strong{font-size:29px}.metrics span,.metrics small{font-size:13px}
 /* 冰箱頁首完全沿用家庭管理頁的 PageTitle 尺寸，避免頁面各自偏移。 */
-@media(min-width:1024px){.page :deep(.page-title){padding:48px 32px 33px}.page :deep(.page-title__text){gap:10px}.page :deep(.page-title__desc){font-size:13px}}
-@media(max-width:1023px){.page :deep(.page-title){padding:60px 40px 41px}.page :deep(.page-title__text){gap:12px}.page :deep(.page-title__desc){font-size:var(--fs-body-1)}}
+@media(min-width:1025px){.page :deep(.page-title){padding:48px 32px 33px}.page :deep(.page-title__text){gap:10px}.page :deep(.page-title__desc){font-size:13px}}
+@media(max-width:1024px){.page :deep(.page-title){padding:60px 40px 41px}.page :deep(.page-title__text){gap:12px}.page :deep(.page-title__desc){font-size:var(--fs-body-1)}}
 
 /* Figma ref/addnewfood/mc — Desktop - 冰箱/新增食材 */
 .ingredient-dialog{display:grid;grid-template-rows:77px minmax(0,1fr) 70px;width:min(620px,calc(100vw - 32px));height:587px;max-height:calc(100dvh - 32px);overflow:hidden;border:1px solid #e9e1d9;border-radius:12px 0 12px;background:#fff;box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}.ingredient-dialog:has(.unit-picker__menu){overflow:visible}

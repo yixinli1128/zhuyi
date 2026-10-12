@@ -65,7 +65,7 @@ defineProps({
 }
 
 /* 所有桌面頁面統一採家庭管理頁的主標題比例。 */
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .page-title {
     padding: 48px 32px 33px;
   }

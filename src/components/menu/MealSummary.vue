@@ -67,7 +67,7 @@ defineProps({
   white-space: nowrap;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 641px) {
   .summary {
     grid-template-columns: repeat(4, 1fr);
   }

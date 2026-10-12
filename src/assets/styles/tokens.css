@@ -67,21 +67,21 @@
 
 /*
  * RWD 斷點（mobile-first：先寫手機樣式，再用 min-width 往上加）
- *   手機   < 768px   Figma Mobile 390
- *   平板   ≥ 768px
- *   桌機   ≥ 1024px  左側 navbar 出現；Figma Desktop 1920
+ *   手機   ≤ 640px       Figma Mobile 390
+ *   平板   641–1024px
+ *   桌機   ≥ 1025px      左側 navbar 出現；1025–1440 等比縮放，Figma Desktop 1920
  * CSS 變數不能用在 @media 裡，所以斷點直接寫數字：
- *   @media (min-width: 768px) { ... }
- *   @media (min-width: 1024px) { ... }
+ *   @media (min-width: 641px) { ... }
+ *   @media (min-width: 1025px) { ... }
  */
-@media (min-width: 768px) {
+@media (min-width: 641px) {
   :root {
     --page-padding-x: var(--space-28);
     --page-padding-y: var(--space-40);
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   :root {
     /* 桌機頁面的垂直起點由共用 PageTitle 控制，避免每頁再疊 60px 留白。 */
     --page-padding-x: 0px;
