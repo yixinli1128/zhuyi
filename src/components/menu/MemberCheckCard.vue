@@ -121,4 +121,27 @@ defineProps({
     font-size: var(--fs-subtitle-2);
   }
 }
+
+@media (max-width: 640px) {
+  .member-card {
+    gap: 8px;
+    min-height: 64px;
+    padding: 8px 10px;
+  }
+
+  .member-card__box {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  .member-card__avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .member-card__name {
+    font-size: 15px;
+  }
+}
 </style>

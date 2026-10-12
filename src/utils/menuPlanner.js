@@ -90,13 +90,14 @@ function pick(candidates, count) {
  * 建立餐單
  * @returns {{ dishes: Array<{ recipeId, type }>, shortage: boolean, rules }}
  */
-export function planMenu({ recipes, members, guest, needs, dishCount, soupCount, useFridge, findFridgeMatches }) {
+export function planMenu({ recipes, members, guest, needs, dishCount, soupCount, useFridge, findFridgeMatches, preferredRecipeIds = [] }) {
   const rules = collectRules(members, guest)
   const scored = recipes
     .filter((recipe) => isAllowed(recipe, rules))
     .map((recipe) => {
       const matches = useFridge ? findFridgeMatches(recipe.ingredients.map((i) => i.name)) : []
-      return { recipe, score: scoreRecipe(recipe, needs, matches) }
+      const preferredScore = preferredRecipeIds.includes(recipe.id) ? 1000 : 0
+      return { recipe, score: scoreRecipe(recipe, needs, matches) + preferredScore }
     })
 
   const dishes = pick(scored.filter((s) => s.recipe.type === 'dish'), dishCount)

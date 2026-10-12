@@ -1,10 +1,11 @@
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { load, save } from './storage'
+import { toDateKey } from '@/utils/date'
 
 const STORAGE_KEY = 'fridge-ingredients'
 const ZONES = ['冷藏', '冷凍', '蔬果室', '常溫/調味']
-const UNITS = ['份', '顆', '片', '包', '盒', '把', '個', 'g（公克）', 'kg（公斤）', 'ml（毫升）', 'L（公升）']
+const UNITS = ['份', '顆', '個', '根', '把', '束', '片', '塊', '條', '包', '袋', '盒', '罐', '瓶', 'g（公克）', 'kg（公斤）', 'ml（毫升）', 'L（公升）', '大匙', '茶匙', '杯']
 const createId = () => crypto.randomUUID()
 const now = () => new Date().toISOString()
 
@@ -81,11 +82,77 @@ export const useFridgeStore = defineStore('fridge', () => {
     return ingredient
   }
 
-  // 供「來點煮意」計算庫存符合度使用；名稱互相包含即視為對應。
+  // 供配餐預覽使用：只回傳未過期、數量大於零且名稱相符的庫存。
   function findMatches(ingredientNames) {
     return activeIngredients.value.filter((item) =>
+      item.expiry >= toDateKey() && Number(item.amount) > 0 &&
       ingredientNames.some((name) => name.includes(item.name) || item.name.includes(name)),
     )
+  }
+
+  // 用於「現有庫存可做料理」：必須同時符合食材名稱、單位與數量，且不能使用過期庫存。
+  // 回傳的是每一個食譜需求的實際扣抵結果，不再只用「名稱有出現」判斷 100% 匹配。
+  function matchRecipeRequirements(requirements = []) {
+    const available = activeIngredients.value
+      .filter((item) => item.expiry >= toDateKey() && Number(item.amount) > 0)
+      .map((item) => ({ ...item }))
+    const remaining = new Map(available.map((item) => [item.id, Number(item.amount)]))
+    const matchedIngredients = []
+    const missingIngredients = []
+    const requirementMatches = []
+    let totalRequirements = 0
+    let matchedRequirements = 0
+
+    requirements.forEach((requirement) => {
+      const needed = Number(requirement.qty ?? requirement.amount)
+      const matchingItems = available.filter((item) => requirement.name.includes(item.name) || item.name.includes(requirement.name))
+      // 「少許／適量」沒有可運算的單位時，至少需要有一項有效同名庫存。
+      if (!Number.isFinite(needed) || needed <= 0 || !requirement.unit) {
+        const isFulfilled = matchingItems.length > 0
+        totalRequirements += 1
+        if (isFulfilled) {
+          matchedRequirements += 1
+          matchedIngredients.push(...matchingItems)
+        } else {
+          missingIngredients.push({ ...requirement, missingQty: null })
+        }
+        requirementMatches.push({ requirement, matchedQty: null, missingQty: null, isFulfilled })
+        return
+      }
+      totalRequirements += 1
+      const target = unitDescriptor(requirement.unit)
+      let remainingNeeded = needed * target.factor
+
+      matchingItems
+        .forEach((ingredient) => {
+          if (remainingNeeded <= 0) return
+          const source = unitDescriptor(ingredient.unit)
+          if (source.group !== target.group) return
+          const availableAmount = (remaining.get(ingredient.id) ?? 0) * source.factor
+          const used = Math.min(availableAmount, remainingNeeded)
+          if (used <= 0) return
+          const usedInIngredientUnit = displayAmount(used / source.factor)
+          remaining.set(ingredient.id, displayAmount((remaining.get(ingredient.id) ?? 0) - usedInIngredientUnit))
+          matchedIngredients.push({ ...ingredient, amountUsed: usedInIngredientUnit })
+          remainingNeeded -= used
+        })
+
+      const missingQty = displayAmount(remainingNeeded / target.factor)
+      const matchedQty = displayAmount(needed - missingQty)
+      const isFulfilled = remainingNeeded <= 0
+      if (isFulfilled) matchedRequirements += 1
+      else missingIngredients.push({ ...requirement, missingQty })
+      requirementMatches.push({ requirement, matchedQty, missingQty, isFulfilled })
+    })
+
+    return {
+      matchedIngredients,
+      missingIngredients,
+      totalRequirements,
+      matchedRequirements,
+      requirementMatches,
+      isComplete: totalRequirements > 0 && missingIngredients.length === 0,
+    }
   }
 
   // 依食譜用量預覽可從冰箱扣除的食材。重量、容量會自動換算；其他單位需相同才會扣除。
@@ -147,6 +214,7 @@ export const useFridgeStore = defineStore('fridge', () => {
     removeIngredient,
     restoreIngredient,
     findMatches,
+    matchRecipeRequirements,
     previewConsumption,
     consumeIngredients,
   }

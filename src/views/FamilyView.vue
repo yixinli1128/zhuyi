@@ -107,7 +107,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
         <header><h2 id="member-list-title">家庭成員名冊</h2><span>共 {{ members.length }} 位成員</span></header>
         <div class="member-grid">
           <article v-for="member in members" :key="member.id" class="member-card">
-            <header><span class="avatar"><img v-if="member.avatar" :src="member.avatar" alt="" /><template v-else>{{ member.name.slice(0, 1) }}</template></span><div><h3>{{ member.name }}</h3><small>份量：{{ member.portionFactor.toFixed(1) }}x</small></div><div class="card-actions"><button type="button" :aria-label="`編輯 ${member.name}`" @click="openEdit(member)">✎</button><button type="button" :aria-label="`刪除 ${member.name}`" @click="confirmDelete(member)">⌫</button></div></header>
+            <header><span class="avatar"><img v-if="member.avatar" :src="member.avatar" alt="" /><template v-else>{{ member.name.slice(0, 1) }}</template></span><div><h3>{{ member.name }}</h3><small>份量：{{ member.portionFactor.toFixed(1) }}x</small></div><div class="card-actions"><button type="button" :aria-label="`編輯 ${member.name}`" @click="openEdit(member)"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button><button type="button" :aria-label="`刪除 ${member.name}`" @click="confirmDelete(member)"><i class="fa-regular fa-trash-can" aria-hidden="true"></i></button></div></header>
             <dl><div><dt>過敏食材</dt><dd><span v-if="!member.allergies.length" class="tag">無</span><span v-for="item in member.allergies" :key="item" class="tag">{{ item }}</span></dd></div><div><dt>忌口食材</dt><dd><span v-if="!member.avoids.length" class="tag">無</span><span v-for="item in member.avoids" :key="item" class="tag">{{ item }}</span></dd></div><div class="two-column"><div><dt>飲食需求</dt><dd>{{ member.dietaryNote || '無' }}</dd></div><div><dt>辣度偏好</dt><dd>{{ spiceLevels.find((item) => item.value === member.spiceLevel)?.label }}</dd></div></div></dl>
             <footer>最近更新：{{ dateLabel(member.updatedAt) }}</footer>
           </article>
@@ -134,31 +134,32 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 
 <style scoped>
 .page { padding: var(--page-padding-y) var(--page-padding-x); }
-.content { max-width: 1440px; padding: 40px; }
-.summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; }
+.content { max-width: 1440px; padding: 28px 40px 40px; }
+.summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .summary article, .member-card { border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; background: #fff; }
-.summary article { min-height: 110px; padding: 16px; }
+.summary article { box-sizing: border-box; min-height: 0; height: 112px; padding: 14px 16px; }
 .summary span, .members > header > span, .member-card small, .member-card dt, .member-card footer { color: var(--text-secondary); font-size: 13px; }
-.summary strong { display: block; color: var(--text-title); font-size: 29px; font-weight: 600; }
-.summary strong small { font-size: 16px; font-weight: 400; }
-.summary p { color: var(--text-secondary); font-size: 13px; }
-.members { margin-top: 48px; }
+.summary span { font-size: 12px; }
+.summary strong { display: block; color: var(--text-title); font-size: 24px; font-weight: 600; line-height: 1.25; }
+.summary strong small { font-size: 14px; font-weight: 400; }
+.summary p { margin: 4px 0 0; color: var(--text-secondary); font-size: 12px; line-height: 1.35; }
+.members { margin-top: 32px; }
 .members > header { display: flex; align-items: baseline; justify-content: space-between; }
 .members h2 { color: var(--text-title); font-size: 24px; font-weight: 400; }
-.member-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 24px; }
-.member-card { min-height: 334px; padding: 21px; }
+.member-grid { display: grid; grid-auto-rows: 312px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+.member-card { box-sizing: border-box; height: 100%; padding: 18px; }
 .member-card > header { display: flex; align-items: center; gap: 12px; padding-bottom: 9px; border-bottom: 1px solid var(--brand-secondary); }
-.avatar { display: grid; width: 48px; height: 48px; place-items: center; overflow: hidden; border: 1px solid var(--brand-primary-border); border-radius: 50%; background: var(--brand-secondary-light); color: var(--text-body); font-size: 20px; }
+.avatar { display: grid; width: 46px; height: 46px; place-items: center; overflow: hidden; border: 1px solid var(--brand-primary-border); border-radius: 50%; background: var(--brand-secondary-light); color: var(--text-body); font-size: 19px; }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
-.member-card h3 { color: var(--text-title); font-size: 20px; font-weight: 400; }
+.member-card h3 { color: var(--text-title); font-size: 19px; font-weight: 400; }
 .card-actions { display: flex; gap: 10px; margin-left: auto; }
-.card-actions button { color: var(--brand-primary); font-size: 18px; }
-.member-card dl { display: grid; gap: 12px; padding: 16px 0; }
-.member-card dd { margin-top: 4px; color: var(--text-body); font-size: 14px; }
-.tag { display: inline-block; margin: 0 4px 4px 0; padding: 3px 8px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 12px; }
+.card-actions button { display: grid; width: 24px; height: 24px; place-items: center; color: var(--brand-primary); font-size: 16px; }
+.member-card dl { display: grid; gap: 9px; padding: 12px 0; }
+.member-card dd { margin-top: 3px; color: var(--text-body); font-size: 13px; }
+.tag { display: inline-block; margin: 0 4px 3px 0; padding: 3px 7px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 11px; }
 .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .member-card footer { padding-top: 9px; border-top: 1px solid var(--brand-secondary); }
-.add-card { display: flex; height: 334.5px; flex-direction: column; align-items: center; justify-content: center; gap: 12px; border: 1px dashed var(--brand-primary-border); border-radius: 12px 0 12px; color: var(--text-body); }
+.add-card { display: flex; box-sizing: border-box; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: 12px; border: 1px dashed var(--brand-primary-border); border-radius: 12px 0 12px; color: var(--text-body); }
 .add-card img { width: 24px; height: 24px; }
 .add-card small { color: var(--text-placeholder); font-size: 12px; }
 .overlay { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; overflow: auto; padding: 16px; background: rgba(52, 38, 28, .35); }
@@ -202,20 +203,77 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .toast { position: fixed; z-index: 40; top: 22px; left: 50%; padding: 12px 18px; border-radius: 999px; background: var(--brand-primary-active); box-shadow: 0 8px 24px rgba(0, 0, 0, .18); color: #fff; transform: translateX(-50%); }
 .toast button { margin-left: 12px; color: #fff; text-decoration: underline; font-weight: 700; }
 
-@media (max-width: 900px) { .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 767px) {
-  .content { padding: 28px var(--page-padding-x) 48px; }
-  .summary, .member-grid { grid-template-columns: 1fr; gap: 16px; }
-  .member-card, .add-card { height: auto; min-height: 260px; }
+@media (min-width: 641px) and (max-width: 1024px) {
+  .content { padding: 24px 28px 48px; }
+  .summary { gap: 16px; }
+  .summary article { height: 106px; padding: 14px; }
+  .summary strong { font-size: 22px; }
+  .members { margin-top: 28px; }
+  .members h2 { font-size: 22px; }
+  /* 忌口標籤可能換行；列高以 320px 為下限並可隨內容增高，避免頁尾溢出卡片。 */
+  .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(320px, auto); gap: 14px; margin-top: 16px; }
+  .member-card { padding: 16px; }
+  .member-card h3 { font-size: 18px; }
+  .member-card dl { gap: 8px; padding: 10px 0; }
+  .add-card { gap: 10px; }
+}
+@media (max-width: 640px) {
+  /* 頁首唯一操作改放在標題右側，與冰箱／日誌的行動版操作位置一致。 */
+  .page :deep(.page-title__text) { flex: 1 1 0; min-width: 0; }
+  .page :deep(.page-title__actions) { width: auto; justify-content: flex-end; }
+  .page :deep(.page-title__actions .btn) { min-height: 36px; padding: 6px 10px; font-size: 12px; }
+  .content { padding: 20px var(--page-padding-x) 48px; }
+  .page :deep(.page-title__desc) { font-size: 12px; line-height: 1.45; }
+  .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .summary article { height: 100px; padding: 12px; }
+  .summary span { font-size: 11px; }
+  .summary strong { font-size: 21px; }
+  .summary strong small { font-size: 12px; }
+  .summary p { font-size: 11px; }
+  .members { margin-top: 20px; }
+  .members h2 { font-size: 20px; }
+  .members > header > span { font-size: 12px; }
+  .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; gap: 12px; margin-top: 14px; }
+  .member-card, .add-card { height: auto; min-height: 232px; }
+  .member-card { padding: 10px; }
+  .member-card > header { gap: 6px; padding-bottom: 8px; }
+  .avatar { width: 32px; height: 32px; font-size: 14px; }
+  .member-card h3 { font-size: 15px; }
+  .card-actions { gap: 4px; }
+  .card-actions button { width: 18px; height: 18px; font-size: 14px; }
+  .member-card small, .member-card dt, .member-card footer, .member-card dd { font-size: 12px; }
+  .member-card dl { gap: 7px; padding: 10px 0; }
+  .tag { padding: 2px 6px; font-size: 10px; }
+  .add-card { gap: 8px; font-size: 14px; }
+  .add-card img { width: 20px; height: 20px; }
+  .add-card small { font-size: 11px; }
   .dialog { inline-size: min(100%, 34rem); min-inline-size: 0; max-inline-size: 100%; }
   .modal-body { inline-size: 100%; }
   .portions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .two-column { grid-template-columns: 1fr; }
+  .two-column { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* 全站頁首比例由 PageTitle 統一處理；此頁只保留家庭管理按鈕尺寸。 */
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .page { padding-top: 0; }
   .page :deep(.page-title__actions .btn) { padding: 8px 10px; font-size: 13px; }
+}
+
+@media (min-width: 1025px) and (max-width: 1279px) {
+  .content { padding: 24px 28px 48px; }
+  .page :deep(.page-title) { padding: 36px 28px 28px; }
+  .summary { gap: 16px; }
+  .members { margin-top: 28px; }
+  /* 窄桌機仍維持三欄，因此卡片內容同步縮小，且列高不可裁切頁尾。 */
+  .member-grid { grid-auto-rows: minmax(310px, auto); gap: 14px; margin-top: 16px; }
+  .member-card { padding: 14px; }
+  .member-card > header { gap: 8px; padding-bottom: 8px; }
+  .avatar { width: 40px; height: 40px; font-size: 17px; }
+  .member-card h3 { font-size: 17px; }
+  .member-card small, .member-card dt, .member-card footer, .member-card dd { font-size: 12px; }
+  .member-card dl { gap: 7px; padding: 10px 0; }
+  .tag { padding: 2px 6px; font-size: 10px; }
+  .card-actions { gap: 6px; }
+  .card-actions button { width: 20px; height: 20px; font-size: 15px; }
 }
 </style>

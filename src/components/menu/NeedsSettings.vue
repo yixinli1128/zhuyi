@@ -75,13 +75,45 @@ function toggle(list, value) {
 .needs {
   display: flex;
   flex-direction: column;
-  gap: var(--space-24);
+  /* 與「本次訪客」採用相同的欄位節奏，兩張設定卡並排時能對齊。 */
+  gap: var(--space-16);
 }
 
 .needs__note {
-  font-size: var(--fs-caption-2);
+  font-size: 12px;
   line-height: 1.5;
   color: var(--text-body);
+}
+
+.needs :deep(.option-group__head) {
+  margin-bottom: 5px;
+}
+
+.needs :deep(.option-group__title) {
+  font-size: 16px;
+  color: var(--text-body);
+}
+
+.needs :deep(.option-group__hint) {
+  font-size: 12px;
+  color: var(--text-placeholder);
+}
+
+.needs :deep(.option-group__body) {
+  gap: 6px;
+}
+
+.needs :deep(.chip) {
+  padding: 5px 8px;
+  border-color: var(--brand-primary-border);
+  background: transparent;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.needs :deep(.chip.is-selected) {
+  border-color: var(--brand-primary);
+  background: var(--brand-secondary);
 }
 
 .needs__more {
@@ -89,7 +121,7 @@ function toggle(list, value) {
   display: inline-flex;
   align-items: center;
   gap: var(--space-8);
-  font-size: var(--fs-body-2);
+  font-size: 14px;
   color: var(--text-body);
 }
 

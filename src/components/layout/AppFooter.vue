@@ -60,14 +60,14 @@ const year = new Date().getFullYear()
 }
 
 /* 平板 */
-@media (min-width: 768px) {
+@media (min-width: 641px) {
   .app-footer {
     padding: var(--space-20) var(--page-padding-x);
   }
 }
 
 /* 桌機（Figma footer/mc 1150:15025）：左品牌、右版權，左右留白同 navbar 寬 */
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .app-footer {
     flex-direction: row;
     align-items: center;

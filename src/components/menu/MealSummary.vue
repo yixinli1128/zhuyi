@@ -67,7 +67,7 @@ defineProps({
   white-space: nowrap;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 641px) {
   .summary {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -101,6 +101,22 @@ defineProps({
 
   .summary dd {
     font-size: var(--fs-subtitle-1);
+  }
+}
+
+@media (max-width: 640px) {
+  .summary__item {
+    gap: 2px;
+    padding: 8px 12px;
+  }
+
+  .summary dt {
+    font-size: 13px;
+  }
+
+  .summary dd {
+    font-size: 18px;
+    line-height: 1.25;
   }
 }
 </style>

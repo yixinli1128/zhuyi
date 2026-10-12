@@ -197,4 +197,37 @@ const classes = computed(() => [
   outline: 2px solid var(--brand-special);
   outline-offset: 2px;
 }
+
+/* 手機維持同一套元件比例：主要操作由桌機的 45px 收斂為 36px，
+   避免頁首「新增」按鈕在窄螢幕搶走標題與內容空間。 */
+@media (max-width: 640px) {
+  .btn--md {
+    gap: 6px;
+    padding: 7px 9px;
+    font-size: 13px;
+    line-height: 20px;
+  }
+
+  .btn--md .btn__icon {
+    font-size: 16px;
+  }
+
+  .btn--outline.btn--md {
+    gap: 8px;
+    padding: 8px 14px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .btn--md {
+    gap: 7px;
+    padding: 9px 10px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .btn--md .btn__icon {
+    font-size: 18px;
+  }
+}
 </style>

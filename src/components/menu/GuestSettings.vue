@@ -84,14 +84,13 @@ function setSpicy(level) {
     </OptionGroup>
 
     <OptionGroup title="辣度偏好">
-      <div class="spicy" role="radiogroup" aria-label="辣度偏好">
+      <div class="spice" role="radiogroup" aria-label="辣度偏好">
         <button
           v-for="(label, level) in SPICY_LEVELS"
           :key="label"
           type="button"
           role="radio"
-          class="spicy__option"
-          :class="{ 'is-active': guest.spicy === level }"
+          :class="{ selected: guest.spicy === level }"
           :aria-checked="guest.spicy === level"
           @click="setSpicy(level)"
         >
@@ -193,32 +192,32 @@ function setSpicy(level) {
   color: var(--text-danger);
 }
 
-/* 辣度：灰底分段選擇器，選到的那格變白底 */
-.spicy {
+/* 與新增成員使用同一組分段辣度偏好樣式。 */
+.spice {
+  box-sizing: border-box;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   width: 100%;
   height: 29px;
   padding: 3px;
-  border: 0;
+  margin-top: 3px;
   border-radius: 10px;
   background: var(--brand-secondary-light);
 }
 
-.spicy__option {
+.spice button {
   padding: 3px 2px;
   border-radius: 7px;
-  font-size: 12px;
   color: var(--text-body);
+  font-size: 12px;
 }
 
-.spicy__option.is-active {
-  background: var(--bg-surface);
-  color: var(--text-title);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+.spice .selected {
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(52, 38, 28, .08);
 }
 
-.spicy__option:focus-visible {
+.spice button:focus-visible {
   outline: 2px solid var(--brand-special);
 }
 </style>

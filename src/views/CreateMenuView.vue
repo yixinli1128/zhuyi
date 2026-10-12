@@ -57,11 +57,11 @@ function defaultSettings() {
   return {
     memberIds: [],
     date: '',
-    people: '',
+    people: 1,
     // 份量仍供配餐計算使用，但不列在 Figma 空狀態的四個欄位中。
     size: 'normal',
-    dishCount: '',
-    soupCount: '',
+    dishCount: 1,
+    soupCount: 0,
     guest: emptyGuest(),
     needs: emptyNeeds(),
     useFridge: false,
@@ -74,24 +74,41 @@ const requestedDate = typeof route.query.date === 'string' && /^\d{4}-\d{2}-\d{2
 const requestedPlan = typeof route.query.planId === 'string'
   ? mealPlanStore.plans.find((plan) => plan.id === route.query.planId) ?? null
   : null
+const requestedRecipeIds = typeof route.query.recipeId === 'string'
+  ? route.query.recipeId.split(',').filter((id) => recipeStore.getRecipe(id))
+  : []
 
 function restoreSettings(plan) {
   if (!plan) return {}
   const dishes = plan.dishes ?? []
+  // 舊版已儲存的餐單可能缺少部分訪客／需求欄位；回編時補齊結構，避免設定面板因 undefined 無法載入。
+  const savedGuest = plan.guest ?? {}
+  const savedNeeds = plan.needs ?? {}
   return {
     memberIds: [...(plan.memberIds ?? [])],
     date: plan.date,
-    people: plan.people ?? plan.servings ?? '',
+    people: plan.people ?? plan.servings ?? 1,
     size: plan.size ?? 'normal',
     dishCount: plan.dishCount ?? dishes.filter((dish) => dish.type === 'dish').length,
-    soupCount: plan.soupCount ?? dishes.filter((dish) => dish.type === 'soup').length,
-    guest: structuredClone(plan.guest ?? emptyGuest()),
-    needs: structuredClone(plan.needs ?? emptyNeeds()),
+    soupCount: plan.soupCount ?? dishes.filter((dish) => dish.type === 'soup').length ?? 0,
+    guest: {
+      allergens: [...(savedGuest.allergens ?? [])],
+      avoid: [...(savedGuest.avoid ?? [])],
+      dietTypes: [...(savedGuest.dietTypes ?? [])],
+      spicy: savedGuest.spicy ?? null,
+    },
+    needs: {
+      wants: [...(savedNeeds.wants ?? [])],
+      flavors: [...(savedNeeds.flavors ?? [])],
+      texture: savedNeeds.texture ?? '不指定',
+      note: savedNeeds.note ?? '',
+    },
     useFridge: Boolean(plan.useFridge),
   }
 }
 
-const settings = reactive({ ...defaultSettings(), ...restoreSettings(requestedPlan), ...(requestedPlan ? {} : requestedDate ? { date: requestedDate } : {}) })
+// 從歷史「帶入今日晚餐」時，網址日期必須優先於原始餐單日期；一般編輯餐單傳入的是同一天，結果不變。
+const settings = reactive({ ...defaultSettings(), ...restoreSettings(requestedPlan), ...(requestedDate ? { date: requestedDate } : {}) })
 const menu = ref(null) // { dishes, servings, shortage, settingsKey }
 
 const guestOpen = ref(false)
@@ -108,17 +125,44 @@ function isSelected(id) {
 // 勾選家人時，人數跟著變（之前手動多加的訪客人數保留）
 function toggleMember(id, checked) {
   const before = settings.memberIds.length
-  const extra = settings.people === '' ? 0 : Math.max(0, settings.people - before)
+  const extra = Math.max(0, (Number(settings.people) || 1) - before)
   settings.memberIds = checked
     ? [...settings.memberIds, id]
     : settings.memberIds.filter((memberId) => memberId !== id)
   const after = settings.memberIds.length
-  settings.people = after ? after + extra : ''
+  settings.people = Math.max(1, after + extra)
 }
 
-const peopleOptions = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: `${i + 1} 人` }))
-const dishOptions = Array.from({ length: 5 }, (_, i) => ({ value: i + 1, label: `${i + 1} 道` }))
-const soupOptions = [0, 1, 2].map((n) => ({ value: n, label: n ? `${n} 湯` : '不要湯' }))
+function updatePeople(value) {
+  const count = Number(value)
+  settings.people = Number.isInteger(count) ? Math.min(20, Math.max(1, count)) : 1
+}
+
+function changePeople(change) {
+  settings.people = Math.min(20, Math.max(1, (Number(settings.people) || 1) + change))
+}
+
+function updateSoupCount(value) {
+  const count = Number(value)
+  settings.soupCount = Number.isInteger(count) ? Math.min(20, Math.max(0, count)) : 0
+}
+
+function changeSoupCount(change) {
+  settings.soupCount = Math.min(20, Math.max(0, (Number(settings.soupCount) || 0) + change))
+}
+function updateDishCount(value) {
+  if (value === '') {
+    settings.dishCount = ''
+    return
+  }
+  const count = Number(value)
+  settings.dishCount = Number.isInteger(count) ? Math.min(20, Math.max(1, count)) : ''
+}
+
+function changeDishCount(change) {
+  const current = Number(settings.dishCount) || 0
+  settings.dishCount = Math.min(20, Math.max(1, current + change))
+}
 
 const guestSubtitle = computed(() =>
   hasGuestSettings(settings.guest) ? '已設定成功，將會套用本餐' : '尚未設定，點此新增飲食需求',
@@ -141,7 +185,7 @@ const submitted = ref(false)
 const errors = computed(() => ({
   members: settings.memberIds.length ? '' : '請至少選擇 1 位用餐的家庭成員',
   date: !settings.date ? '請選擇用餐日期' : settings.date < today ? '用餐日期不能早於今天' : '',
-  people: settings.people === '' ? '請選擇人數' : '',
+  people: settings.people < 1 ? '人數至少為 1 位' : '',
 }))
 
 const shownErrors = computed(() => (submitted.value ? errors.value : {}))
@@ -211,6 +255,7 @@ async function buildMenu() {
     soupCount: settings.soupCount,
     useFridge: settings.useFridge,
     findFridgeMatches: fridgeStore.findMatches,
+    preferredRecipeIds: requestedRecipeIds,
   })
 
   menu.value = {
@@ -454,6 +499,10 @@ function chooseOtherDate() {
         </RouterLink>
       </header>
 
+      <p v-if="requestedRecipeIds.length" class="imported-recipe" role="status">
+        已從冰箱帶入「{{ requestedRecipeIds.map((id) => recipeStore.getRecipe(id)?.name).filter(Boolean).join('、') }}」，建立餐單時會優先保留。
+      </p>
+
       <div class="field-group">
         <p class="field-label">家庭成員</p>
         <div v-if="familyStore.activeMembers.length" class="members">
@@ -477,13 +526,21 @@ function chooseOtherDate() {
           v-model="settings.date"
           type="date"
           label="日期"
+          placeholder="請選擇或輸入"
           :min="today"
           :error="shownErrors.date"
           class="fields__date"
         />
-        <BaseSelect v-model="settings.people" label="人數" :options="peopleOptions" :error="shownErrors.people" />
-        <BaseSelect v-model="settings.dishCount" label="菜數" :options="dishOptions" />
-        <BaseSelect v-model="settings.soupCount" label="湯數" :options="soupOptions" />
+        <label class="custom-dish-field">人數
+          <span><button type="button" aria-label="減少人數" :disabled="settings.people <= 1" @click="changePeople(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.people" type="number" min="1" max="20" inputmode="numeric" @input="updatePeople($event.target.value)" /><button type="button" aria-label="增加人數" :disabled="settings.people >= 20" @click="changePeople(1)"><i class="fa-solid fa-plus"></i></button></span>
+          <small v-if="shownErrors.people" class="field-error">{{ shownErrors.people }}</small>
+        </label>
+        <label class="custom-dish-field">菜數
+          <span><button type="button" aria-label="減少菜數" @click="changeDishCount(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.dishCount" type="number" min="1" max="20" inputmode="numeric" placeholder="1–20" @input="updateDishCount($event.target.value)" /><button type="button" aria-label="增加菜數" @click="changeDishCount(1)"><i class="fa-solid fa-plus"></i></button></span>
+        </label>
+        <label class="custom-dish-field">湯數
+          <span><button type="button" aria-label="減少湯數" :disabled="settings.soupCount <= 0" @click="changeSoupCount(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.soupCount" type="number" min="0" max="20" inputmode="numeric" @input="updateSoupCount($event.target.value)" /><button type="button" aria-label="增加湯數" :disabled="settings.soupCount >= 20" @click="changeSoupCount(1)"><i class="fa-solid fa-plus"></i></button></span>
+        </label>
       </div>
 
       <div class="panels">
@@ -686,6 +743,16 @@ function chooseOtherDate() {
   background: var(--brand-secondary-light);
 }
 
+.imported-recipe {
+  margin: calc(var(--space-8) * -1) 0 0;
+  padding: 9px 12px;
+  border-left: 3px solid var(--brand-primary);
+  border-radius: 0 8px 8px 0;
+  background: var(--brand-secondary-light);
+  color: var(--text-body);
+  font-size: var(--fs-caption-1);
+}
+
 .field-group {
   display: flex;
   flex-direction: column;
@@ -701,6 +768,68 @@ function chooseOtherDate() {
 .field-error {
   font-size: var(--fs-caption-2);
   color: var(--text-danger);
+}
+
+.custom-dish-field {
+  /* 與 BaseSelect 的「label + 44px control」使用同一個兩列尺寸，
+     避免自訂菜數步進器因 label 行高而往下偏移。 */
+  display: grid;
+  grid-template-rows: normal 44px;
+  row-gap: var(--space-4);
+  align-content: start;
+  min-width: 0;
+  color: var(--text-body);
+  font-size: var(--fs-body-2);
+  line-height: normal;
+}
+
+.custom-dish-field > span {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  height: 44px;
+}
+
+.custom-dish-field input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 44px;
+  padding: 0 var(--space-8);
+  border: 1px solid var(--brand-primary-border);
+  border-right: 0;
+  border-left: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-body);
+  font: inherit;
+  text-align: center;
+  outline: none;
+}
+
+.custom-dish-field input:focus {
+  border-color: var(--brand-primary);
+}
+
+.custom-dish-field button {
+  display: grid;
+  height: 44px;
+  place-items: center;
+  border: 1px solid var(--brand-primary-border);
+  background: var(--brand-secondary-light);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.custom-dish-field button:disabled {
+  cursor: not-allowed;
+  opacity: .38;
+}
+
+.custom-dish-field button:first-child {
+  border-radius: 12px 0 0 12px;
+}
+
+.custom-dish-field button:last-child {
+  border-radius: 0 12px 12px 0;
 }
 
 .members {
@@ -771,6 +900,7 @@ function chooseOtherDate() {
 
 .recipes {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-20);
 }
 
@@ -920,13 +1050,14 @@ function chooseOtherDate() {
 }
 
 /* ---------- 平板 ---------- */
-@media (min-width: 768px) {
+@media (min-width: 641px) {
   .block {
     padding: var(--space-40) 0;
   }
 
   .fields {
-    grid-template-columns: repeat(3, 1fr);
+    /* 設定欄位一律成對排列；避免平板出現前三欄一排、第四欄孤立的 3+1。 */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .fields__date {
@@ -938,14 +1069,24 @@ function chooseOtherDate() {
   }
 
   .recipes {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* 與家庭管理／冰箱一致：外層先保留平板頁面起始距離，再放共用 PageTitle。 */
+  .page { padding: var(--page-padding-y) 28px 48px; }
+  .block { gap: 18px; padding: 24px 0; }
+  .block__title { font-size: 20px; }
+  .fields { gap: 14px; }
+  .panels { gap: 14px; }
+}
+
 /* ---------- 桌機（Figma 1440 內容區左右 40） ---------- */
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .block {
-    padding: var(--space-40);
+    gap: var(--space-20);
+    padding: 28px 40px;
   }
 
   /* Figma Desktop - 來點煮意：主標題維持共用 29px，內容層級比其他頁面更精緻。 */
@@ -990,24 +1131,63 @@ function chooseOtherDate() {
 
   .members {
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    gap: 16px;
   }
 
   .fields {
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-40);
+    gap: 24px;
   }
 
   .panels {
-    gap: var(--space-24);
+    gap: 20px;
   }
 
   .recipes {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  .block--result {
+    padding-top: 24px;
+  }
 }
 
-@media (max-width: 767px) {
+/* 左側 navbar 已出現、但主內容仍不足以容納完整四欄的緊湊桌機。 */
+@media (min-width: 1025px) and (max-width: 1279px) {
+  .page :deep(.page-title) { padding: 36px 28px 28px; }
+  .page :deep(.page-title__text) { gap: var(--space-8); }
+  .page :deep(.page-title__desc) { font-size: 14px; }
+  .block { gap: 18px; padding: 24px 28px; }
+  .members { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .panels { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .recipes { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .block--result { padding-top: 20px; }
+}
+
+@media (max-width: 640px) {
+  .members { gap: 8px; }
+  .block {
+    gap: var(--space-16);
+    /* 與家庭管理／冰箱相同：外層 16px + 區塊內 16px，內容從 32px 起。 */
+    padding: var(--space-20) var(--page-padding-x);
+  }
+
+  .block__edit {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  .fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .fields__date {
+    grid-column: auto;
+  }
+
   .skeletons {
     grid-template-columns: repeat(2, 1fr);
   }

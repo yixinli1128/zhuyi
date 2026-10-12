@@ -50,7 +50,7 @@ defineEmits(['swap', 'view'])
   display: flex;
   flex-direction: column;
   border: 1px solid var(--brand-secondary);
-  border-radius: 4px;
+  border-radius: 12px 0 12px 0;
   background: var(--bg-surface);
   overflow: hidden;
 }
@@ -126,5 +126,34 @@ defineEmits(['swap', 'view'])
   .recipe-card__name {
     font-size: var(--fs-subtitle-1);
   }
+}
+
+/* 平板與窄桌機在欄數變少時，也同步收斂卡片內的視覺比例。 */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .recipe-card__badge { top: 10px; left: 10px; padding: 2px 8px; font-size: 11px; }
+  .recipe-card__body { gap: 10px; padding: 14px; }
+  .recipe-card__name { font-size: 16px; }
+  .recipe-card__ingredients { gap: 6px; font-size: 12px; }
+  .recipe-card__actions { gap: 6px; }
+  .recipe-card__actions :deep(.btn) { min-height: 34px; padding: 6px 8px; font-size: 12px; }
+}
+
+@media (min-width: 1025px) and (max-width: 1279px) {
+  .recipe-card__badge { top: 10px; left: 10px; padding: 2px 8px; font-size: 11px; }
+  .recipe-card__body { gap: 12px; padding: 16px; }
+  .recipe-card__name { font-size: 17px; }
+  .recipe-card__ingredients { gap: 6px; font-size: 12px; }
+  .recipe-card__actions { gap: 6px; }
+  .recipe-card__actions :deep(.btn) { min-height: 35px; padding: 6px 9px; font-size: 12px; }
+}
+
+@media (max-width: 640px) {
+  .recipe-card__badge { top: 8px; left: 8px; padding: 2px 6px; font-size: 10px; }
+  .recipe-card__body { gap: 8px; padding: 10px; }
+  .recipe-card__name { font-size: 14px; line-height: 1.3; }
+  .recipe-card__ingredients { gap: 4px; font-size: 11px; line-height: 1.35; }
+  .recipe-card__fridge { gap: 4px; font-size: 10px; }
+  .recipe-card__actions { flex-direction: column; gap: 6px; }
+  .recipe-card__actions :deep(.btn) { width: 100%; min-height: 32px; padding: 5px 6px; font-size: 11px; }
 }
 </style>

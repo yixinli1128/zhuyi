@@ -2,7 +2,7 @@
 // Figma Form/Select、Form/Date：標題＋下拉選單（或日期）＋錯誤訊息
 //   <BaseSelect v-model="people" label="人數" :options="[{ value: 1, label: '1 人' }]" :error="errors.people" />
 //   <BaseSelect v-model="date" label="日期" type="date" />
-import { useId } from 'vue'
+import { computed, useId } from 'vue'
 
 const model = defineModel({ type: [String, Number], default: '' })
 
@@ -26,6 +26,12 @@ defineProps({
 })
 
 const id = useId()
+
+const dateText = computed(() => {
+  if (!model.value) return ''
+  const [year, month, day] = String(model.value).split('-')
+  return year && month && day ? `${year} / ${month} / ${day}` : String(model.value)
+})
 </script>
 
 <template>
@@ -42,7 +48,10 @@ const id = useId()
         :min="min"
         :aria-invalid="!!error"
       />
-      <span v-if="type === 'date' && !model" class="select-field__date-placeholder">年 / 月 / 日</span>
+      <span v-if="type === 'date'" class="select-field__date-value" :class="{ 'is-placeholder': !model }">
+        {{ dateText || placeholder }}
+      </span>
+      <i v-if="type === 'date'" class="select-field__date-icon fa-regular fa-calendar" aria-hidden="true"></i>
       <select
         v-else
         :id="id"
@@ -104,12 +113,19 @@ const id = useId()
 .select-field__control[type='date'] {
   appearance: auto;
   -webkit-appearance: auto;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }
 
-/* Chrome 的 date 欄位本身會畫出 yyyy/mm/dd；空值時隱藏它，避免和中文提示重疊。 */
-.select-field__control.is-empty::-webkit-datetime-edit,
-.select-field__control.is-empty::-webkit-datetime-edit-fields-wrapper {
-  color: transparent;
+/* 日期由同一個顯示層統一呈現，避免 Chrome 的 yyyy/mm/dd 與提示文字重疊。 */
+.select-field__control[type='date']::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .select-field__control:hover {
@@ -132,13 +148,29 @@ const id = useId()
   pointer-events: none;
 }
 
-.select-field__date-placeholder {
+.select-field__date-value {
   position: absolute;
   top: 50%;
   left: var(--space-12);
+  right: 40px;
   transform: translateY(-50%);
   font-size: var(--fs-body-2);
+  color: var(--text-body);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.select-field__date-value.is-placeholder {
   color: var(--text-placeholder);
+}
+
+.select-field__date-icon {
+  position: absolute;
+  top: 50%;
+  right: var(--space-12);
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 17px;
   pointer-events: none;
 }
 

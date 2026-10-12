@@ -42,15 +42,23 @@ const isAuthLayout = computed(() => route.meta.layout === 'auth')
 }
 
 /* 桌機 Figma grid：1920px = 240px 導覽 / 1440px 主要內容 / 240px 留白。 */
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .app-body {
     display: grid;
-    grid-template-columns: 12.5vw 75vw 12.5vw;
+    /* 保留 Figma 的三欄構圖，同時避免 1025–1439px 時側欄被壓得太窄。 */
+    grid-template-columns: clamp(180px, 12.5vw, 240px) minmax(0, 1fr) clamp(40px, 12.5vw, 180px);
   }
 
   .app-main {
     grid-column: 2;
-    width: 75vw;
+    width: auto;
+  }
+}
+
+/* 只有手機有固定底部導覽，需要為它保留內容安全距離。 */
+@media (max-width: 640px) {
+  .app-main {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
   }
 }
 
@@ -65,6 +73,8 @@ const isAuthLayout = computed(() => route.meta.layout === 'auth')
   }
 
   .app-main.is-full {
+    grid-column: 1 / -1;
+    width: auto;
     padding-right: 0;
   }
 }
