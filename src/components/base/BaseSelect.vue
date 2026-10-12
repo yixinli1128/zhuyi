@@ -54,10 +54,7 @@ const id = useId()
         <option value="" disabled>{{ placeholder }}</option>
         <option v-for="option in options" :key="option.value" :value="option.value">{{ option.label }}</option>
       </select>
-      <i
-        :class="['select-field__icon', type === 'date' ? 'fa-regular fa-calendar' : 'fa-solid fa-chevron-down']"
-        aria-hidden="true"
-      ></i>
+      <i v-if="type !== 'date'" class="select-field__icon fa-solid fa-chevron-down" aria-hidden="true"></i>
     </div>
     <p v-if="error" class="select-field__error">{{ error }}</p>
   </div>
@@ -102,6 +99,13 @@ const id = useId()
   color: var(--text-placeholder);
 }
 
+/* 日期欄位保留瀏覽器原生日期選擇器。先前把日曆按鈕撐滿整個輸入框，
+   Chrome 在部分桌機版會多開一個空白的選擇器外框。 */
+.select-field__control[type='date'] {
+  appearance: auto;
+  -webkit-appearance: auto;
+}
+
 /* Chrome 的 date 欄位本身會畫出 yyyy/mm/dd；空值時隱藏它，避免和中文提示重疊。 */
 .select-field__control.is-empty::-webkit-datetime-edit,
 .select-field__control.is-empty::-webkit-datetime-edit-fields-wrapper {
@@ -116,16 +120,6 @@ const id = useId()
   border-color: var(--brand-primary);
   outline: 2px solid var(--brand-special);
   outline-offset: 1px;
-}
-
-/* 用自己的圖示取代瀏覽器的日曆按鈕，但整格點了都能開日曆 */
-.select-field__control::-webkit-calendar-picker-indicator {
-  position: absolute;
-  inset: 0;
-  width: auto;
-  height: auto;
-  opacity: 0;
-  cursor: pointer;
 }
 
 .select-field__icon {
