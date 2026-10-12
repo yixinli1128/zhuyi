@@ -69,7 +69,7 @@ function onAction() {
   transform: translate(-50%, -8px);
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .toast {
     top: var(--space-40);
   }

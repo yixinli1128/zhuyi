@@ -261,6 +261,7 @@ async function buildMenu() {
   menu.value = {
     dishes: result.dishes,
     servings: calcServings(),
+    people: settings.people,
     shortage: result.shortage,
     settingsKey: settingsKey.value,
   }
@@ -285,10 +286,14 @@ function fridgeItemsFor(recipe) {
 const summary = computed(() => {
   const recipes = menuRecipes.value
   const fridgeIds = new Set(recipes.flatMap((recipe) => fridgeItemsFor(recipe).map((item) => item.id)))
+  // 每人熱量 = 整桌熱量（每道每份熱量 × 這次煮的份數）÷ 用餐人數
+  const servings = menu.value?.servings ?? 0
+  const people = menu.value?.people ?? settings.people
+  const tableKcal = recipes.reduce((sum, recipe) => sum + recipe.kcal * servings, 0)
   return {
     dishCount: recipes.filter((recipe) => recipe.type === 'dish').length,
     soupCount: recipes.filter((recipe) => recipe.type === 'soup').length,
-    kcal: Math.round(recipes.reduce((sum, recipe) => sum + recipe.kcal, 0) / 10) * 10,
+    kcal: people ? Math.round(tableKcal / people / 10) * 10 : 0,
     minutes: Math.round(recipes.reduce((sum, recipe) => sum + recipe.cookTime, 0) / 5) * 5,
     fridgeCount: fridgeIds.size,
   }
@@ -701,7 +706,7 @@ function chooseOtherDate() {
   padding: var(--page-padding-y) var(--page-padding-x);
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .page {
     padding-top: 0;
   }
@@ -1187,7 +1192,6 @@ function chooseOtherDate() {
   .fields__date {
     grid-column: auto;
   }
-
   .skeletons {
     grid-template-columns: repeat(2, 1fr);
   }

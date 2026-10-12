@@ -82,11 +82,13 @@ export const useFridgeStore = defineStore('fridge', () => {
     return ingredient
   }
 
-  // 供配餐預覽使用：只回傳未過期、數量大於零且名稱相符的庫存。
+  // 供「來點煮意」計算庫存符合度使用；名稱互相包含即視為對應。
+  // 食材名稱先去掉括號說明；單字食材（水、鹽）不反向比對，免得「水」對到「水餃」。
   function findMatches(ingredientNames) {
+    const names = ingredientNames.map((name) => name.replace(/（.*）/, ''))
     return activeIngredients.value.filter((item) =>
       item.expiry >= toDateKey() && Number(item.amount) > 0 &&
-      ingredientNames.some((name) => name.includes(item.name) || item.name.includes(name)),
+      names.some((name) => name.includes(item.name) || (name.length > 1 && item.name.includes(name))),
     )
   }
 

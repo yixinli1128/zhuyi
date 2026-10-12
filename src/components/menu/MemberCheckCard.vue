@@ -105,7 +105,7 @@ defineProps({
   text-overflow: ellipsis;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .member-card {
     gap: var(--space-24);
     min-height: 84px;

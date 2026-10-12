@@ -1,5 +1,5 @@
 // 食材份量換算後的顯示文字
-//   formatAmount({ amount: '300 克', qty: 300, unit: '克' }, 4 / 3) → '400 克'
+//   formatAmount({ amount: '300 公克', qty: 300, unit: '公克' }, 4 / 3) → '400 公克'
 const FRACTIONS = { 0.25: '1/4', 0.5: '1/2', 0.75: '3/4' }
 
 function roundTo(value, step) {
@@ -19,7 +19,7 @@ export function formatAmount(item, ratio = 1) {
 
   const qty = item.qty * ratio
   let text
-  if (['克', '毫升', 'g', 'ml'].includes(item.unit)) {
+  if (['克', '公克', '毫升', 'g', 'ml'].includes(item.unit)) {
     text = String(qty >= 20 ? roundTo(qty, 5) : roundTo(qty, 1))
   } else if (['茶匙', '大匙'].includes(item.unit)) {
     text = toFraction(roundTo(qty, 0.25))

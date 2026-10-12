@@ -61,8 +61,8 @@ function isIconClass(value) {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-24);
-  padding: var(--space-28) var(--space-20);
+  gap: clamp(16px, 5vw, 24px);
+  padding: clamp(20px, 6.5vw, 28px) clamp(16px, 5vw, 20px);
   background: var(--bg-surface);
   border: 1px solid var(--brand-secondary);
   border-radius: 12px 0;
@@ -77,7 +77,7 @@ function isIconClass(value) {
 }
 
 .auth-card__title {
-  font-size: 32px;
+  font-size: clamp(24px, 7vw, 32px);
   font-weight: 700;
   color: var(--text-title);
 }
@@ -150,9 +150,26 @@ function isIconClass(value) {
   text-decoration: underline;
 }
 
-@media (min-width: 768px) {
+/* 平板：卡片比桌機窄，留白和標題跟著縮；到桌機回到 Figma 的 40px、32px */
+@media (min-width: 641px) {
   .auth-card {
-    padding: var(--space-40);
+    gap: clamp(16px, 2.6vw, 24px);
+    padding: clamp(20px, 3.6vw, 40px);
+  }
+
+  .auth-card__title {
+    font-size: clamp(24px, 3.2vw, 32px);
+  }
+}
+
+@media (min-width: 1025px) {
+  .auth-card {
+    gap: var(--space-24);
+    padding: clamp(28px, 2.1vw, 40px);
+  }
+
+  .auth-card__title {
+    font-size: clamp(26px, 1.67vw, 32px);
   }
 }
 </style>

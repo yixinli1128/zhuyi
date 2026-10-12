@@ -4,6 +4,8 @@ import { RouterView, useRoute } from 'vue-router'
 import AppNavbar from './components/layout/AppNavbar.vue'
 import AppFooter from './components/layout/AppFooter.vue'
 import AppToast from './components/layout/AppToast.vue'
+import FloatingBackdrop from './components/layout/FloatingBackdrop.vue'
+import IntroSplash from './components/layout/IntroSplash.vue'
 
 const route = useRoute()
 // 登入、註冊等頁面：桌機不顯示左側 navbar，內容滿版
@@ -12,6 +14,7 @@ const isAuthLayout = computed(() => route.meta.layout === 'auth')
 
 <template>
   <div class="app-layout">
+    <FloatingBackdrop />
     <div class="app-body">
       <AppNavbar :hide-sidebar="isAuthLayout" />
       <main class="app-main" :class="{ 'is-full': isAuthLayout }">
@@ -20,6 +23,7 @@ const isAuthLayout = computed(() => route.meta.layout === 'auth')
     </div>
     <AppFooter />
     <AppToast />
+    <IntroSplash />
   </div>
 </template>
 
@@ -60,6 +64,12 @@ const isAuthLayout = computed(() => route.meta.layout === 'auth')
   .app-main {
     padding-bottom: calc(64px + env(safe-area-inset-bottom));
   }
+
+  /* 會員頁沒有左側導覽，內容橫跨三欄滿版 */
+  .app-main.is-full {
+    grid-column: 1 / -1;
+    width: auto;
+  }
 }
 
 /* 1920px 設計稿以像素鎖定三欄；超出畫布的空間平均保留在兩側。 */
@@ -68,10 +78,9 @@ const isAuthLayout = computed(() => route.meta.layout === 'auth')
     grid-template-columns: minmax(240px, 1fr) 1440px minmax(240px, 1fr);
   }
 
-  .app-main {
+  .app-main:not(.is-full) {
     width: 1440px;
   }
-
   .app-main.is-full {
     grid-column: 1 / -1;
     width: auto;

@@ -314,6 +314,8 @@ watch(
     position: fixed;
     top: 0;
     left: 0;
+    /* 帳號選單往右超出側欄時仍保持在頁面內容之上。 */
+    z-index: 10;
     width: clamp(180px, 12.5vw, 240px);
     height: 100vh;
     display: flex;

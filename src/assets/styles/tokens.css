@@ -67,9 +67,9 @@
 
 /*
  * RWD 斷點（mobile-first：先寫手機樣式，再用 min-width 往上加）
- *   手機   ≤ 640px   Figma Mobile 390
+ *   手機   ≤ 640px       Figma Mobile 390
  *   平板   641–1024px
- *   桌機   ≥ 1025px  左側 navbar 出現；Figma Desktop 1920
+ *   桌機   ≥ 1025px      左側 navbar 出現；1025–1440 等比縮放，Figma Desktop 1920
  * CSS 變數不能用在 @media 裡，所以斷點直接寫數字：
  *   @media (min-width: 641px) { ... }
  *   @media (min-width: 1025px) { ... }

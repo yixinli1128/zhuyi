@@ -74,7 +74,7 @@ const groups = computed(() => {
                 <summary class="step__summary">
                   <span class="step__no">{{ step.no }}</span>
                   <span class="step__title">{{ step.title }}</span>
-                  <span class="step__minutes">{{ step.minutes }} 分鐘</span>
+                  <span class="step__minutes">{{ step.minutes ? `${step.minutes} 分鐘` : step.tag }}</span>
                 </summary>
                 <p class="step__desc">{{ step.desc }}</p>
                 <p v-if="step.keyTip" class="step__tip">{{ step.keyTip }}</p>
@@ -271,7 +271,7 @@ const groups = computed(() => {
   color: var(--text-placeholder);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 641px) {
   .recipe-top {
     flex-direction: row;
     align-items: flex-start;

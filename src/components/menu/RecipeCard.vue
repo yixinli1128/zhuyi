@@ -122,7 +122,7 @@ defineEmits(['swap', 'view'])
   margin-top: auto;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .recipe-card__name {
     font-size: var(--fs-subtitle-1);
   }

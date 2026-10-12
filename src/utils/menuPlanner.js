@@ -37,11 +37,44 @@ export function suggestDishCount(people) {
   return 4
 }
 
+// 忌口／過敏詞的對應：家人可能選類別（蛋類、海鮮），也可能直接寫食材（雞肉、蝦）
+//   flag：對到 recipe.dietFlags；words：改用這些字比對食材名稱（「雞肉」要對到「雞腿」但不能對到「雞蛋」）
+const WORD_RULES = {
+  蛋類: { flag: 'egg' },
+  蛋: { flag: 'egg' },
+  雞蛋: { flag: 'egg' },
+  海鮮: { flag: 'seafood' },
+  牛奶製品: { flag: 'dairy' },
+  乳製品: { flag: 'dairy' },
+  奶: { flag: 'dairy' },
+  肉類: { flag: 'meat' },
+  雞肉: { words: ['雞腿', '雞胸', '雞肉', '雞丁'] },
+  雞: { words: ['雞腿', '雞胸', '雞肉', '雞丁'] },
+  豬肉: { words: ['豬', '排骨', '貢丸', '五花', '里肌', '梅花'] },
+  豬: { words: ['豬', '排骨', '貢丸', '五花', '里肌', '梅花'] },
+  牛肉: { words: ['牛肉'] },
+  牛: { words: ['牛肉'] },
+  甲殼類: { words: ['蝦', '蟹'] },
+  魚類: { words: ['魚'] },
+  魚: { words: ['魚'] },
+}
+
+// 這道菜有沒有用到某個忌口／過敏食材：先看過敏原標示，再看類別，最後比對菜名與食材名稱
+function recipeContains(recipe, word) {
+  if (recipe.allergens.includes(word)) return true
+  const rule = WORD_RULES[word]
+  if (rule?.flag && recipe.dietFlags.includes(rule.flag)) return true
+  const names = [recipe.name, ...recipe.mainIngredients, ...recipe.ingredients.map((i) => i.name.replace(/（.*）/, ''))]
+  return (rule?.words ?? [word]).some((w) => names.some((name) => name.includes(w)))
+}
+
 // 把成員和訪客的限制合在一起
 function collectRules(members, guest) {
   // 家庭管理與早期餐單資料的欄位名稱不同；這裡兼容兩種格式，避免配餐遺漏既有偏好。
-  const allergens = new Set([...members.flatMap((m) => m.allergens ?? m.allergies ?? []), ...guest.allergens])
-  const avoid = new Set([...members.flatMap((m) => m.avoidIngredients ?? m.avoids ?? []), ...guest.avoid])
+  // 家庭管理頁點選的過敏原（甲殼類、蛋類…）也會存在 avoids，所以過敏和忌口都用同一套比對
+  const clean = (list) => (list ?? []).map((word) => word.trim()).filter(Boolean)
+  const allergens = new Set([...members.flatMap((m) => clean(m.allergens ?? m.allergies)), ...clean(guest.allergens)])
+  const avoid = new Set([...members.flatMap((m) => clean(m.avoidIngredients ?? m.avoids)), ...clean(guest.avoid)])
   const dietIds = [...members.map((m) => m.dietType ?? m.dietaryNote).filter(Boolean), ...guest.dietTypes]
   const blockedFlags = new Set(
     dietTypes.filter((type) => dietIds.includes(type.id) || dietIds.includes(type.name)).flatMap((t) => t.excludes),
@@ -53,11 +86,9 @@ function collectRules(members, guest) {
 }
 
 export function isAllowed(recipe, rules) {
-  if (recipe.allergens.some((a) => rules.allergens.has(a))) return false
   if (recipe.dietFlags.some((f) => rules.blockedFlags.has(f))) return false
   if (recipe.spicy > rules.maxSpicy) return false
-  const names = recipe.ingredients.map((i) => i.name)
-  return ![...rules.avoid].some((word) => names.some((name) => name.includes(word)))
+  return ![...rules.allergens, ...rules.avoid].some((word) => recipeContains(recipe, word))
 }
 
 // jitter：加一點隨機，每次建立的組合才會有變化
@@ -70,7 +101,7 @@ function scoreRecipe(recipe, needs, fridgeMatches, jitter = 1.5) {
   return score
 }
 
-// 依分數挑 count 道，盡量不要同一種主食材重複（例：兩道都是豬肉）
+// 依分數挑 count 道，盡量不要同一類重複（例：三道都是蛋料理），其次避開同一種主食材（例：兩道都是豬肉）
 function pick(candidates, count) {
   const chosen = []
   const pool = [...candidates]
@@ -81,8 +112,9 @@ function pick(candidates, count) {
   return chosen
 
   function adjusted(item) {
-    const repeats = chosen.filter((c) => c.recipe.categories[0] === item.recipe.categories[0]).length
-    return item.score - repeats * 2.5
+    const groupRepeats = chosen.filter((c) => c.recipe.group && c.recipe.group === item.recipe.group).length
+    const mainRepeats = chosen.filter((c) => c.recipe.categories[0] === item.recipe.categories[0]).length
+    return item.score - groupRepeats * 6 - mainRepeats * 2.5
   }
 }
 
@@ -109,11 +141,16 @@ export function planMenu({ recipes, members, guest, needs, dishCount, soupCount,
   }
 }
 
-// 更換菜色的候選：同類型、符合限制、不在目前餐單裡，分數高的在前
+// 更換菜色只換同一類（肉類換肉類、湯品換湯品）；舊資料沒有 group 就比 type
+function sameGroup(a, b) {
+  return a.group && b.group ? a.group === b.group : a.type === b.type
+}
+
+// 更換菜色的候選：同一類、符合限制、不在目前餐單裡，分數高的在前
 export function swapCandidates({ recipes, current, menuIds, members, guest, needs, useFridge, findFridgeMatches }) {
   const rules = collectRules(members, guest)
   return recipes
-    .filter((r) => r.type === current.type && !menuIds.includes(r.id) && isAllowed(r, rules))
+    .filter((r) => sameGroup(r, current) && !menuIds.includes(r.id) && isAllowed(r, rules))
     .map((recipe) => {
       const matches = useFridge ? findFridgeMatches(recipe.ingredients.map((i) => i.name)) : []
       return { recipe, score: scoreRecipe(recipe, needs, matches, 0) }
