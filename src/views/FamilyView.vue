@@ -110,7 +110,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
           <div class="train-caption"><small>FAMILY EXPRESS</small></div>
           <div class="train-route">
             <span class="train-engine" aria-hidden="true"><img :src="trainLocomotiveUrl" alt="" /><small>煮意號</small></span>
-            <span v-for="member in members" :key="member.id" class="train-car" :aria-label="member.name">
+            <span v-for="(member, index) in members" :key="member.id" class="train-car" :style="{ zIndex: index + 2 }" :aria-label="member.name">
               <span class="train-car__body"><img :src="trainCarriageUrl" alt="" /><span class="train-car__window"><b>{{ member.name }}</b></span></span>
             </span>
           </div>
@@ -168,7 +168,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .train-car { width: 101px; margin-top: 23px; margin-left: 9px; }
 .train-car__body { position: relative; z-index: 1; display: block; width: 137px; height: 91px; margin-left: -46px; }
 .train-car__body > img { display: block; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; opacity: .84; filter: saturate(.55) brightness(1.18) contrast(.82); }
-.train-car__window { position: absolute; top: 25%; left: 65%; display: grid; width: 48px; height: 22px; place-items: center; transform: translateX(-50%); }
+.train-car__window { position: absolute; top: 32%; left: 65%; display: grid; width: 48px; height: 22px; place-items: center; transform: translateX(-50%); }
 .train-car__window > b { color: #4a3930; font-size: 10px; font-weight: 400; line-height: 1; white-space: nowrap; }
 .members > header { display: flex; align-items: baseline; justify-content: space-between; }
 .members h2 { color: var(--text-title); font-size: 24px; font-weight: 400; }
