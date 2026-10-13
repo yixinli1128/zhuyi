@@ -155,19 +155,19 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .summary strong small { font-size: 14px; font-weight: 400; }
 .summary p { margin: 4px 0 0; color: var(--text-secondary); font-size: 12px; line-height: 1.35; }
 .members { margin-top: 32px; }
-.family-train { margin-bottom: 16px; padding: 0 0 14px; border-bottom: 1px solid var(--brand-secondary); }
+.family-train { margin-bottom: 16px; padding: 0 0 10px; border-bottom: 1px solid var(--brand-secondary); }
 .train-caption { display: flex; align-items: baseline; gap: 8px; color: var(--text-body); white-space: nowrap; }
-.train-caption small { color: #4a3930; font-size: 10px; letter-spacing: .12em; }
+.train-caption small { color: #4a3930; font-size: 11px; font-weight: 500; letter-spacing: .16em; }
 .train-caption strong { font-size: 18px; font-weight: 400; }
-.train-route { position: relative; display: flex; min-width: 0; height: 132px; align-items: flex-start; gap: 0; overflow-x: auto; overflow-y: hidden; margin-top: 8px; padding: 0 5px; scrollbar-width: thin; }
-.train-route::before { position: absolute; z-index: 0; top: 98px; right: 0; left: 0; height: 10px; opacity: .76; background: repeating-linear-gradient(90deg, transparent 0 9px, #9d8979 9px 14px, transparent 14px 19px) 0 3px / 100% 5px no-repeat, linear-gradient(90deg, #665044, #80695b 24%, #5a473d 60%, #705b4d) 0 0 / 100% 2px no-repeat, linear-gradient(90deg, #665044, #80695b 24%, #5a473d 60%, #705b4d) 0 8px / 100% 2px no-repeat; content: ''; }
+.train-route { position: relative; display: flex; min-width: 0; height: 122px; align-items: flex-start; gap: 0; overflow-x: auto; overflow-y: hidden; margin-top: 8px; padding: 0 5px; scrollbar-width: thin; }
+.train-route::before { position: absolute; z-index: 0; top: 100px; right: 0; left: 0; height: 10px; opacity: .76; background: repeating-linear-gradient(90deg, transparent 0 9px, #9d8979 9px 14px, transparent 14px 19px) 0 3px / 100% 5px no-repeat, linear-gradient(90deg, #665044, #80695b 24%, #5a473d 60%, #705b4d) 0 0 / 100% 2px no-repeat, linear-gradient(90deg, #665044, #80695b 24%, #5a473d 60%, #705b4d) 0 8px / 100% 2px no-repeat; content: ''; }
 .train-engine, .train-car { position: relative; z-index: 1; display: flex; flex: 0 0 auto; flex-direction: column; align-items: center; color: var(--text-secondary); font-size: 10px; line-height: 1.2; text-align: center; }
-.train-engine { width: 116px; margin-top: 27px; }
-.train-engine > img { display: block; width: 110px; height: 75px; object-fit: contain; object-position: center bottom; transform: scaleX(-1); mix-blend-mode: multiply; opacity: .78; filter: saturate(.55) brightness(1.16) contrast(.8); }
+.train-engine { width: 130px; margin-top: 24px; }
+.train-engine > img { display: block; width: 124px; height: 85px; object-fit: contain; object-position: center bottom; transform: scaleX(-1); mix-blend-mode: multiply; opacity: .78; filter: saturate(.55) brightness(1.16) contrast(.8); }
 .train-engine > small { position: absolute; top: -13px; left: 50%; font-size: inherit; white-space: nowrap; transform: translateX(-50%); }
-.train-car { width: 88px; margin-top: 27px; margin-left: 8px; }
-.train-car::before { position: absolute; z-index: 0; top: 51px; left: -18px; width: 20px; height: 2px; border-radius: 2px; background: #4a3930; content: ''; }
-.train-car__body { position: relative; z-index: 1; display: block; width: 84px; height: 75px; }
+.train-car { width: 101px; margin-top: 23px; margin-left: 9px; }
+.train-car::before { position: absolute; z-index: 0; top: 58px; left: -19px; width: 21px; height: 2px; border-radius: 2px; background: #4a3930; content: ''; }
+.train-car__body { position: relative; z-index: 1; display: block; width: 96px; height: 86px; }
 .train-car__body > img { display: block; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; opacity: .84; filter: saturate(.55) brightness(1.18) contrast(.82); }
 .train-car__window { position: absolute; top: 27%; left: 50%; display: grid; width: 48px; height: 22px; place-items: center; transform: translateX(-50%); }
 .train-car__window > b { color: #4a3930; font-size: 10px; font-weight: 400; line-height: 1; white-space: nowrap; }
@@ -260,17 +260,17 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .summary strong small { font-size: 12px; }
   .summary p { font-size: 11px; }
   .members { margin-top: 20px; }
-  .family-train { margin-bottom: 12px; padding-bottom: 10px; }
+  .family-train { margin-bottom: 12px; padding-bottom: 8px; }
   .train-caption { gap: 6px; }
-  .train-caption small { font-size: 8px; }
+  .train-caption small { font-size: 9px; }
   .train-caption strong { font-size: 15px; }
-  .train-route { height: 113px; margin-top: 7px; }
+  .train-route { height: 102px; margin-top: 7px; }
   .train-route::before { top: 84px; }
-  .train-engine { width: 90px; margin-top: 23px; font-size: 9px; }
-  .train-engine > img { width: 86px; height: 61px; }
-  .train-car { width: 70px; margin-top: 23px; margin-left: 6px; font-size: 9px; }
-  .train-car::before { top: 42px; left: -15px; width: 17px; height: 2px; }
-  .train-car__body { width: 67px; height: 61px; }
+  .train-engine { width: 104px; margin-top: 20px; font-size: 9px; }
+  .train-engine > img { width: 100px; height: 69px; }
+  .train-car { width: 80px; margin-top: 20px; margin-left: 7px; font-size: 9px; }
+  .train-car::before { top: 47px; left: -16px; width: 18px; height: 2px; }
+  .train-car__body { width: 77px; height: 69px; }
   .train-car__window { width: 34px; height: 15px; }
   .train-car__window > b { font-size: 8px; }
   .train-add { width: 32px; margin-top: 44px; margin-left: 0; }
