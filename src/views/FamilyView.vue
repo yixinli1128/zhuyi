@@ -166,7 +166,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .train-engine > img { display: block; width: 124px; height: 85px; object-fit: contain; object-position: center bottom; transform: scaleX(-1); mix-blend-mode: multiply; opacity: .78; filter: saturate(.55) brightness(1.16) contrast(.8); }
 .train-engine > small { position: absolute; top: -13px; left: 50%; font-size: inherit; white-space: nowrap; transform: translateX(-50%); }
 .train-car { width: 101px; margin-top: 23px; margin-left: 9px; }
-.train-car::before { position: absolute; z-index: 0; top: 58px; left: -19px; width: 21px; height: 2px; border-radius: 2px; background: #4a3930; content: ''; }
+.train-car::before { position: absolute; z-index: 2; top: 58px; left: -24px; width: 30px; height: 2px; border-radius: 2px; background: #4a3930; content: ''; }
 .train-car__body { position: relative; z-index: 1; display: block; width: 96px; height: 86px; }
 .train-car__body > img { display: block; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; opacity: .84; filter: saturate(.55) brightness(1.18) contrast(.82); }
 .train-car__window { position: absolute; top: 27%; left: 50%; display: grid; width: 48px; height: 22px; place-items: center; transform: translateX(-50%); }
@@ -269,7 +269,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .train-engine { width: 104px; margin-top: 20px; font-size: 9px; }
   .train-engine > img { width: 100px; height: 69px; }
   .train-car { width: 80px; margin-top: 20px; margin-left: 7px; font-size: 9px; }
-  .train-car::before { top: 47px; left: -16px; width: 18px; height: 2px; }
+  .train-car::before { top: 47px; left: -20px; width: 25px; height: 2px; }
   .train-car__body { width: 77px; height: 69px; }
   .train-car__window { width: 34px; height: 15px; }
   .train-car__window > b { font-size: 8px; }
