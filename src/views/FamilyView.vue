@@ -198,7 +198,8 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .spice .selected { background: #fff; box-shadow: 0 1px 2px rgba(52, 38, 28, .08); }
 .error { margin: 8px 0; color: #b9534e; font-size: 12px; }
 .modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 8px 18px; }
-.confirm { padding: 28px; }
+.confirm { position: relative; padding: 28px; }
+.confirm > .close { position: absolute; top: 18px; right: 18px; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 .toast { position: fixed; z-index: 40; top: 22px; left: 50%; padding: 12px 18px; border-radius: 999px; background: var(--brand-primary-active); box-shadow: 0 8px 24px rgba(0, 0, 0, .18); color: #fff; transform: translateX(-50%); }
 .toast button { margin-left: 12px; color: #fff; text-decoration: underline; font-weight: 700; }
