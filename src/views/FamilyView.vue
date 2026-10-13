@@ -8,7 +8,7 @@ import avatarPlaceholderUrl from '@/assets/figma/avatar-placeholder.svg'
 import closeIconUrl from '@/assets/figma/icon-close.svg'
 import tagRemoveIconUrl from '@/assets/figma/icon-tag-remove.svg'
 import trainLocomotiveUrl from '@/assets/family-train-locomotive-ink-v3.png'
-import trainCarriageUrl from '@/assets/family-train-carriage-ink-v2.png'
+import trainCarriageUrl from '@/assets/family-train-carriage-ink-v3.png'
 
 const familyStore = useFamilyStore()
 const dialog = ref(null)
@@ -166,10 +166,9 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .train-engine > img { display: block; width: 124px; height: 85px; object-fit: contain; object-position: center bottom; transform: scaleX(-1); mix-blend-mode: multiply; opacity: .78; filter: saturate(.55) brightness(1.16) contrast(.8); }
 .train-engine > small { position: absolute; top: -13px; left: 50%; font-size: inherit; white-space: nowrap; transform: translateX(-50%); }
 .train-car { width: 101px; margin-top: 23px; margin-left: 9px; }
-.train-car::before { position: absolute; z-index: 2; top: 58px; left: -24px; width: 30px; height: 2px; border-radius: 2px; background: #4a3930; content: ''; }
-.train-car__body { position: relative; z-index: 1; display: block; width: 96px; height: 86px; }
+.train-car__body { position: relative; z-index: 1; display: block; width: 137px; height: 91px; margin-left: -46px; }
 .train-car__body > img { display: block; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; opacity: .84; filter: saturate(.55) brightness(1.18) contrast(.82); }
-.train-car__window { position: absolute; top: 27%; left: 50%; display: grid; width: 48px; height: 22px; place-items: center; transform: translateX(-50%); }
+.train-car__window { position: absolute; top: 25%; left: 65%; display: grid; width: 48px; height: 22px; place-items: center; transform: translateX(-50%); }
 .train-car__window > b { color: #4a3930; font-size: 10px; font-weight: 400; line-height: 1; white-space: nowrap; }
 .members > header { display: flex; align-items: baseline; justify-content: space-between; }
 .members h2 { color: var(--text-title); font-size: 24px; font-weight: 400; }
@@ -269,8 +268,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .train-engine { width: 104px; margin-top: 20px; font-size: 9px; }
   .train-engine > img { width: 100px; height: 69px; }
   .train-car { width: 80px; margin-top: 20px; margin-left: 7px; font-size: 9px; }
-  .train-car::before { top: 47px; left: -20px; width: 25px; height: 2px; }
-  .train-car__body { width: 77px; height: 69px; }
+  .train-car__body { width: 104px; height: 69px; margin-left: -35px; }
   .train-car__window { width: 34px; height: 15px; }
   .train-car__window > b { font-size: 8px; }
   .train-add { width: 32px; margin-top: 44px; margin-left: 0; }
