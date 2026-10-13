@@ -342,6 +342,20 @@ function addRecipeToToday(recipe) {
   text-align: center;
 }
 
+/* 燈號不沿用第一欄文字的左內距；三種裝置皆固定顯示為正圓狀態點。 */
+.ingredient > .signal {
+  box-sizing: border-box;
+  width: 10px;
+  min-width: 10px;
+  height: 10px;
+  min-height: 10px;
+  margin: 0;
+  padding: 0 !important;
+  border-radius: 50%;
+  justify-self: center;
+  align-self: center;
+}
+
 /* 優先確保賞味期限完整一行呈現，名稱欄再吸收剩餘寬度。 */
 @media (min-width: 641px) {
   .table-head,
@@ -364,6 +378,15 @@ function addRecipeToToday(recipe) {
   .table-head > :nth-child(5),
   .ingredient > :nth-child(5) {
     white-space: nowrap;
+  }
+
+  .ingredient > .signal {
+    width: 8px;
+    min-width: 8px;
+    height: 8px;
+    min-height: 8px;
+    margin: 0;
+    padding: 0 !important;
   }
 }
 </style>
