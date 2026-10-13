@@ -163,7 +163,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .train-route::before { position: absolute; z-index: 0; top: 98px; right: 0; left: 0; height: 10px; opacity: .76; background: repeating-linear-gradient(90deg, transparent 0 9px, #9d8979 9px 14px, transparent 14px 19px) 0 3px / 100% 5px no-repeat, linear-gradient(90deg, #665044, #80695b 24%, #5a473d 60%, #705b4d) 0 0 / 100% 2px no-repeat, linear-gradient(90deg, #665044, #80695b 24%, #5a473d 60%, #705b4d) 0 8px / 100% 2px no-repeat; content: ''; }
 .train-engine, .train-car { position: relative; z-index: 1; display: flex; flex: 0 0 auto; flex-direction: column; align-items: center; color: var(--text-secondary); font-size: 10px; line-height: 1.2; text-align: center; }
 .train-engine { width: 116px; margin-top: 27px; }
-.train-engine > img { display: block; width: 110px; height: 75px; object-fit: contain; object-position: center bottom; mix-blend-mode: multiply; opacity: .78; filter: saturate(.55) brightness(1.16) contrast(.8); }
+.train-engine > img { display: block; width: 110px; height: 75px; object-fit: contain; object-position: center bottom; transform: scaleX(-1); mix-blend-mode: multiply; opacity: .78; filter: saturate(.55) brightness(1.16) contrast(.8); }
 .train-engine > small { margin-top: 1px; font-size: inherit; white-space: nowrap; }
 .train-car { width: 88px; margin-top: 27px; margin-left: 8px; }
 .train-car::before { position: absolute; z-index: 0; top: 51px; left: -18px; width: 20px; height: 2px; border-radius: 2px; background: #4a3930; content: ''; }
