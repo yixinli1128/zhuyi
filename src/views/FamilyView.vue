@@ -107,7 +107,6 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
       </section>
       <section class="members" aria-labelledby="member-list-title">
         <aside class="family-train" :aria-label="`家庭列車，目前 ${members.length} 位成員`">
-          <div class="train-caption"><small>FAMILY EXPRESS</small></div>
           <div class="train-route">
             <span class="train-engine" :style="{ zIndex: members.length + 2 }" aria-hidden="true"><img :src="trainLocomotiveUrl" alt="" /><small>煮意號</small></span>
             <span v-for="(member, index) in members" :key="member.id" class="train-car" :style="{ zIndex: members.length - index + 1 }" :aria-label="member.name">
