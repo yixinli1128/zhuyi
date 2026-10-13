@@ -239,7 +239,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .member-card > header { gap: 6px; padding-bottom: 8px; }
   .avatar { width: 32px; height: 32px; font-size: 14px; }
   .member-card h3 { font-size: 15px; }
-  .card-actions { gap: 4px; }
+  .card-actions { flex-direction: column; gap: 4px; }
   .card-actions button { width: 18px; height: 18px; font-size: 14px; }
   .member-card small, .member-card dt, .member-card footer, .member-card dd { font-size: 12px; }
   .member-card dl { gap: 7px; padding: 10px 0; }
