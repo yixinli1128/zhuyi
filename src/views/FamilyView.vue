@@ -107,11 +107,12 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
         <aside class="family-train" :aria-label="`家庭列車，目前 ${members.length} 位成員`">
           <div class="train-caption"><small>FAMILY EXPRESS</small><strong>一家人的列車</strong><span>一位成員，一節車廂</span></div>
           <div class="train-route">
-            <span class="train-engine" aria-hidden="true"><span class="train-engine__body"><span></span></span><small>我們</small></span>
+            <span class="train-engine" aria-hidden="true"><span class="train-engine__smoke"></span><span class="train-engine__body"><span></span></span><small>煮意號</small></span>
             <span v-for="member in members" :key="member.id" class="train-car" :aria-label="member.name">
               <span class="train-car__body"><img v-if="member.avatar" :src="member.avatar" alt="" /><b v-else>{{ member.name.slice(0, 1) }}</b></span>
               <small>{{ member.name }}</small>
             </span>
+            <button class="train-add" type="button" aria-label="新增一位家庭成員" @click="openAdd"><b>＋</b><small>下一位</small></button>
           </div>
         </aside>
         <header><h2 id="member-list-title">家庭成員名冊</h2><span>共 {{ members.length }} 位成員</span></header>
@@ -154,27 +155,30 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .summary strong small { font-size: 14px; font-weight: 400; }
 .summary p { margin: 4px 0 0; color: var(--text-secondary); font-size: 12px; line-height: 1.35; }
 .members { margin-top: 32px; }
-.family-train { margin-bottom: 16px; padding: 0 0 12px; border-bottom: 1px solid var(--brand-secondary); }
+.family-train { margin-bottom: 16px; padding: 0 0 14px; border-bottom: 1px solid var(--brand-secondary); }
 .train-caption { display: flex; align-items: baseline; gap: 8px; color: var(--text-body); white-space: nowrap; }
-.train-caption small { color: var(--brand-primary); font-size: 9px; letter-spacing: .12em; }
-.train-caption strong { font-size: 17px; font-weight: 400; }
+.train-caption small { color: var(--brand-primary); font-size: 9px; letter-spacing: .16em; }
+.train-caption strong { font-size: 18px; font-weight: 400; }
 .train-caption span { color: var(--text-placeholder); font-size: 11px; }
-.train-route { position: relative; display: flex; min-width: 0; align-items: flex-start; gap: 8px; overflow-x: auto; margin-top: 10px; padding: 2px 4px 0; scrollbar-width: thin; }
-.train-route::before { position: absolute; z-index: 0; top: 15px; right: 0; left: 0; height: 1px; background: var(--brand-primary-border); content: ''; }
-.train-engine, .train-car { position: relative; z-index: 1; display: flex; flex: 0 0 auto; width: 38px; flex-direction: column; align-items: center; color: var(--text-secondary); font-size: 10px; line-height: 1.2; text-align: center; }
-.train-engine__body { position: relative; display: block; width: 35px; height: 26px; border-radius: 7px 9px 5px 5px; background: var(--brand-primary); }
-.train-engine__body::before { position: absolute; top: -6px; left: 5px; width: 12px; height: 8px; border-radius: 4px 4px 0 0; background: var(--brand-primary); content: ''; }
-.train-engine__body::after { position: absolute; right: 6px; bottom: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--brand-secondary-light); content: ''; }
-.train-engine__body > span, .train-engine__body > span::after { position: absolute; bottom: -4px; width: 8px; height: 8px; border: 2px solid var(--brand-primary); border-radius: 50%; background: var(--bg-surface); content: ''; }
-.train-engine__body > span { left: 5px; }
-.train-engine__body > span::after { left: 15px; bottom: -2px; }
-.train-engine > small, .train-car > small { margin-top: 6px; font-size: inherit; white-space: nowrap; }
-.train-car__body { position: relative; display: grid; width: 31px; height: 25px; place-items: center; border: 1px solid var(--brand-primary-border); border-radius: 6px 6px 4px 4px; background: #fff; color: var(--text-body); font-size: 12px; }
-.train-car__body::before, .train-car__body::after { position: absolute; bottom: -5px; width: 7px; height: 7px; border: 1px solid var(--brand-primary); border-radius: 50%; background: var(--bg-surface); content: ''; }
-.train-car__body::before { left: 3px; }
-.train-car__body::after { right: 3px; }
-.train-car img { width: 19px; height: 19px; border-radius: 50%; object-fit: cover; }
-.train-car b { font-weight: 400; line-height: 1; }
+.train-route { position: relative; display: flex; min-width: 0; min-height: 78px; align-items: flex-start; gap: 10px; overflow-x: auto; margin-top: 12px; padding: 3px 5px 0; scrollbar-width: thin; }
+.train-route::before { position: absolute; z-index: 0; top: 52px; right: 0; left: 0; height: 4px; border-top: 1px solid var(--brand-primary-border); border-bottom: 1px solid var(--brand-primary-border); background: repeating-linear-gradient(90deg, transparent 0 4px, var(--brand-primary-border) 4px 5px); content: ''; }
+.train-engine, .train-car, .train-add { position: relative; z-index: 1; display: flex; flex: 0 0 auto; width: 68px; flex-direction: column; align-items: center; color: var(--text-secondary); font-size: 10px; line-height: 1.2; text-align: center; }
+.train-engine__smoke { position: absolute; top: -8px; left: -18px; width: 58px; height: 34px; opacity: .52; filter: blur(2px); background: radial-gradient(circle at 18% 75%, #c6b8aa 0 9px, transparent 10px), radial-gradient(circle at 47% 40%, #d6ccc1 0 12px, transparent 13px), radial-gradient(circle at 78% 70%, #c6b8aa 0 10px, transparent 11px); }
+.train-engine__body { position: relative; display: block; width: 58px; height: 42px; border: 2px solid #5c4838; border-radius: 8px 12px 5px 5px; background: linear-gradient(180deg, #967a63 0 25%, #745d49 25% 100%); box-shadow: inset 0 0 0 3px rgba(255,255,255,.16); }
+.train-engine__body::before { position: absolute; top: -12px; left: 8px; width: 14px; height: 15px; border: 2px solid #5c4838; border-bottom: 0; border-radius: 5px 5px 0 0; background: #745d49; content: ''; }
+.train-engine__body::after { position: absolute; top: 8px; right: 8px; width: 12px; height: 12px; border-radius: 2px; background: var(--brand-secondary-light); box-shadow: -18px 0 0 rgba(248,245,242,.72); content: ''; }
+.train-engine__body > span, .train-engine__body > span::after { position: absolute; bottom: -8px; width: 12px; height: 12px; border: 2px solid #5c4838; border-radius: 50%; background: var(--bg-surface); content: ''; }
+.train-engine__body > span { left: 8px; }
+.train-engine__body > span::after { left: 25px; bottom: -2px; }
+.train-engine > small, .train-car > small, .train-add > small { margin-top: 9px; font-size: inherit; white-space: nowrap; }
+.train-car__body { position: relative; display: grid; width: 62px; height: 42px; place-items: center; border: 2px solid #6a5543; border-radius: 4px; background: repeating-linear-gradient(-45deg, #806752 0 5px, #a2866d 5px 10px); box-shadow: inset 0 -14px 0 #745d49, inset 0 0 0 3px rgba(255,255,255,.17); color: var(--text-body); font-size: 15px; }
+.train-car__body::before { position: absolute; z-index: -1; inset: 8px 7px 11px; border-radius: 2px; background: #fff; box-shadow: 0 0 0 1px rgba(92,72,56,.22); content: ''; }
+.train-car__body::after { position: absolute; bottom: -8px; left: 9px; width: 12px; height: 12px; border: 2px solid #5c4838; border-radius: 50%; background: var(--bg-surface); box-shadow: 28px 0 0 -2px var(--bg-surface), 28px 0 0 0 #5c4838; content: ''; }
+.train-car img, .train-car b { position: relative; z-index: 1; width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+.train-car b { display: grid; place-items: center; background: var(--brand-secondary-light); font-weight: 400; line-height: 1; }
+.train-add { width: 86px; margin-left: 4px; padding-top: 7px; border: 1px dashed var(--brand-primary-border); border-radius: 4px; background: rgba(248,245,242,.65); color: var(--text-placeholder); }
+.train-add b { font-size: 17px; font-weight: 400; line-height: 1; }
+.train-add > small { margin: 6px 0 7px; }
 .members > header { display: flex; align-items: baseline; justify-content: space-between; }
 .members h2 { color: var(--text-title); font-size: 24px; font-weight: 400; }
 .member-grid { display: grid; grid-auto-rows: 312px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
@@ -269,18 +273,24 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .train-caption small { font-size: 8px; }
   .train-caption strong { font-size: 15px; }
   .train-caption span { display: none; }
-  .train-route { gap: 5px; }
-  .train-engine, .train-car { width: 30px; font-size: 9px; }
-  .train-engine__body { width: 30px; height: 22px; }
-  .train-engine__body::before { top: -5px; left: 4px; width: 10px; height: 7px; }
-  .train-engine__body::after { right: 5px; bottom: 5px; width: 6px; height: 6px; }
-  .train-engine__body > span, .train-engine__body > span::after { width: 6px; height: 6px; border-width: 1px; }
-  .train-engine__body > span { left: 5px; }
-  .train-engine__body > span::after { left: 13px; bottom: -1px; }
-  .train-engine > small, .train-car > small { margin-top: 5px; }
-  .train-car__body { width: 27px; height: 21px; font-size: 10px; }
-  .train-car__body::before, .train-car__body::after { bottom: -4px; width: 5px; height: 5px; }
-  .train-car img { width: 16px; height: 16px; }
+  .train-route { min-height: 63px; gap: 6px; margin-top: 10px; }
+  .train-route::before { top: 40px; }
+  .train-engine, .train-car { width: 50px; font-size: 9px; }
+  .train-engine__smoke { top: -7px; left: -13px; transform: scale(.72); transform-origin: left bottom; }
+  .train-engine__body { width: 43px; height: 31px; border-width: 1px; }
+  .train-engine__body::before { top: -9px; left: 6px; width: 10px; height: 11px; border-width: 1px; }
+  .train-engine__body::after { top: 6px; right: 6px; width: 9px; height: 9px; box-shadow: -14px 0 0 rgba(248,245,242,.72); }
+  .train-engine__body > span, .train-engine__body > span::after { bottom: -6px; width: 9px; height: 9px; border-width: 1px; }
+  .train-engine__body > span { left: 6px; }
+  .train-engine__body > span::after { left: 18px; bottom: -1px; }
+  .train-engine > small, .train-car > small { margin-top: 7px; }
+  .train-car__body { width: 46px; height: 31px; border-width: 1px; font-size: 11px; box-shadow: inset 0 -10px 0 #745d49, inset 0 0 0 2px rgba(255,255,255,.17); }
+  .train-car__body::before { inset: 6px 5px 8px; }
+  .train-car__body::after { bottom: -6px; left: 6px; width: 9px; height: 9px; border-width: 1px; box-shadow: 21px 0 0 -1px var(--bg-surface), 21px 0 0 0 #5c4838; }
+  .train-car img, .train-car b { width: 15px; height: 15px; }
+  .train-add { width: 64px; padding-top: 5px; font-size: 9px; }
+  .train-add b { font-size: 14px; }
+  .train-add > small { margin: 4px 0 5px; }
   .members h2 { font-size: 20px; }
   .members > header > span { font-size: 12px; }
   .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; gap: 12px; margin-top: 14px; }
