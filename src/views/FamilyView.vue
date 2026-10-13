@@ -113,7 +113,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
             <span v-for="member in members" :key="member.id" class="train-car" :aria-label="member.name">
               <span class="train-car__body"><img :src="trainCarriageUrl" alt="" /><span class="train-car__window"><b>{{ member.name }}</b></span></span>
             </span>
-            <button class="train-add" type="button" aria-label="新增一位家庭成員" @click="openAdd"><b>＋</b><small>下一位</small></button>
+            <button class="train-add" type="button" aria-label="新增一位家庭成員" @click="openAdd"><span aria-hidden="true">＋</span><small>新增</small></button>
           </div>
         </aside>
         <header><h2 id="member-list-title">家庭成員名冊</h2><span>共 {{ members.length }} 位成員</span></header>
@@ -160,21 +160,21 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .train-caption { display: flex; align-items: baseline; gap: 8px; color: var(--text-body); white-space: nowrap; }
 .train-caption small { color: #4a3930; font-size: 10px; letter-spacing: .12em; }
 .train-caption strong { font-size: 18px; font-weight: 400; }
-.train-route { position: relative; display: flex; min-width: 0; height: 114px; align-items: flex-start; gap: 6px; overflow-x: auto; overflow-y: hidden; margin-top: 8px; padding: 0 5px; scrollbar-width: thin; }
+.train-route { position: relative; display: flex; min-width: 0; height: 114px; align-items: flex-start; gap: 0; overflow-x: auto; overflow-y: hidden; margin-top: 8px; padding: 0 5px; scrollbar-width: thin; }
 .train-route::before { position: absolute; z-index: 0; top: 81px; right: 0; left: 0; height: 3px; border-radius: 70% 30% 45% 55%; background: #4a3930; box-shadow: 0 4px 0 -2px #b9a99a; content: ''; }
 .train-engine, .train-car, .train-add { position: relative; z-index: 1; display: flex; flex: 0 0 auto; flex-direction: column; align-items: center; color: var(--text-secondary); font-size: 10px; line-height: 1.2; text-align: center; }
 .train-engine { width: 114px; }
 .train-engine > img { display: block; width: 108px; height: 88px; object-fit: contain; object-position: center bottom; mix-blend-mode: multiply; opacity: .88; filter: saturate(.65) brightness(1.15) contrast(.86); }
 .train-engine > small, .train-add > small { margin-top: 1px; font-size: inherit; white-space: nowrap; }
-.train-car { width: 96px; margin-top: 27px; }
+.train-car { width: 96px; margin-top: 27px; margin-left: -12px; }
+.train-car::before { position: absolute; z-index: -1; top: 79px; left: -15px; width: 16px; height: 3px; border-radius: 2px; background: #4a3930; content: ''; }
 .train-car__body { position: relative; display: block; width: 92px; height: 75px; }
 .train-car__body > img { display: block; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; opacity: .84; filter: saturate(.55) brightness(1.18) contrast(.82); }
 .train-car__window { position: absolute; top: 31%; left: 50%; display: grid; width: 48px; height: 22px; place-items: center; transform: translateX(-50%); }
 .train-car__window > b { color: #4a3930; font-size: 10px; font-weight: 400; line-height: 1; white-space: nowrap; }
-.train-car b { display: grid; place-items: center; background: var(--brand-secondary-light); font-weight: 400; line-height: 1; }
-.train-add { width: 86px; margin-left: 4px; padding-top: 7px; border: 1px dashed #9c8877; border-radius: 12px 4px 10px 5px; background: rgba(248,245,242,.65); color: #796757; }
-.train-add b { font-size: 17px; font-weight: 400; line-height: 1; }
-.train-add > small { margin: 6px 0 7px; }
+.train-add { width: 36px; margin-top: 49px; margin-left: 2px; padding: 0; color: #796757; }
+.train-add > span { display: grid; width: 23px; height: 23px; place-items: center; border: 1px solid var(--brand-primary-border); border-radius: 50%; background: rgba(248,245,242,.78); font-size: 16px; font-weight: 300; line-height: 1; }
+.train-add > small { margin-top: 3px; font-size: 9px; }
 .members > header { display: flex; align-items: baseline; justify-content: space-between; }
 .members h2 { color: var(--text-title); font-size: 24px; font-weight: 400; }
 .member-grid { display: grid; grid-auto-rows: 312px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
@@ -268,18 +268,17 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .train-caption { gap: 6px; }
   .train-caption small { font-size: 8px; }
   .train-caption strong { font-size: 15px; }
-  .train-route { height: 85px; gap: 4px; margin-top: 7px; }
-  .train-route::before { top: 61px; }
-  .train-engine { width: 79px; font-size: 9px; }
-  .train-engine > img { width: 76px; height: 65px; }
-  .train-car { width: 66px; margin-top: 18px; font-size: 9px; }
-  .train-car__body { width: 63px; height: 51px; }
+  .train-route { height: 98px; margin-top: 7px; }
+  .train-route::before { top: 70px; }
+  .train-engine { width: 94px; font-size: 9px; }
+  .train-engine > img { width: 91px; height: 75px; }
+  .train-car { width: 78px; margin-top: 23px; margin-left: -10px; font-size: 9px; }
+  .train-car::before { top: 69px; left: -12px; width: 13px; height: 2px; }
+  .train-car__body { width: 75px; height: 61px; }
   .train-car__window { width: 34px; height: 15px; }
   .train-car__window > b { font-size: 8px; }
-  .train-car img, .train-car b { width: 15px; height: 15px; }
-  .train-add { width: 64px; padding-top: 5px; font-size: 9px; }
-  .train-add b { font-size: 14px; }
-  .train-add > small { margin: 4px 0 5px; }
+  .train-add { width: 32px; margin-top: 44px; margin-left: 0; }
+  .train-add > span { width: 20px; height: 20px; font-size: 14px; }
   .members h2 { font-size: 20px; }
   .members > header > span { font-size: 12px; }
   .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; gap: 12px; margin-top: 14px; }
