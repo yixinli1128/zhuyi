@@ -38,7 +38,6 @@ const groups = computed(() => {
         <div class="recipe-top__info">
           <p class="recipe-top__servings">
             <i class="fa-solid fa-user-group" aria-hidden="true"></i>{{ people }} 人份
-            <span v-if="people !== recipe.servings" class="recipe-top__hint">（原食譜 {{ recipe.servings }} 人份，已換算）</span>
           </p>
           <RecipeMeta :minutes="recipe.cookTime" :kcal="recipe.kcal" class="recipe-top__meta" />
           <p class="recipe-top__intro">{{ recipe.intro }}</p>
@@ -118,10 +117,6 @@ const groups = computed(() => {
   color: var(--text-body);
 }
 
-.recipe-top__hint {
-  font-size: var(--fs-caption-2);
-  color: var(--text-secondary);
-}
 
 .recipe-top__meta {
   font-size: var(--fs-body-2);
