@@ -105,12 +105,12 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
       </section>
       <section class="members" aria-labelledby="member-list-title">
         <aside class="family-train" :aria-label="`家庭列車，目前 ${members.length} 位成員`">
-          <div class="train-caption"><i class="fa-solid fa-train" aria-hidden="true"></i><span>家庭列車</span><small>一位成員，一節車廂</small></div>
+          <div class="train-caption"><small>FAMILY EXPRESS</small><strong>一家人的列車</strong><span>一位成員，一節車廂</span></div>
           <div class="train-route">
-            <span class="train-engine" aria-hidden="true"><span></span></span>
+            <span class="train-engine" aria-hidden="true"><span class="train-engine__body"><span></span></span><small>我們</small></span>
             <span v-for="member in members" :key="member.id" class="train-car" :aria-label="member.name">
-              <img v-if="member.avatar" :src="member.avatar" alt="" />
-              <b v-else>{{ member.name.slice(0, 1) }}</b>
+              <span class="train-car__body"><img v-if="member.avatar" :src="member.avatar" alt="" /><b v-else>{{ member.name.slice(0, 1) }}</b></span>
+              <small>{{ member.name }}</small>
             </span>
           </div>
         </aside>
@@ -154,21 +154,25 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .summary strong small { font-size: 14px; font-weight: 400; }
 .summary p { margin: 4px 0 0; color: var(--text-secondary); font-size: 12px; line-height: 1.35; }
 .members { margin-top: 32px; }
-.family-train { display: flex; min-height: 54px; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 16px; padding: 10px 14px; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; background: var(--brand-secondary-light); }
-.train-caption { display: flex; flex: 0 0 auto; align-items: center; gap: 7px; color: var(--text-body); font-size: 14px; white-space: nowrap; }
-.train-caption i { color: var(--brand-primary); font-size: 16px; }
-.train-caption small { margin-left: 3px; color: var(--text-placeholder); font-size: 11px; }
-.train-route { display: flex; min-width: 0; align-items: center; justify-content: flex-end; gap: 6px; overflow-x: auto; padding: 2px 0; scrollbar-width: thin; }
-.train-engine { position: relative; display: block; flex: 0 0 auto; width: 35px; height: 26px; border-radius: 7px 9px 5px 5px; background: var(--brand-primary); }
-.train-engine::before { position: absolute; top: -6px; left: 5px; width: 12px; height: 8px; border-radius: 4px 4px 0 0; background: var(--brand-primary); content: ''; }
-.train-engine::after { position: absolute; right: 6px; bottom: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--brand-secondary-light); content: ''; }
-.train-engine span, .train-engine span::after { position: absolute; bottom: -4px; width: 8px; height: 8px; border: 2px solid var(--brand-primary); border-radius: 50%; background: var(--bg-surface); content: ''; }
-.train-engine span { left: 5px; }
-.train-engine span::after { left: 15px; bottom: -2px; }
-.train-car { position: relative; display: grid; flex: 0 0 auto; width: 31px; height: 25px; place-items: center; border: 1px solid var(--brand-primary-border); border-radius: 6px 6px 4px 4px; background: #fff; color: var(--text-body); font-size: 12px; }
-.train-car::before, .train-car::after { position: absolute; bottom: -5px; width: 7px; height: 7px; border: 1px solid var(--brand-primary); border-radius: 50%; background: var(--bg-surface); content: ''; }
-.train-car::before { left: 3px; }
-.train-car::after { right: 3px; }
+.family-train { margin-bottom: 16px; padding: 0 0 12px; border-bottom: 1px solid var(--brand-secondary); }
+.train-caption { display: flex; align-items: baseline; gap: 8px; color: var(--text-body); white-space: nowrap; }
+.train-caption small { color: var(--brand-primary); font-size: 9px; letter-spacing: .12em; }
+.train-caption strong { font-size: 17px; font-weight: 400; }
+.train-caption span { color: var(--text-placeholder); font-size: 11px; }
+.train-route { position: relative; display: flex; min-width: 0; align-items: flex-start; gap: 8px; overflow-x: auto; margin-top: 10px; padding: 2px 4px 0; scrollbar-width: thin; }
+.train-route::before { position: absolute; z-index: 0; top: 15px; right: 0; left: 0; height: 1px; background: var(--brand-primary-border); content: ''; }
+.train-engine, .train-car { position: relative; z-index: 1; display: flex; flex: 0 0 auto; width: 38px; flex-direction: column; align-items: center; color: var(--text-secondary); font-size: 10px; line-height: 1.2; text-align: center; }
+.train-engine__body { position: relative; display: block; width: 35px; height: 26px; border-radius: 7px 9px 5px 5px; background: var(--brand-primary); }
+.train-engine__body::before { position: absolute; top: -6px; left: 5px; width: 12px; height: 8px; border-radius: 4px 4px 0 0; background: var(--brand-primary); content: ''; }
+.train-engine__body::after { position: absolute; right: 6px; bottom: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--brand-secondary-light); content: ''; }
+.train-engine__body > span, .train-engine__body > span::after { position: absolute; bottom: -4px; width: 8px; height: 8px; border: 2px solid var(--brand-primary); border-radius: 50%; background: var(--bg-surface); content: ''; }
+.train-engine__body > span { left: 5px; }
+.train-engine__body > span::after { left: 15px; bottom: -2px; }
+.train-engine > small, .train-car > small { margin-top: 6px; font-size: inherit; white-space: nowrap; }
+.train-car__body { position: relative; display: grid; width: 31px; height: 25px; place-items: center; border: 1px solid var(--brand-primary-border); border-radius: 6px 6px 4px 4px; background: #fff; color: var(--text-body); font-size: 12px; }
+.train-car__body::before, .train-car__body::after { position: absolute; bottom: -5px; width: 7px; height: 7px; border: 1px solid var(--brand-primary); border-radius: 50%; background: var(--bg-surface); content: ''; }
+.train-car__body::before { left: 3px; }
+.train-car__body::after { right: 3px; }
 .train-car img { width: 19px; height: 19px; border-radius: 50%; object-fit: cover; }
 .train-car b { font-weight: 400; line-height: 1; }
 .members > header { display: flex; align-items: baseline; justify-content: space-between; }
@@ -260,19 +264,22 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .summary strong small { font-size: 12px; }
   .summary p { font-size: 11px; }
   .members { margin-top: 20px; }
-  .family-train { min-height: 46px; gap: 10px; margin-bottom: 12px; padding: 8px 10px; }
-  .train-caption { gap: 5px; font-size: 12px; }
-  .train-caption i { font-size: 14px; }
-  .train-caption small { display: none; }
+  .family-train { margin-bottom: 12px; padding-bottom: 10px; }
+  .train-caption { gap: 6px; }
+  .train-caption small { font-size: 8px; }
+  .train-caption strong { font-size: 15px; }
+  .train-caption span { display: none; }
   .train-route { gap: 5px; }
-  .train-engine { width: 30px; height: 22px; }
-  .train-engine::before { top: -5px; left: 4px; width: 10px; height: 7px; }
-  .train-engine::after { right: 5px; bottom: 5px; width: 6px; height: 6px; }
-  .train-engine span, .train-engine span::after { width: 6px; height: 6px; border-width: 1px; }
-  .train-engine span { left: 5px; }
-  .train-engine span::after { left: 13px; bottom: -1px; }
-  .train-car { width: 27px; height: 21px; font-size: 10px; }
-  .train-car::before, .train-car::after { bottom: -4px; width: 5px; height: 5px; }
+  .train-engine, .train-car { width: 30px; font-size: 9px; }
+  .train-engine__body { width: 30px; height: 22px; }
+  .train-engine__body::before { top: -5px; left: 4px; width: 10px; height: 7px; }
+  .train-engine__body::after { right: 5px; bottom: 5px; width: 6px; height: 6px; }
+  .train-engine__body > span, .train-engine__body > span::after { width: 6px; height: 6px; border-width: 1px; }
+  .train-engine__body > span { left: 5px; }
+  .train-engine__body > span::after { left: 13px; bottom: -1px; }
+  .train-engine > small, .train-car > small { margin-top: 5px; }
+  .train-car__body { width: 27px; height: 21px; font-size: 10px; }
+  .train-car__body::before, .train-car__body::after { bottom: -4px; width: 5px; height: 5px; }
   .train-car img { width: 16px; height: 16px; }
   .members h2 { font-size: 20px; }
   .members > header > span { font-size: 12px; }
