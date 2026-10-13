@@ -104,6 +104,16 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
         <article><span>每餐總份量</span><strong>{{ totalPortions }} <small>人份</small></strong><p>依成員食量係數動態加權</p></article>
       </section>
       <section class="members" aria-labelledby="member-list-title">
+        <aside class="family-train" :aria-label="`家庭列車，目前 ${members.length} 位成員`">
+          <div class="train-caption"><i class="fa-solid fa-train" aria-hidden="true"></i><span>家庭列車</span><small>一位成員，一節車廂</small></div>
+          <div class="train-route">
+            <span class="train-engine" aria-hidden="true"><span></span></span>
+            <span v-for="member in members" :key="member.id" class="train-car" :aria-label="member.name">
+              <img v-if="member.avatar" :src="member.avatar" alt="" />
+              <b v-else>{{ member.name.slice(0, 1) }}</b>
+            </span>
+          </div>
+        </aside>
         <header><h2 id="member-list-title">家庭成員名冊</h2><span>共 {{ members.length }} 位成員</span></header>
         <div class="member-grid">
           <article v-for="member in members" :key="member.id" class="member-card">
@@ -144,6 +154,23 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .summary strong small { font-size: 14px; font-weight: 400; }
 .summary p { margin: 4px 0 0; color: var(--text-secondary); font-size: 12px; line-height: 1.35; }
 .members { margin-top: 32px; }
+.family-train { display: flex; min-height: 54px; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 16px; padding: 10px 14px; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; background: var(--brand-secondary-light); }
+.train-caption { display: flex; flex: 0 0 auto; align-items: center; gap: 7px; color: var(--text-body); font-size: 14px; white-space: nowrap; }
+.train-caption i { color: var(--brand-primary); font-size: 16px; }
+.train-caption small { margin-left: 3px; color: var(--text-placeholder); font-size: 11px; }
+.train-route { display: flex; min-width: 0; align-items: center; justify-content: flex-end; gap: 6px; overflow-x: auto; padding: 2px 0; scrollbar-width: thin; }
+.train-engine { position: relative; display: block; flex: 0 0 auto; width: 35px; height: 26px; border-radius: 7px 9px 5px 5px; background: var(--brand-primary); }
+.train-engine::before { position: absolute; top: -6px; left: 5px; width: 12px; height: 8px; border-radius: 4px 4px 0 0; background: var(--brand-primary); content: ''; }
+.train-engine::after { position: absolute; right: 6px; bottom: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--brand-secondary-light); content: ''; }
+.train-engine span, .train-engine span::after { position: absolute; bottom: -4px; width: 8px; height: 8px; border: 2px solid var(--brand-primary); border-radius: 50%; background: var(--bg-surface); content: ''; }
+.train-engine span { left: 5px; }
+.train-engine span::after { left: 15px; bottom: -2px; }
+.train-car { position: relative; display: grid; flex: 0 0 auto; width: 31px; height: 25px; place-items: center; border: 1px solid var(--brand-primary-border); border-radius: 6px 6px 4px 4px; background: #fff; color: var(--text-body); font-size: 12px; }
+.train-car::before, .train-car::after { position: absolute; bottom: -5px; width: 7px; height: 7px; border: 1px solid var(--brand-primary); border-radius: 50%; background: var(--bg-surface); content: ''; }
+.train-car::before { left: 3px; }
+.train-car::after { right: 3px; }
+.train-car img { width: 19px; height: 19px; border-radius: 50%; object-fit: cover; }
+.train-car b { font-weight: 400; line-height: 1; }
 .members > header { display: flex; align-items: baseline; justify-content: space-between; }
 .members h2 { color: var(--text-title); font-size: 24px; font-weight: 400; }
 .member-grid { display: grid; grid-auto-rows: 312px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
@@ -210,6 +237,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .summary article { height: 106px; padding: 14px; }
   .summary strong { font-size: 22px; }
   .members { margin-top: 28px; }
+  .family-train { margin-bottom: 14px; }
   .members h2 { font-size: 22px; }
   /* 忌口標籤可能換行；列高以 320px 為下限並可隨內容增高，避免頁尾溢出卡片。 */
   .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(320px, auto); gap: 14px; margin-top: 16px; }
@@ -232,6 +260,20 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .summary strong small { font-size: 12px; }
   .summary p { font-size: 11px; }
   .members { margin-top: 20px; }
+  .family-train { min-height: 46px; gap: 10px; margin-bottom: 12px; padding: 8px 10px; }
+  .train-caption { gap: 5px; font-size: 12px; }
+  .train-caption i { font-size: 14px; }
+  .train-caption small { display: none; }
+  .train-route { gap: 5px; }
+  .train-engine { width: 30px; height: 22px; }
+  .train-engine::before { top: -5px; left: 4px; width: 10px; height: 7px; }
+  .train-engine::after { right: 5px; bottom: 5px; width: 6px; height: 6px; }
+  .train-engine span, .train-engine span::after { width: 6px; height: 6px; border-width: 1px; }
+  .train-engine span { left: 5px; }
+  .train-engine span::after { left: 13px; bottom: -1px; }
+  .train-car { width: 27px; height: 21px; font-size: 10px; }
+  .train-car::before, .train-car::after { bottom: -4px; width: 5px; height: 5px; }
+  .train-car img { width: 16px; height: 16px; }
   .members h2 { font-size: 20px; }
   .members > header > span { font-size: 12px; }
   .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; gap: 12px; margin-top: 14px; }
@@ -266,6 +308,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .page :deep(.page-title) { padding: 36px 28px 28px; }
   .summary { gap: 16px; }
   .members { margin-top: 28px; }
+  .family-train { margin-bottom: 14px; }
   /* 窄桌機仍維持三欄，因此卡片內容同步縮小，且列高不可裁切頁尾。 */
   .member-grid { grid-auto-rows: minmax(310px, auto); gap: 14px; margin-top: 16px; }
   .member-card { padding: 14px; }
