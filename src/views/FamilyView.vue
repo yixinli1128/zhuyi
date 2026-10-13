@@ -235,7 +235,8 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .members > header > span { font-size: 12px; }
   .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; gap: 12px; margin-top: 14px; }
   .member-card, .add-card { height: auto; min-height: 232px; }
-  .member-card { padding: 10px; }
+  /* 行動版卡片四邊保留一致且較充裕的內容留白。 */
+  .member-card { padding: 16px; }
   .member-card > header { gap: 6px; padding-bottom: 8px; }
   .avatar { width: 32px; height: 32px; font-size: 14px; }
   .member-card h3 { font-size: 15px; }
