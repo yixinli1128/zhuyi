@@ -107,7 +107,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
       </section>
       <section class="members" aria-labelledby="member-list-title">
         <aside class="family-train" :aria-label="`家庭列車，目前 ${members.length} 位成員`">
-          <div class="train-caption"><small>煮意・家人列車</small><strong>一家人的列車</strong></div>
+          <div class="train-caption"><small>FAMILY EXPRESS</small><strong>一家人的列車</strong></div>
           <div class="train-route">
             <span class="train-engine" aria-hidden="true"><img :src="trainLocomotiveUrl" alt="" /><small>煮意號</small></span>
             <span v-for="member in members" :key="member.id" class="train-car" :aria-label="member.name">
@@ -164,7 +164,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .train-engine, .train-car { position: relative; z-index: 1; display: flex; flex: 0 0 auto; flex-direction: column; align-items: center; color: var(--text-secondary); font-size: 10px; line-height: 1.2; text-align: center; }
 .train-engine { width: 116px; margin-top: 27px; }
 .train-engine > img { display: block; width: 110px; height: 75px; object-fit: contain; object-position: center bottom; transform: scaleX(-1); mix-blend-mode: multiply; opacity: .78; filter: saturate(.55) brightness(1.16) contrast(.8); }
-.train-engine > small { margin-top: 1px; font-size: inherit; white-space: nowrap; }
+.train-engine > small { position: absolute; top: -13px; left: 50%; font-size: inherit; white-space: nowrap; transform: translateX(-50%); }
 .train-car { width: 88px; margin-top: 27px; margin-left: 8px; }
 .train-car::before { position: absolute; z-index: 0; top: 51px; left: -18px; width: 20px; height: 2px; border-radius: 2px; background: #4a3930; content: ''; }
 .train-car__body { position: relative; z-index: 1; display: block; width: 84px; height: 75px; }
