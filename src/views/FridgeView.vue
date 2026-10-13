@@ -438,4 +438,19 @@ function addRecipeToToday(recipe) {
 @media (max-width: 640px) {
   .toast { max-width: calc(100vw - 24px); padding: 8px 14px; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 }
+
+/* 搜尋與新增操作維持次要、緊湊的工具列比例，不搶走庫存內容的視覺層級。 */
+.search-actions { height: 38px; gap: 6px; }
+.search { min-height: 38px; height: 38px; gap: 8px; padding: 0 11px; }
+.search img { width: 14px; height: 14px; }
+.search input, .search input:focus { height: 18px; font-size: 14px; }
+.search-actions :deep(.inventory-add) { min-height: 36px; height: 36px; gap: 4px; padding: 6px 10px; font-size: 12px; line-height: 18px; }
+.search-actions :deep(.inventory-add .button-icon) { width: 15px; height: 15px; }
+
+@media (max-width: 640px) {
+  .search-actions { height: 36px; gap: 6px; }
+  .search { min-height: 36px; height: 36px; padding: 0 10px; }
+  .search input, .search input:focus { font-size: 13px; }
+  .search-actions :deep(.inventory-add) { min-height: 34px; height: 34px; padding: 5px 9px; font-size: 12px; }
+}
 </style>
