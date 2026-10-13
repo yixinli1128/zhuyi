@@ -7,7 +7,7 @@ import addIconUrl from '@/assets/figma/icon-add-duotone.svg'
 import avatarPlaceholderUrl from '@/assets/figma/avatar-placeholder.svg'
 import closeIconUrl from '@/assets/figma/icon-close.svg'
 import tagRemoveIconUrl from '@/assets/figma/icon-tag-remove.svg'
-import trainLocomotiveUrl from '@/assets/family-train-locomotive-ink.png'
+import trainLocomotiveUrl from '@/assets/family-train-locomotive-ink-v2.png'
 import trainCarriageUrl from '@/assets/family-train-carriage-ink-v2.png'
 
 const familyStore = useFamilyStore()
@@ -160,16 +160,16 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .train-caption small { color: #4a3930; font-size: 10px; letter-spacing: .12em; }
 .train-caption strong { font-size: 18px; font-weight: 400; }
 .train-route { position: relative; display: flex; min-width: 0; height: 114px; align-items: flex-start; gap: 0; overflow-x: auto; overflow-y: hidden; margin-top: 8px; padding: 0 5px; scrollbar-width: thin; }
-.train-route::before { position: absolute; z-index: 0; top: 80px; right: 0; left: 0; height: 9px; background: repeating-linear-gradient(90deg, transparent 0 10px, #b9a99a 10px 14px) 0 3px / 100% 4px no-repeat, linear-gradient(#4a3930, #4a3930) 0 0 / 100% 2px no-repeat, linear-gradient(#4a3930, #4a3930) 0 7px / 100% 2px no-repeat; content: ''; }
+.train-route::before { position: absolute; z-index: 0; top: 80px; right: 0; left: 0; height: 10px; opacity: .76; background: repeating-linear-gradient(90deg, transparent 0 9px, #9d8979 9px 14px, transparent 14px 19px) 0 3px / 100% 5px no-repeat, linear-gradient(90deg, #665044, #80695b 24%, #5a473d 60%, #705b4d) 0 0 / 100% 2px no-repeat, linear-gradient(90deg, #665044, #80695b 24%, #5a473d 60%, #705b4d) 0 8px / 100% 2px no-repeat; content: ''; }
 .train-engine, .train-car { position: relative; z-index: 1; display: flex; flex: 0 0 auto; flex-direction: column; align-items: center; color: var(--text-secondary); font-size: 10px; line-height: 1.2; text-align: center; }
-.train-engine { width: 114px; }
-.train-engine > img { display: block; width: 108px; height: 88px; object-fit: contain; object-position: center bottom; mix-blend-mode: multiply; opacity: .88; filter: saturate(.65) brightness(1.15) contrast(.86); }
+.train-engine { width: 108px; }
+.train-engine > img { display: block; width: 102px; height: 80px; object-fit: contain; object-position: center bottom; mix-blend-mode: multiply; opacity: .78; filter: saturate(.55) brightness(1.16) contrast(.8); }
 .train-engine > small { margin-top: 1px; font-size: inherit; white-space: nowrap; }
 .train-car { width: 88px; margin-top: 27px; margin-left: 8px; }
 .train-car::before { position: absolute; z-index: 0; top: 44px; left: -18px; width: 20px; height: 2px; border-radius: 2px; background: #4a3930; content: ''; }
 .train-car__body { position: relative; z-index: 1; display: block; width: 84px; height: 75px; }
 .train-car__body > img { display: block; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; opacity: .84; filter: saturate(.55) brightness(1.18) contrast(.82); }
-.train-car__window { position: absolute; top: 31%; left: 50%; display: grid; width: 48px; height: 22px; place-items: center; transform: translateX(-50%); }
+.train-car__window { position: absolute; top: 27%; left: 50%; display: grid; width: 48px; height: 22px; place-items: center; transform: translateX(-50%); }
 .train-car__window > b { color: #4a3930; font-size: 10px; font-weight: 400; line-height: 1; white-space: nowrap; }
 .members > header { display: flex; align-items: baseline; justify-content: space-between; }
 .members h2 { color: var(--text-title); font-size: 24px; font-weight: 400; }
@@ -266,8 +266,8 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .train-caption strong { font-size: 15px; }
   .train-route { height: 98px; margin-top: 7px; }
   .train-route::before { top: 69px; }
-  .train-engine { width: 94px; font-size: 9px; }
-  .train-engine > img { width: 91px; height: 75px; }
+  .train-engine { width: 88px; font-size: 9px; }
+  .train-engine > img { width: 84px; height: 70px; }
   .train-car { width: 70px; margin-top: 23px; margin-left: 6px; font-size: 9px; }
   .train-car::before { top: 35px; left: -15px; width: 17px; height: 2px; }
   .train-car__body { width: 67px; height: 61px; }
