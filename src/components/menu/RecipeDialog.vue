@@ -1,7 +1,7 @@
 <script setup>
 // Figma menu/recipeReview：查看食譜彈窗，食材份量依這次用餐的人份換算
 import { computed } from 'vue'
-import { formatAmount } from '@/utils/amount'
+import { formatAmount, formatNote, noteInAmount } from '@/utils/amount'
 import BaseDialog from '@/components/base/BaseDialog.vue'
 import RecipeMeta from './RecipeMeta.vue'
 
@@ -24,7 +24,7 @@ const groups = computed(() => {
   const map = new Map()
   props.recipe.ingredients.forEach((item) => {
     if (!map.has(item.group)) map.set(item.group, [])
-    map.get(item.group).push({ ...item, display: formatAmount(item, ratio) })
+    map.get(item.group).push({ ...item, display: formatAmount(item, ratio) + (noteInAmount(item) ? `（${formatNote(item, ratio)}）` : '') })
   })
   return [...map].map(([name, items]) => ({ name, items }))
 })

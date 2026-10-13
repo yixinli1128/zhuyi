@@ -74,7 +74,7 @@ const vReveal = {
 
 onBeforeUnmount(() => revealObserver?.disconnect())
 
-const announcement = '2024.11.20 「冬令溫潤餐單演算法」上線：自動適配當季高山高麗菜與深根蘿蔔，減鹽低卡無負擔。'
+const announcement = '2026.10.01 「秋季當令餐單」上線：自動適配當季茭白筍、芋頭與蓮藕，減鹽低卡無負擔。'
 
 const pillars = [
   { title: '主意 · ZERO FATIGUE', desc: '靈感隨心生。根據冰箱常備、時令節氣自動配餐，不再苦惱菜色搭配。' },

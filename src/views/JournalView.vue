@@ -7,8 +7,14 @@ import { useRecipeStore } from '@/stores/recipes'
 import { useFridgeStore } from '@/stores/fridge'
 import { useToastStore } from '@/stores/toast'
 import { fromDateKey, toDateKey } from '@/utils/date'
+import { englishUnits } from '@/utils/amount'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseDialog from '@/components/base/BaseDialog.vue'
+import DatePickerDialog from '@/components/base/DatePickerDialog.vue'
+import AppIcon from '@/components/base/AppIcon.vue'
+import fridgeIconUrl from '@/assets/figma/fridge-empty.svg'
+
+const fridgeIconStyle = { '--icon': `url("${fridgeIconUrl}")` }
 
 const router = useRouter()
 const route = useRoute()
@@ -21,9 +27,9 @@ const historyFilter = ref('all')
 const historyPage = ref(1)
 const finishDialogOpen = ref(false)
 const scheduleDialogOpen = ref(false)
+const scheduleAnchor = ref(null)
 const scheduleSourcePlan = ref(null)
 const scheduleDate = ref('')
-const scheduleMonth = ref(new Date())
 const groceryNeededExpanded = ref(true)
 const groceryStockExpanded = ref(true)
 const groceryContent = ref(null)
@@ -56,8 +62,8 @@ function createCalendarDays(currentMonth) {
   })
 }
 const calendarDays = computed(() => createCalendarDays(month.value))
-const scheduleCalendarDays = computed(() => createCalendarDays(scheduleMonth.value))
-const scheduleMonthLabel = computed(() => `${scheduleMonth.value.getFullYear()} 年 ${scheduleMonth.value.getMonth() + 1} 月`)
+// 排餐月曆上標出已有餐單的日期
+const plannedDates = computed(() => mealPlans.plans.map((plan) => plan.date))
 const mealHeadline = computed(() => {
   const date = fromDateKey(selectedDate.value)
   return `${date.getMonth() + 1}月${date.getDate()}日 週${weekdays[date.getDay()]}晚餐`
@@ -85,11 +91,8 @@ const planIngredientGroups = computed(() => {
   return [...grouped.values()]
 })
 const ingredientCoverage = computed(() => {
-  const groups = planIngredientGroups.value
-  if (!selectedPlan.value?.useFridge) {
-    return groups.map((requirement) => ({ requirement, matchedQty: 0, missingQty: requirement.qty, isFulfilled: false }))
-  }
-  return fridge.matchRecipeRequirements(groups).requirementMatches
+  // 不論餐單是否勾選使用冰箱庫存，都比對冰箱並列出已有的食材。
+  return fridge.matchRecipeRequirements(planIngredientGroups.value).requirementMatches
 })
 // 部分有庫存時，採買清單只列仍需補足的數量；庫存區則顯示這餐實際會使用的數量。
 const groceryItems = computed(() => ingredientCoverage.value
@@ -113,12 +116,33 @@ const pageTitle = computed(() => view.value === 'calendar' ? '餐食日誌・餐
 const pageDescription = computed(() => view.value === 'calendar'
   ? '掌握全月份配餐與料理歷程，選取日期即時檢視專屬菜單與生鮮採買清單。'
   : '料理足跡已歸檔至飲食歷史紀錄，隨時可一鍵複製重煮。')
-const historyFilters = ['all', '2026-10', '2026-09', '2026-08']
+// 月份分頁依實際烹飪紀錄產生（新到舊），不寫死月份
+const historyFilters = computed(() => ['all', ...new Set(mealPlans.plans
+  .filter((plan) => plan.status === 'cooked')
+  .map((plan) => plan.date.slice(0, 7))
+  .sort((a, b) => b.localeCompare(a)))])
 const historyFilterLabel = (filter) => filter === 'all' ? '全部紀錄' : filter.replace('-', '/')
 const visibleHistoryPlans = computed(() => mealPlans.plans
   .filter((plan) => plan.status === 'cooked')
   .filter((plan) => historyFilter.value === 'all' || plan.date.startsWith(historyFilter.value))
   .sort((a, b) => b.date.localeCompare(a.date)))
+// 計數標籤跟著分頁：全部紀錄顯示總數，選月份時顯示該月筆數
+const historyCountLabel = computed(() => historyFilter.value === 'all'
+  ? `共記錄 ${visibleHistoryPlans.value.length} 餐`
+  : `${Number(historyFilter.value.slice(5))}月共記錄 ${visibleHistoryPlans.value.length} 餐`)
+// 常煮排名：上方為前一個月、下方為前兩個月；該月沒有烹飪紀錄時顯示空狀態。
+const topRecipeCards = computed(() => [1, 2].map((offset) => {
+  const date = new Date()
+  date.setDate(1)
+  date.setMonth(date.getMonth() - offset)
+  const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+  const counts = new Map()
+  mealPlans.plans
+    .filter((plan) => plan.status === 'cooked' && plan.date.startsWith(key))
+    .forEach((plan) => historyDishes(plan).forEach((name) => counts.set(name, (counts.get(name) ?? 0) + 1)))
+  const ranked = [...counts].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([name, count]) => ({ name, count }))
+  return { key, title: `${date.getMonth() + 1}月常煮料理 TOP 3`, items: ranked }
+}))
 // Figma 的桌機首屏以七筆緊湊列式紀錄構成帳本，不讓清單只剩三筆而留白。
 const historyPageSize = 7
 const historyPageCount = computed(() => Math.max(1, Math.ceil(visibleHistoryPlans.value.length / historyPageSize)))
@@ -154,8 +178,8 @@ function toggleGroceryItem(item) {
   if (selectedPlan.value) mealPlans.toggleGroceryItem(selectedPlan.value.id, item.key)
 }
 function formatGroceryAmount(item) {
-  if (item.qty == null) return item.amount
-  return `${item.qty}${item.unit || ''}`
+  if (item.qty == null) return englishUnits(item.amount)
+  return englishUnits(`${item.qty}${item.unit || ''}`)
 }
 function requestCompleteMeal() {
   if (!selectedPlan.value) return
@@ -171,21 +195,14 @@ function confirmCompleteMeal() {
     { action: { label: '查看歷史紀錄', onClick: () => { view.value = 'history' } } },
   )
 }
-function openSchedulePicker(plan) {
+function openSchedulePicker(plan, event) {
   scheduleSourcePlan.value = plan
+  scheduleAnchor.value = event?.currentTarget ?? null
   scheduleDate.value = today
-  const date = fromDateKey(today)
-  scheduleMonth.value = new Date(date.getFullYear(), date.getMonth(), 1)
   scheduleDialogOpen.value = true
 }
-function selectScheduleDate(day) {
-  scheduleDate.value = day.key
-  if (!day.inMonth) {
-    const date = fromDateKey(day.key)
-    scheduleMonth.value = new Date(date.getFullYear(), date.getMonth(), 1)
-  }
-}
-function scheduleHistoryPlan() {
+function scheduleHistoryPlan(dateKey) {
+  scheduleDate.value = dateKey
   const source = scheduleSourcePlan.value
   if (!source || !scheduleDate.value) return
   if (mealPlans.getPlan(scheduleDate.value)) {
@@ -234,8 +251,8 @@ watch(selectedDate, async () => {
     <PageTitle :title="pageTitle" :description="pageDescription">
       <template #actions>
         <div class="view-switch" role="tablist" aria-label="餐食日誌檢視方式">
-          <button :class="{ 'is-active': view === 'calendar' }" role="tab" aria-label="月曆檢視" :aria-selected="view === 'calendar'" @click="view = 'calendar'"><i class="fa-regular fa-calendar-days" aria-hidden="true"></i><span>月曆檢視</span></button>
-          <button :class="{ 'is-active': view === 'history' }" role="tab" aria-label="歷史列表" :aria-selected="view === 'history'" @click="view = 'history'"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>歷史列表</span></button>
+          <button :class="{ 'is-active': view === 'calendar' }" role="tab" aria-label="月曆檢視" :aria-selected="view === 'calendar'" @click="view = 'calendar'"><AppIcon name="calendar" /><span>月曆檢視</span></button>
+          <button :class="{ 'is-active': view === 'history' }" role="tab" aria-label="歷史列表" :aria-selected="view === 'history'" @click="view = 'history'"><AppIcon name="history" /><span>歷史列表</span></button>
         </div>
       </template>
     </PageTitle>
@@ -257,7 +274,7 @@ watch(selectedDate, async () => {
           <article v-for="recipe in selectedRecipes" :key="recipe.id" class="planned-dish">
             <div class="planned-dish__main">
               <img v-if="recipe.imageUrl" :src="recipe.imageUrl" :alt="recipe.imageAlt || recipe.name" />
-              <div v-else class="dish-placeholder"><i class="fa-solid fa-utensils"></i></div>
+              <div v-else class="dish-placeholder"><AppIcon name="tableware" /></div>
               <div class="planned-dish__copy">
                 <div class="planned-dish__heading"><div><p>{{ recipe.type === 'soup' ? '今日湯品' : '今日菜色' }}</p><h3>{{ recipe.name }}</h3></div><span class="dish-time"><i class="fa-regular fa-clock"></i> {{ recipe.cookTime }} 分鐘</span></div>
                 <p class="dish-intro">{{ recipe.intro }}</p>
@@ -269,7 +286,7 @@ watch(selectedDate, async () => {
         </div>
         <button v-if="selectedPlan && selectedRecipes.length && selectedPlan.status !== 'cooked'" class="complete-menu complete-menu--footer" @click="requestCompleteMeal"><i class="fa-solid fa-check"></i> 煮好晚餐！扣除庫存並存入歷史紀錄</button>
         <div v-if="!selectedPlan || !selectedRecipes.length" class="meal-empty">
-          <i class="fa-solid fa-utensils"></i><h3>今日尚未規劃餐單</h3>
+          <AppIcon name="tableware" /><h3>今日尚未規劃餐單</h3>
           <p>系統已為您備妥家庭飲食偏好與冰箱食材庫存，隨時可一鍵啟動智能配餐，為今晚餐桌帶來旬味靈感。</p>
         </div>
       </section>
@@ -292,7 +309,7 @@ watch(selectedDate, async () => {
         <template v-if="selectedPlan">
           <div ref="groceryContent" class="grocery-content">
             <section class="grocery-group"><button class="grocery-summary" type="button" :aria-expanded="groceryNeededExpanded" @click="groceryNeededExpanded = !groceryNeededExpanded"><span><i class="fa-solid fa-bag-shopping"></i>待採買清單</span><i :class="['fa-solid', groceryNeededExpanded ? 'fa-chevron-up' : 'fa-chevron-down']"></i></button><ul v-if="groceryNeededExpanded && groceryItems.length" class="grocery-list"><li v-for="item in groceryItems" :key="item.key"><button :class="{ 'is-checked': groceryChecked.has(item.key) || groceryChecked.has(item.name) }" @click="toggleGroceryItem(item)"><i class="fa-solid fa-check"></i><span class="grocery-item__name"><b>{{ item.name }}</b><em>{{ formatGroceryAmount(item) }}</em></span><small>{{ item.recipeNames.join('、') }}</small></button></li></ul><p v-else-if="groceryNeededExpanded" class="grocery-group__empty">這份餐單沒有需要另外採買的食材。</p></section>
-            <section v-if="fridgeItems.length" class="grocery-group grocery-group--stock"><button class="grocery-summary" type="button" :aria-expanded="groceryStockExpanded" @click="groceryStockExpanded = !groceryStockExpanded"><span><i class="fa-solid fa-box-open"></i>冰箱已有庫存</span><i :class="['fa-solid', groceryStockExpanded ? 'fa-chevron-up' : 'fa-chevron-down']"></i></button><ul v-if="groceryStockExpanded" class="stock-list"><li v-for="item in fridgeItems" :key="item.key"><span class="grocery-item__name"><b>{{ item.name }}</b><em>{{ formatGroceryAmount(item) }}</em></span><small>{{ item.recipeNames.join('、') }}</small></li></ul></section>
+            <section class="grocery-group grocery-group--stock"><button class="grocery-summary" type="button" :aria-expanded="groceryStockExpanded" @click="groceryStockExpanded = !groceryStockExpanded"><span><i class="stock-fridge-icon" :style="fridgeIconStyle" aria-hidden="true"></i>冰箱已有庫存</span><i :class="['fa-solid', groceryStockExpanded ? 'fa-chevron-up' : 'fa-chevron-down']"></i></button><ul v-if="groceryStockExpanded && fridgeItems.length" class="stock-list"><li v-for="item in fridgeItems" :key="item.key"><span class="grocery-item__name"><b>{{ item.name }}</b><em>{{ formatGroceryAmount(item) }}</em></span><small>{{ item.recipeNames.join('、') }}</small></li></ul><p v-else-if="groceryStockExpanded" class="grocery-group__empty">冰箱目前沒有這份餐單用得到的食材。</p></section>
           </div>
           <footer class="grocery-footer"><button @click="selectedPlan.groceryChecked = []"><i class="fa-solid fa-rotate-left"></i>重設勾選</button><button @click="groceryItems.forEach((item) => { if (!groceryChecked.has(item.key)) toggleGroceryItem(item) })"><i class="fa-solid fa-check"></i>全部標記為已採買</button></footer>
         </template>
@@ -303,27 +320,29 @@ watch(selectedDate, async () => {
 
     <main v-else class="history-layout">
       <section class="history-records">
-        <header class="history-filter"><div role="tablist" aria-label="歷史月份篩選"><button v-for="filter in historyFilters" :key="filter" :class="{ 'is-current': historyFilter === filter }" role="tab" :aria-selected="historyFilter === filter" @click="historyFilter = filter">{{ historyFilterLabel(filter) }}</button></div><span>本月共記錄 {{ visibleHistoryPlans.length }} 餐</span></header>
-        <div v-if="!visibleHistoryPlans.length" class="records-empty"><i class="fa-solid fa-utensils"></i><h2>尚未有烹飪紀錄</h2><p>當你完成配餐後，紀錄會在這出現</p></div>
+        <header class="history-filter"><div role="tablist" aria-label="歷史月份篩選"><button v-for="filter in historyFilters" :key="filter" :class="{ 'is-current': historyFilter === filter }" role="tab" :aria-selected="historyFilter === filter" @click="historyFilter = filter">{{ historyFilterLabel(filter) }}</button></div><span>{{ historyCountLabel }}</span></header>
+        <div v-if="!visibleHistoryPlans.length" class="records-empty"><AppIcon name="tableware" /><h2>尚未有烹飪紀錄</h2><p>當你完成配餐後，紀錄會在這出現</p></div>
         <section v-else class="history-list" aria-label="烹飪紀錄">
           <header class="history-list__header"><span><i></i>近期烹飪紀錄</span><em>共 {{ visibleHistoryPlans.length }} 餐</em></header>
           <ol class="history-ledger">
             <li v-for="plan in pagedHistoryPlans" :key="plan.id">
-              <div class="history-ledger__top"><h2>{{ formatHistoryDate(plan.date) }}</h2><button class="history-action" @click="bringHistoryToToday(plan)"><i class="fa-solid fa-plus"></i>帶入今日晚餐</button></div>
-              <div class="history-ledger__bottom"><div class="history-dishes"><template v-for="(dish, index) in historyDishes(plan)" :key="`${plan.id}-${dish}`"><span v-if="index" aria-hidden="true">/</span><b>{{ dish }}</b></template><b v-if="!historyDishes(plan).length">已完成餐單</b></div><button class="history-action history-action--schedule" @click="openSchedulePicker(plan)"><i class="fa-regular fa-calendar"></i>排餐至<i class="fa-solid fa-chevron-down"></i></button></div>
+              <div class="history-ledger__top"><h2>{{ formatHistoryDate(plan.date) }}</h2><div class="history-ledger__meta"><span v-if="plan.servings" class="history-servings">・{{ plan.servings }}人份</span><button class="history-action" @click="bringHistoryToToday(plan)"><i class="fa-solid fa-plus"></i>帶入今日晚餐</button></div></div>
+              <div class="history-ledger__bottom"><div class="history-dishes"><template v-for="(dish, index) in historyDishes(plan)" :key="`${plan.id}-${dish}`"><span v-if="index" aria-hidden="true">/</span><b>{{ dish }}</b></template><b v-if="!historyDishes(plan).length">已完成餐單</b></div><button class="history-action history-action--schedule" @click="openSchedulePicker(plan, $event)"><i class="fa-regular fa-calendar"></i>排餐至<i class="fa-solid fa-chevron-down"></i></button></div>
             </li>
           </ol>
           <footer class="history-pagination"><span>{{ historyRangeLabel }}</span><div><button aria-label="上一頁" :disabled="historyPage === 1" @click="setHistoryPage(historyPage - 1)"><i class="fa-solid fa-chevron-left"></i></button><button v-for="page in historyPageCount" :key="page" :class="{ 'is-current': historyPage === page }" :aria-label="`第 ${page} 頁`" @click="setHistoryPage(page)">{{ page }}</button><button aria-label="下一頁" :disabled="historyPage === historyPageCount" @click="setHistoryPage(historyPage + 1)"><i class="fa-solid fa-chevron-right"></i></button></div></footer>
         </section>
       </section>
-      <aside class="top-recipes"><header><h2><i class="fa-solid fa-circle"></i> 上月常煮料理 TOP 3</h2><span>8月份統計</span></header><ol><li><b>1</b><span>清蒸嫩豆腐</span><em>5 次</em></li><li><b>2</b><span>家常蒜泥白肉</span><em>4 次</em></li><li><b>3</b><span>鮮菇番茄蛋花湯</span><em>4 次</em></li></ol><p>料理提示：常煮菜品高頻複製，建議下次配餐可適度引進季節性蔬菜（如南瓜、蓮藕）豐富餐桌。</p></aside>
+      <div class="top-recipes-stack">
+        <aside v-for="(card, cardIndex) in topRecipeCards" :key="card.key" class="top-recipes"><header><h2><i class="fa-solid fa-circle"></i> {{ card.title }}</h2></header><ol v-if="card.items.length"><li v-for="(item, index) in card.items" :key="item.name"><b>{{ index + 1 }}</b><span>{{ item.name }}</span><em>{{ item.count }} 次</em></li></ol><p v-else class="top-recipes__empty">這個月還沒有烹飪紀錄</p><p v-if="cardIndex === 0 && card.items.length">料理提示：常煮菜品高頻複製，建議下次配餐可適度引進季節性蔬菜（如南瓜、蓮藕）豐富餐桌。</p></aside>
+      </div>
     </main>
 
     <BaseDialog v-model:open="finishDialogOpen" :title="`確認 ${completionDateLabel} 已經煮好了嗎？`" description="確認後，系統會從冰箱庫存扣除用到的食材，並把這餐存入歷史紀錄。" :width="520">
       <div class="completion-dialog">
         <h3>將從冰箱庫存扣除</h3>
         <ul v-if="fridgeDeductions.length" class="deduction-list">
-          <li v-for="item in fridgeDeductions" :key="`${item.id}-${item.recipeName}`"><span>{{ item.name }}</span><strong>− {{ item.amount }} {{ item.unit }}</strong></li>
+          <li v-for="item in fridgeDeductions" :key="`${item.id}-${item.recipeName}`"><span>{{ item.name }}</span><strong>− {{ englishUnits(`${item.amount} ${item.unit}`) }}</strong></li>
         </ul>
         <p v-else class="no-deduction">此餐未使用冰箱庫存，確認後會直接存入歷史紀錄。</p>
       </div>
@@ -332,15 +351,7 @@ watch(selectedDate, async () => {
         <BaseButton @click="confirmCompleteMeal">確認並扣除</BaseButton>
       </template>
     </BaseDialog>
-    <BaseDialog v-model:open="scheduleDialogOpen" title="選擇排餐日期" description="選擇日期後，會將這份歷史餐單複製為新的待烹飪餐單。" :width="440">
-      <section class="schedule-calendar" aria-label="選擇排餐日期">
-        <header><button aria-label="上個月" @click="scheduleMonth = new Date(scheduleMonth.getFullYear(), scheduleMonth.getMonth() - 1, 1)"><i class="fa-solid fa-chevron-left"></i></button><h3>{{ scheduleMonthLabel }}</h3><button aria-label="下個月" @click="scheduleMonth = new Date(scheduleMonth.getFullYear(), scheduleMonth.getMonth() + 1, 1)"><i class="fa-solid fa-chevron-right"></i></button></header>
-        <div class="schedule-weekdays" aria-hidden="true"><span v-for="day in weekdays" :key="day">{{ day }}</span></div>
-        <div class="schedule-days"><button v-for="day in scheduleCalendarDays" :key="day.key" :class="{ 'is-muted': !day.inMonth, 'is-selected': day.key === scheduleDate, 'has-plan': day.plan }" :aria-label="`${day.key}${day.plan ? ' 已有餐單' : ''}`" @click="selectScheduleDate(day)">{{ day.number }}</button></div>
-        <p>已選擇：{{ scheduleDate.replaceAll('-', ' / ') }}</p>
-      </section>
-      <template #footer><BaseButton variant="secondary" @click="scheduleDialogOpen = false">取消</BaseButton><BaseButton @click="scheduleHistoryPlan">確認排餐</BaseButton></template>
-    </BaseDialog>
+    <DatePickerDialog v-model:open="scheduleDialogOpen" :anchor="scheduleAnchor" :value="scheduleDate" :min="today" :marked="plannedDates" title="選擇排餐日期" confirm-label="確認排餐" :auto-close="false" @confirm="scheduleHistoryPlan" />
   </section>
 </template>
 
@@ -359,7 +370,7 @@ watch(selectedDate, async () => {
 .meal-banner__copy { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--text-secondary); font-size: 16px; }
 .meal-banner__copy h2 { color: var(--text-title); font-size: 18px; font-weight: 500; }.meal-banner__copy i { color: var(--text-placeholder); }.meal-banner__dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-placeholder); }
 .edit-menu, .today-button { padding: 5px 10px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 10px; white-space: nowrap; }.edit-menu:hover, .today-button:hover { background: var(--brand-secondary-hover); }
-.meal-empty { display: flex; height: 201px; flex-direction: column; align-items: center; justify-content: center; margin-top: 16px; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; text-align: center; }.meal-empty>i { margin-bottom: 12px; color: var(--brand-primary); font-size: 22px; }.meal-empty h3, .grocery-empty h3 { color: var(--text-body); font-size: 14px; font-weight: 500; }.meal-empty p, .grocery-empty p { max-width: 360px; margin-top: 8px; color: var(--text-placeholder); font-size: 10px; line-height: 1.7; }
+.meal-empty { display: flex; height: 201px; flex-direction: column; align-items: center; justify-content: center; margin-top: 16px; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; text-align: center; }.meal-empty>.app-icon { margin-bottom: 12px; color: var(--brand-primary); font-size: 22px; }.meal-empty h3, .grocery-empty h3 { color: var(--text-body); font-size: 14px; font-weight: 500; }.meal-empty p, .grocery-empty p { max-width: 360px; margin-top: 8px; color: var(--text-placeholder); font-size: 10px; line-height: 1.7; }
 .planned-meal { display: grid; gap: 16px; margin-top: 16px; }
 .planned-dish { display: grid; gap: 12px; padding: 21px; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; background: var(--bg-surface); box-shadow: 0 1px 2px rgb(0 0 0 / .02); }
 .planned-dish__main { display: flex; min-width: 0; gap: 16px; }
@@ -381,14 +392,16 @@ watch(selectedDate, async () => {
 .grocery-list li button { display: grid; width: 100%; grid-template-columns: 14px minmax(0, 1fr) minmax(84px, 38%); align-items: center; gap: 10px; padding: 9px 8px; border: 0; border-radius: 10px; background: transparent; color: var(--text-body); font-size: 11px; text-align: left; cursor: pointer; }
 .grocery-list li button>i { display: grid; width: 14px; height: 14px; place-items: center; border: 1px solid var(--brand-primary-border); border-radius: 2px; color: transparent; font-size: 8px; }.grocery-list li button.is-checked { color: var(--text-placeholder); text-decoration: line-through; }.grocery-list li button.is-checked>i { border-color: var(--brand-primary); background: var(--brand-primary); color: var(--text-on-primary); }
 .grocery-item__name { display: flex; min-width: 0; align-items: center; gap: 8px; overflow: hidden; }.grocery-list b, .stock-list b { overflow: hidden; color: var(--text-body); font-size: 11px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }.grocery-list em, .stock-list em { flex: 0 0 auto; color: var(--text-body); font-size: 11px; font-style: normal; white-space: nowrap; }.grocery-list small, .stock-list small { min-width: 0; overflow: hidden; color: var(--text-placeholder); font-size: 10px; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
-.side-card { overflow: hidden; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; background: var(--bg-surface); padding: 21px; }.month-card__header, .month-title, .grocery-header { display: flex; align-items: center; }.month-card__header { justify-content: space-between; }.month-title { gap: 8px; }.month-title h2 { color: var(--text-secondary); font-size: 14px; font-weight: 500; white-space: nowrap; }.month-title button { display: grid; width: 16px; height: 20px; place-items: center; color: var(--text-placeholder); font-size: 10px; }.today-button { padding: 0; background: transparent; color: var(--text-placeholder); font-size: 12px; }.today-button:hover { background: transparent; color: var(--brand-primary); }.weekday-row, .month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }.weekday-row { margin-top: 17px; padding: 6px 0; border-bottom: 1px solid var(--brand-secondary); color: var(--text-placeholder); font-size: 10px; text-align: center; }.month-grid { gap: 0; margin-top: 12px; }.month-day { display: grid; height: 32px; place-items: center; border-radius: 999px; color: var(--text-secondary); font-size: 12px; }.month-day:hover { background: var(--brand-secondary-light); }.month-day.is-muted { color: var(--brand-secondary); }.month-day.has-plan::after { content: ''; width: 3px; height: 3px; margin-top: -3px; border-radius: 50%; background: var(--brand-primary); }.month-day.is-selected { background: var(--brand-special); color: #fff; }.month-day.is-selected::after { background: #fff; }
-.month-card { box-sizing: border-box; min-height: 342px; opacity: .8; }.journal-layout.has-plan .month-card { min-height: 371px; opacity: 1; }
+.side-card { overflow: hidden; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; background: var(--bg-surface); padding: 21px; }.month-card__header, .month-title, .grocery-header { display: flex; align-items: center; }.month-card__header { justify-content: space-between; }.month-title { gap: 8px; }.month-title h2 { color: var(--text-secondary); font-size: 14px; font-weight: 500; white-space: nowrap; }.month-title button { display: grid; width: 16px; height: 20px; place-items: center; color: var(--text-placeholder); font-size: 10px; }.today-button { padding: 0; background: transparent; color: var(--text-placeholder); font-size: 12px; }.today-button:hover { background: transparent; color: var(--brand-primary); }.weekday-row, .month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }.weekday-row { margin-top: 17px; padding: 6px 0; border-bottom: 1px solid var(--brand-secondary); color: var(--text-placeholder); font-size: 10px; text-align: center; }.month-grid { gap: 0; margin-top: 12px; }.month-day { display: grid; height: 32px; aspect-ratio: 1 / 1; justify-self: center; place-items: center; border-radius: 50%; color: var(--text-secondary); font-size: 12px; }.month-day:not(.is-selected):hover { background: var(--brand-secondary-light); }.month-day.is-muted { color: var(--brand-secondary); }.month-day.has-plan::after { content: ''; width: 3px; height: 3px; margin-top: -3px; border-radius: 50%; background: var(--brand-primary); }.month-day.is-selected { background: var(--brand-special); color: #fff; }.month-day.is-selected::after { background: #fff; }
+.month-card { box-sizing: border-box; min-height: 342px; opacity: .8; }.journal-layout.has-plan .month-card { opacity: 1; }
 .grocery-card { grid-column: 2; grid-row: 2; display: flex; min-height: 339px; flex-direction: column; gap: 8px; }.journal-layout.has-plan .grocery-card { display: grid; height: 581px; min-height: 0; max-height: 581px; grid-template-rows: auto auto minmax(0, 1fr) auto; }
 .grocery-header { gap: 10px; }.grocery-header>div:not(.grocery-icon) { min-width: 0; }.grocery-icon { display: grid; width: 42px; height: 42px; flex: 0 0 42px; place-items: center; border: 1px solid var(--brand-secondary); border-radius: 10px; background: var(--brand-secondary-light); color: var(--brand-primary); font-size: 16px; }.grocery-header h2 { overflow: hidden; color: var(--text-title); font-size: 16px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }.grocery-header p, .grocery-header>span { color: var(--text-placeholder); font-size: 10px; }.grocery-header p { margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.grocery-header>span { flex: 0 0 auto; margin-left: auto; padding: 4px 7px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 11px; white-space: nowrap; }
 .grocery-progress { padding-bottom: 1px; border-bottom: 1px solid var(--brand-secondary); }.grocery-progress>i { display: block; height: 5px; overflow: hidden; border-radius: 999px; background: var(--brand-secondary-light); }.grocery-progress>i>b { display: block; height: 100%; border-radius: inherit; background: var(--brand-primary); transition: width .2s ease; }.grocery-progress>div { display: flex; justify-content: space-between; margin-top: 5px; color: var(--text-placeholder); font-size: 10px; }.grocery-progress strong { font-weight: 400; }
-.grocery-content { display: grid; width: 100%; min-height: 0; align-content: start; gap: 8px; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }.grocery-group { width: 100%; min-height: 0; }.grocery-summary { display: flex; flex: 0 0 auto; width: 100%; align-items: center; justify-content: space-between; padding: 7px 8px; border-radius: 8px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 12px; text-align: left; }.grocery-summary:hover { background: var(--brand-secondary-hover); }.grocery-summary>span { display: inline-flex; align-items: center; gap: 7px; }.grocery-summary>span>i { color: var(--brand-primary); font-size: 13px; }.grocery-summary>i { display: grid; width: 20px; height: 12px; place-items: center; color: var(--text-placeholder); font-size: 8px; }.grocery-group__empty { padding: 10px; color: var(--text-placeholder); font-size: 10px; }.grocery-list { min-height: 0; }.grocery-group--stock { margin-top: 0; }.stock-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 8px; border-radius: 10px; }.grocery-footer { display: flex; flex: 0 0 auto; justify-content: space-between; width: 100%; margin-top: 0; padding-top: 8px; border-top: 1px solid var(--brand-secondary); }.grocery-footer button { display: inline-flex; align-items: center; gap: 4px; padding: 4px 7px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 10px; }.grocery-footer button:last-child { background: var(--brand-secondary); color: var(--text-body); }.grocery-footer i { font-size: 9px; }.grocery-empty { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 20px 12px 0; text-align: center; }.grocery-empty>i { margin-bottom: 11px; color: var(--brand-primary); font-size: 24px; }.grocery-empty p { max-width: 240px; }
+.grocery-content { display: flex; flex-direction: column; width: 100%; min-height: 0; gap: 8px; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }.grocery-group { flex: 0 0 auto; width: 100%; }.grocery-summary { display: flex; flex: 0 0 auto; width: 100%; align-items: center; justify-content: space-between; padding: 7px 8px; border-radius: 8px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 12px; text-align: left; }.grocery-summary:hover { background: var(--brand-secondary-hover); }.grocery-summary>span { display: inline-flex; align-items: center; gap: 7px; }.grocery-summary>span>i { color: var(--brand-primary); font-size: 13px; }.grocery-summary>i { display: grid; width: 20px; height: 12px; place-items: center; color: var(--text-placeholder); font-size: 8px; }.grocery-group__empty { padding: 10px; color: var(--text-placeholder); font-size: 10px; }.grocery-list { min-height: 0; }.grocery-group--stock { margin-top: 0; }
+/* 冰箱已有庫存使用 Figma 冰箱圖示，以遮罩套用品牌色。 */
+.grocery-summary>span>.stock-fridge-icon { display: inline-block; width: 14px; height: 14px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }.stock-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 8px; border-radius: 10px; }.grocery-footer { display: flex; flex: 0 0 auto; justify-content: space-between; width: 100%; margin-top: 0; padding-top: 8px; border-top: 1px solid var(--brand-secondary); }.grocery-footer button { display: inline-flex; align-items: center; gap: 4px; padding: 4px 7px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 10px; }.grocery-footer button:last-child { background: var(--brand-secondary); color: var(--text-body); }.grocery-footer i { font-size: 9px; }.grocery-empty { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 20px 12px 0; text-align: center; }.grocery-empty>i { margin-bottom: 11px; color: var(--brand-primary); font-size: 24px; }.grocery-empty p { max-width: 240px; }
 .completion-dialog { padding: 4px 0 2px; }.completion-dialog h3 { margin-bottom: 12px; color: var(--text-body); font-size: 15px; font-weight: 500; }.deduction-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--brand-secondary); }.deduction-list li { display: flex; align-items: center; justify-content: space-between; min-height: 42px; border-bottom: 1px solid var(--brand-secondary); color: var(--text-body); font-size: 14px; }.deduction-list strong { color: var(--brand-primary); font-size: 13px; font-weight: 500; }.no-deduction { padding: 16px; border: 1px dashed var(--brand-secondary); border-radius: 8px; color: var(--text-placeholder); font-size: 13px; line-height: 1.6; }
-.schedule-calendar { display: grid; gap: 12px; }.schedule-calendar>header { display: flex; align-items: center; justify-content: center; gap: 12px; }.schedule-calendar>header h3 { min-width: 130px; color: var(--text-body); font-size: 16px; font-weight: 400; text-align: center; }.schedule-calendar>header button { display: grid; width: 28px; height: 28px; place-items: center; color: var(--text-secondary); font-size: 11px; }.schedule-weekdays, .schedule-days { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }.schedule-weekdays { padding-bottom: 6px; border-bottom: 1px solid var(--brand-secondary); color: var(--text-placeholder); font-size: 11px; }.schedule-days button { position: relative; display: grid; height: 38px; place-items: center; border-radius: 50%; color: var(--text-secondary); font-size: 13px; }.schedule-days button:hover { background: var(--brand-secondary-light); }.schedule-days button.is-muted { color: var(--brand-secondary); }.schedule-days button.has-plan::after { position: absolute; bottom: 3px; width: 3px; height: 3px; border-radius: 50%; background: var(--brand-primary); content: ''; }.schedule-days button.is-selected { background: var(--brand-primary); color: var(--text-on-primary); }.schedule-days button.is-selected::after { background: #fff; }.schedule-calendar>p { color: var(--text-secondary); font-size: 12px; text-align: center; }
+
 .history-layout { display: grid; grid-template-columns: minmax(0, 893.333fr) minmax(0, 426.667fr); gap: 40px; padding: 20px 40px 88px; }
 .history-records { display: flex; min-width: 0; flex-direction: column; gap: 16px; }
 .history-filter { display: flex; min-height: 36px; align-items: flex-start; justify-content: space-between; }
@@ -397,9 +410,10 @@ watch(selectedDate, async () => {
 .history-filter button.is-current { padding-bottom: 10px; border-color: var(--brand-primary); color: var(--text-body); }
 .history-filter span { margin-top: 4px; padding: 4px 8px; border-radius: 12px; background: #edf2f7; color: var(--text-special); font-size: 14px; line-height: 18px; white-space: nowrap; }
 .records-empty { display: flex; height: 182px; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; text-align: center; }
-.records-empty>i { margin-bottom: 12px; color: var(--brand-primary); font-size: 24px; }.records-empty h2 { color: var(--text-body); font-size: 16px; font-weight: 500; line-height: 24px; }.records-empty p { margin-top: 8px; color: var(--text-placeholder); font-size: 12px; line-height: 18px; }
+.records-empty>.app-icon { margin-bottom: 12px; color: var(--brand-primary); font-size: 24px; }.records-empty h2 { color: var(--text-body); font-size: 16px; font-weight: 500; line-height: 24px; }.records-empty p { margin-top: 8px; color: var(--text-placeholder); font-size: 12px; line-height: 18px; }
 .history-list { display: grid; gap: 0; list-style: none; }
 .history-list__header { display: flex; align-items: center; justify-content: space-between; padding: 0 0 9px; border-bottom: 1px solid var(--brand-secondary); }.history-list__header>span { display: flex; align-items: center; gap: 8px; color: var(--text-body); font-size: 11px; letter-spacing: .66px; }.history-list__header>span i { width: 6px; height: 6px; border-radius: 50%; background: #000; }.history-list__header em { color: var(--text-secondary); font-size: 12px; font-style: normal; }
+.history-ledger__meta { display: flex; flex: 0 0 auto; align-items: center; gap: 6px; }.history-servings { color: var(--text-placeholder); font-size: 12px; white-space: nowrap; }
 .history-ledger { margin: 0; padding: 0; list-style: none; }.history-ledger>li { display: grid; gap: 8px; padding: 16px 0; border-bottom: 1px dashed var(--brand-primary-border); }.history-ledger__top, .history-ledger__bottom { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 16px; }.history-ledger h2 { color: var(--text-body); font-size: 16px; font-weight: 400; white-space: nowrap; }.history-dishes { display: flex; min-width: 0; flex: 1; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--text-body); font-size: 14px; line-height: 22px; }.history-dishes b { font-weight: 400; white-space: nowrap; }.history-dishes span { color: var(--text-secondary); }.history-action { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 4px; padding: 4px 8px; border-radius: 999px; background: var(--brand-secondary); box-shadow: 0 1px 1px rgb(0 0 0 / .05); color: var(--text-body); font-size: 12px; line-height: 16px; white-space: nowrap; }.history-action--schedule { padding: 4px; }.history-action:hover { background: var(--brand-secondary-hover); }.history-action i { font-size: 11px; }.history-action i:last-child { display: grid; width: 16px; height: 8px; margin-left: 0; place-items: center; font-size: 9px; }
 .history-pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px 2px; border-top: 1px solid var(--brand-secondary); }.history-pagination>span { color: var(--text-secondary); font-size: 10px; }.history-pagination>div { display: flex; align-items: center; gap: 8px; }.history-pagination button { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid var(--brand-primary-border); border-radius: 50%; background: var(--bg-surface); color: var(--text-secondary); font-size: 14px; }.history-pagination button:first-child, .history-pagination button:last-child { border-color: transparent; background: transparent; font-size: 12px; }.history-pagination button.is-current { border-color: var(--brand-primary); background: var(--brand-primary); color: var(--text-on-primary); }.history-pagination button:disabled { cursor: default; opacity: .45; }
 .top-recipes { min-height: 296px; padding: 20px; border: 1px solid var(--brand-primary-border); border-radius: 12px 0 12px; }.top-recipes header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--brand-secondary); }.top-recipes h2 { color: var(--text-body); font-size: 16px; font-weight: 500; }.top-recipes h2 i { margin-right: 7px; font-size: 8px; color: #000; }.top-recipes header span { color: var(--text-placeholder); font-size: 10px; letter-spacing: .8px; }.top-recipes ol { margin: 0; padding: 10px 0; list-style: none; }.top-recipes li { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; min-height: 38px; border-bottom: 1px dashed var(--brand-secondary); color: var(--text-secondary); font-size: 14px; }.top-recipes li b { display: grid; width: 14px; height: 14px; place-items: center; border-radius: 50%; background: var(--brand-secondary-light); font-size: 9px; font-weight: 500; }.top-recipes li:first-child b { background: var(--brand-special); color: #fff; }.top-recipes li em { color: var(--text-placeholder); font-size: 12px; font-style: normal; }.top-recipes>p { padding: 8px; border-left: 2px solid var(--brand-primary); background: var(--brand-secondary); color: var(--text-secondary); font-size: 10px; line-height: 1.45; }
@@ -509,11 +523,11 @@ watch(selectedDate, async () => {
 }
 /* 僅手機使用 icon；平板與桌機保留完整文字。 */
 @media(max-width:640px){
-  .view-switch button{display:grid;width:34px;height:34px;padding:0;place-items:center;border-radius:8px;font-size:15px}
+  .view-switch button{display:grid;width:34px;height:34px;padding:0;place-items:center;border-radius:8px;font-size:19px}
   .view-switch button span{display:none}
 }
 @media(min-width:641px){
-  .view-switch button>i{display:none}
+  .view-switch button>i,.view-switch button>.app-icon{display:none}
 }
 @media(min-width:1025px) and (max-width:1279px){
   .journal-page :deep(.page-title){padding:36px 28px 28px}
@@ -577,4 +591,26 @@ watch(selectedDate, async () => {
   .dish-guide p { font-size: clamp(11px, 1.05vw, 12px); }
   .dish-guide button { padding: 5px 6px; font-size: clamp(10px, .95vw, 11px); }
 }
+
+/* 歷史月份篩選改為可橫向滑動：放不下的月份藏在右側，滑動後出現。 */
+.history-filter { gap: 12px; min-width: 0; }
+.history-filter div { flex: 1 1 auto; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.history-filter div::-webkit-scrollbar { display: none; }
+.history-filter button { flex: 0 0 auto; white-space: nowrap; }
+.history-filter span { flex: 0 0 auto; }
+
+/* 平板與小桌機：常煮排名依比例縮放，不再固定寬度擠壓左側紀錄。 */
+@media (min-width: 641px) and (max-width: 1199px) {
+  .history-layout { grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr); gap: clamp(16px, 2.6vw, 32px); }
+  .top-recipes { min-width: 0; padding: clamp(12px, 1.6vw, 18px); }
+  .top-recipes header { gap: 8px; flex-wrap: wrap; }
+  .top-recipes h2 { font-size: clamp(13px, 1.5vw, 16px); white-space: nowrap; }
+  .top-recipes li { font-size: clamp(12px, 1.35vw, 14px); }
+  .top-recipes li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .top-recipes li em { padding-left: 6px; }
+}
+
+/* 兩張常煮排名卡上下排列，共用右側欄位。 */
+.top-recipes .top-recipes__empty { padding: 28px 0; border: 0; background: none; color: var(--text-placeholder); font-size: 13px; text-align: center; }
+.top-recipes-stack { display: grid; min-width: 0; align-self: start; gap: 16px; }
 </style>

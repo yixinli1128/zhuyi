@@ -102,9 +102,10 @@ function scoreRecipe(recipe, needs, fridgeMatches, jitter = 1.5) {
 }
 
 // 依分數挑 count 道，盡量不要同一類重複（例：三道都是蛋料理），其次避開同一種主食材（例：兩道都是豬肉）
-function pick(candidates, count) {
-  const chosen = []
-  const pool = [...candidates]
+// locked：一定要保留的菜，先放進去，只補不足的道數
+function pick(candidates, count, locked = []) {
+  const chosen = candidates.filter((item) => locked.includes(item)).slice(0, count)
+  const pool = candidates.filter((item) => !chosen.includes(item))
   while (chosen.length < count && pool.length) {
     pool.sort((a, b) => adjusted(b) - adjusted(a))
     chosen.push(pool.shift())
@@ -122,7 +123,7 @@ function pick(candidates, count) {
  * 建立餐單
  * @returns {{ dishes: Array<{ recipeId, type }>, shortage: boolean, rules }}
  */
-export function planMenu({ recipes, members, guest, needs, dishCount, soupCount, useFridge, findFridgeMatches, preferredRecipeIds = [] }) {
+export function planMenu({ recipes, members, guest, needs, dishCount, soupCount, useFridge, findFridgeMatches, preferredRecipeIds = [], lockedRecipeIds = [] }) {
   const rules = collectRules(members, guest)
   const scored = recipes
     .filter((recipe) => isAllowed(recipe, rules))
@@ -132,8 +133,10 @@ export function planMenu({ recipes, members, guest, needs, dishCount, soupCount,
       return { recipe, score: scoreRecipe(recipe, needs, matches) + preferredScore }
     })
 
-  const dishes = pick(scored.filter((s) => s.recipe.type === 'dish'), dishCount)
-  const soups = pick(scored.filter((s) => s.recipe.type === 'soup'), soupCount)
+  // 原本餐單的菜（例：排餐至某天後想再加一道）不換掉；不符合這次過敏／忌口的才不保留
+  const locked = scored.filter((s) => lockedRecipeIds.includes(s.recipe.id))
+  const dishes = pick(scored.filter((s) => s.recipe.type === 'dish'), dishCount, locked)
+  const soups = pick(scored.filter((s) => s.recipe.type === 'soup'), soupCount, locked)
 
   return {
     dishes: [...dishes, ...soups].map((s) => ({ recipeId: s.recipe.id, type: s.recipe.type })),

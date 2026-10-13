@@ -12,11 +12,24 @@ const imageByName = Object.fromEntries(
   Object.entries(imageFiles).map(([path, url]) => [path.split('/').pop(), url]),
 )
 
+// 新增的食譜若沒填 group，依湯品／肉類／蛋類／蔬菜類推斷，更換菜色才能只列同類型。
+function inferGroup(recipe) {
+  if (recipe.group) return recipe.group
+  if (recipe.type === 'soup') return '湯品類'
+  if ((recipe.categories ?? []).some((category) => ['雞肉', '豬肉', '牛肉', '海鮮'].includes(category))) return '肉類'
+  if (recipe.name.includes('蛋')) return '蛋類'
+  return '蔬菜類'
+}
+
 // 食譜：固定參考資料，直接讀 JSON，不會被使用者修改
 export const useRecipeStore = defineStore('recipes', () => {
   const recipes = recipeData.map((recipe) => ({
     ...recipe,
-    imageUrl: imageByName[recipe.image] ?? '',
+    group: inferGroup(recipe),
+    // image 欄位空白時（例如後來新增的食譜），改用「菜名.副檔名」找同名照片。
+    imageUrl: imageByName[recipe.image]
+      ?? ['png', 'jpg', 'jpeg', 'webp'].map((ext) => imageByName[`${recipe.name}.${ext}`]).find(Boolean)
+      ?? '',
   }))
 
   const byId = computed(() => Object.fromEntries(recipes.map((r) => [r.id, r])))

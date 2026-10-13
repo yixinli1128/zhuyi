@@ -3,14 +3,15 @@
 import { ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import NavProfile from './NavProfile.vue'
+import AppIcon from '@/components/base/AppIcon.vue'
 import logoUrl from '@/assets/zhuyi-img/logo/logo_pc.png'
 import logoMobileUrl from '@/assets/zhuyi-img/logo/logo_mobile.png'
 
 const items = [
-  { label: '來點煮意', to: '/create', icon: 'fa-solid fa-utensils' },
-  { label: '餐食日誌', to: '/journal', icon: 'fa-regular fa-calendar-days' },
-  { label: '冰箱庫存', to: '/fridge', icon: 'fa-solid fa-box-archive' },
-  { label: '家庭管理', to: '/family', icon: 'fa-solid fa-people-group' },
+  { label: '來點煮意', to: '/create', icon: 'tableware' },
+  { label: '餐食日誌', to: '/journal', icon: 'calendar' },
+  { label: '冰箱庫存', to: '/fridge', icon: 'fridge' },
+  { label: '家庭管理', to: '/family', icon: 'family' },
 ]
 
 defineProps({
@@ -63,7 +64,7 @@ watch(
       </RouterLink>
     </nav>
     <!-- 手機直接顯示登入者，避免先點人物 icon 才看到帳號。 -->
-    <NavProfile class="mobile-header__profile" />
+    <NavProfile class="mobile-header__profile" placement="down" />
     <button
       type="button"
       class="mobile-header__toggle"
@@ -83,7 +84,7 @@ watch(
 
   <nav v-if="!hideSidebar" class="mobile-bottom-nav" aria-label="主要導覽">
     <RouterLink v-for="item in items" :key="item.to" :to="item.to" class="mobile-bottom-nav__item" active-class="is-active">
-      <i :class="item.icon" aria-hidden="true"></i>
+      <AppIcon :name="item.icon" />
       <span>{{ item.label }}</span>
     </RouterLink>
   </nav>
@@ -239,16 +240,20 @@ watch(
     white-space: nowrap;
   }
 
+  /* 跟桌機一樣：灰藍底線，目前頁面由左向右展開 */
   .tablet-nav__item::after {
     position: absolute;
-    right: 0;
+    right: -4px;
     bottom: -7px;
-    left: 0;
+    left: -4px;
     height: 2px;
     border-radius: 999px;
-    background: var(--brand-primary);
+    background: var(--brand-special);
     content: '';
     opacity: 0;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.28s ease-out, opacity 0.12s ease-out;
   }
 
   .tablet-nav__item.is-active {
@@ -257,6 +262,7 @@ watch(
 
   .tablet-nav__item.is-active::after {
     opacity: 1;
+    transform: scaleX(1);
   }
 
   .mobile-bottom-nav {
@@ -292,8 +298,8 @@ watch(
     line-height: 1.2;
   }
 
-  .mobile-bottom-nav__item i {
-    font-size: 17px;
+  .mobile-bottom-nav__item .app-icon {
+    font-size: 20px;
   }
 
   .mobile-bottom-nav__item.is-active {

@@ -74,4 +74,25 @@ function onAction() {
     top: var(--space-40);
   }
 }
+
+/* 手機：縮小提示條，訊息維持單行，過長時以省略號收尾。 */
+@media (max-width: 640px) {
+  .toast {
+    gap: var(--space-8);
+    max-width: calc(100vw - 24px);
+    padding: 8px 14px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .toast__icon {
+    font-size: 10px;
+  }
+
+  .toast__message {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
 </style>

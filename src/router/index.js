@@ -40,13 +40,13 @@ const routes = [
     name: 'login',
     component: () => import('@/views/LoginView.vue'),
     // layout: 'auth' → 桌機不顯示左側 navbar（Figma 登入頁是滿版）
-    meta: { title: '會員登入', layout: 'auth' },
+    meta: { title: '會員登入', layout: 'auth', guestOnly: true },
   },
   {
     path: '/register',
     name: 'register',
     component: () => import('@/views/RegisterView.vue'),
-    meta: { title: '會員註冊', layout: 'auth' },
+    meta: { title: '會員註冊', layout: 'auth', guestOnly: true },
   },
   {
     path: '/forgot-password',
@@ -85,9 +85,14 @@ const router = createRouter({
   },
 })
 
+// 訪客可自由瀏覽與配餐，只有帳號設定需要登入；已登入時不再進入登入／註冊頁
 router.beforeEach((to) => {
-  if (to.meta.requiresAuth && !useUserStore().isLoggedIn) {
+  const isLoggedIn = useUserStore().isLoggedIn
+  if (to.meta.requiresAuth && !isLoggedIn) {
     return { path: '/login', query: { redirect: to.fullPath } }
+  }
+  if (to.meta.guestOnly && isLoggedIn) {
+    return typeof to.query.redirect === 'string' && to.query.redirect.startsWith('/') ? to.query.redirect : '/'
   }
 })
 

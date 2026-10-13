@@ -11,6 +11,7 @@ import { useFridgeStore } from '@/stores/fridge'
 import { useRecipeStore } from '@/stores/recipes'
 import { useMealPlanStore } from '@/stores/mealPlans'
 import { useToastStore } from '@/stores/toast'
+import { useUserStore } from '@/stores/user'
 import { formatMonthDay, formatShort, formatWeekday, toDateKey } from '@/utils/date'
 import {
   FLAVOR_OPTIONS,
@@ -39,6 +40,7 @@ import RecipeCard from '@/components/menu/RecipeCard.vue'
 import MenuReasons from '@/components/menu/MenuReasons.vue'
 import SwapDialog from '@/components/menu/SwapDialog.vue'
 import RecipeDialog from '@/components/menu/RecipeDialog.vue'
+import AppIcon from '@/components/base/AppIcon.vue'
 
 const familyStore = useFamilyStore()
 const fridgeStore = useFridgeStore()
@@ -52,11 +54,19 @@ const today = toDateKey()
 const MEAL_TYPE = '晚餐'
 
 // ---------- 用餐設定 ----------
+// 登入時預設勾選帳號本人
+function defaultMemberIds() {
+  const email = useUserStore().user?.email?.toLowerCase()
+  return email ? familyStore.activeMembers.filter((member) => member.ownerEmail === email).map((member) => member.id) : []
+}
+
 function defaultSettings() {
+  const memberIds = defaultMemberIds()
   return {
-    memberIds: [],
-    date: '',
-    people: 0,
+    memberIds,
+    // IA：用餐日期預設今天，可改選未來日期
+    date: today,
+    people: memberIds.length,
     // 份量仍供配餐計算使用，但不列在 Figma 空狀態的四個欄位中。
     size: 'normal',
     dishCount: 0,
@@ -66,6 +76,9 @@ function defaultSettings() {
     useFridge: false,
   }
 }
+
+// 已有餐單的日期，日期月曆上加小點（同餐食日誌）
+const plannedDates = computed(() => mealPlanStore.plans.map((plan) => plan.date))
 
 const requestedDate = typeof route.query.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(route.query.date)
   ? route.query.date
@@ -83,13 +96,16 @@ function restoreSettings(plan) {
   // 舊版已儲存的餐單可能缺少部分訪客／需求欄位；回編時補齊結構，避免設定面板因 undefined 無法載入。
   const savedGuest = plan.guest ?? {}
   const savedNeeds = plan.needs ?? {}
+  // 舊餐單的菜色只存 recipeId，類型要回食譜資料查；人數、菜數、湯數一律限制在 0–20。
+  const dishType = (dish) => dish.type ?? recipeStore.getRecipe(dish.recipeId)?.type
+  const clampCount = (value) => Math.min(20, Math.max(0, Math.round(Number(value) || 0)))
   return {
     memberIds: [...(plan.memberIds ?? [])],
     date: plan.date,
-    people: plan.people ?? plan.servings ?? 0,
+    people: clampCount(plan.people ?? (plan.memberIds?.length || plan.servings)),
     size: plan.size ?? 'normal',
-    dishCount: plan.dishCount ?? dishes.filter((dish) => dish.type === 'dish').length,
-    soupCount: plan.soupCount ?? dishes.filter((dish) => dish.type === 'soup').length ?? 0,
+    dishCount: clampCount(plan.dishCount ?? dishes.filter((dish) => dishType(dish) === 'dish').length),
+    soupCount: clampCount(plan.soupCount ?? dishes.filter((dish) => dishType(dish) === 'soup').length),
     guest: {
       allergens: [...(savedGuest.allergens ?? [])],
       avoid: [...(savedGuest.avoid ?? [])],
@@ -224,6 +240,14 @@ async function buildMenu() {
   submitted.value = true
   if (errorCount.value || status.value === 'loading') return
 
+  // 同一天已經有餐單：先確認要取代或改其他日期，再開始配餐。
+  const existing = findConflictPlan()
+  if (existing) {
+    conflictPlan.value = existing
+    conflictOpen.value = true
+    return
+  }
+
   // 未選份量時補上正常份量；人數與菜數必須由使用者明確設定至少 1。
   if (settings.size === '') settings.size = 'normal'
   guestOpen.value = false
@@ -240,6 +264,10 @@ async function buildMenu() {
     return
   }
 
+  // 從已有餐單進來（編輯、排餐至、帶入今日晚餐）時，原本的菜保留，只補上新增的道數
+  const lockedRecipeIds = requestedPlan
+    ? (menu.value?.dishes ?? []).map((dish) => dish.recipeId).filter((id) => requestedPlan.dishes.some((dish) => dish.recipeId === id))
+    : []
   const result = planMenu({
     recipes: recipeStore.recipes,
     members: selectedMembers.value,
@@ -250,6 +278,7 @@ async function buildMenu() {
     useFridge: settings.useFridge,
     findFridgeMatches: fridgeStore.findMatches,
     preferredRecipeIds: requestedRecipeIds,
+    lockedRecipeIds,
   })
 
   menu.value = {
@@ -410,6 +439,22 @@ function openRecipe(recipe) {
 // ---------- 儲存到餐食日誌 ----------
 const conflictOpen = ref(false)
 const conflictPlan = ref(null)
+// 從餐食日誌「編輯餐單」進來時，同一天的原餐單就是正在修改的這份，不算重複。
+const editingPlanId = requestedPlan && route.query.source !== 'history' ? requestedPlan.id : null
+// 使用者在建立餐單前已確認取代的日期，儲存時不再重複詢問。
+const replaceApprovedDate = ref('')
+
+function findConflictPlan() {
+  const existing = mealPlanStore.getPlan(settings.date, MEAL_TYPE)
+  if (!existing || existing.id === editingPlanId || replaceApprovedDate.value === settings.date) return null
+  return existing
+}
+
+function confirmReplace() {
+  replaceApprovedDate.value = settings.date
+  conflictOpen.value = false
+  buildMenu()
+}
 const saving = ref(false)
 
 const conflictDishes = computed(() =>
@@ -446,7 +491,7 @@ async function saveToJournal({ replace = false } = {}) {
   conflictOpen.value = false
 
   if (!replace) {
-    const existing = mealPlanStore.getPlan(settings.date, MEAL_TYPE)
+    const existing = findConflictPlan()
     if (existing) {
       conflictPlan.value = existing
       conflictOpen.value = true
@@ -481,7 +526,7 @@ const dateField = ref(null)
 function chooseOtherDate() {
   conflictOpen.value = false
   dateField.value?.$el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  dateField.value?.$el.querySelector('input')?.focus()
+  dateField.value?.$el.querySelector('button')?.focus()
 }
 </script>
 
@@ -492,10 +537,7 @@ function chooseOtherDate() {
     <!-- ========== 用餐設定 ========== -->
     <section class="block" aria-labelledby="settings-title">
       <header class="block__head">
-        <h2 id="settings-title" class="block__title">{{ isEditing ? '修改用餐設定' : '用餐設定' }}</h2>
-        <RouterLink to="/family" class="block__edit" aria-label="編輯家庭成員" title="編輯家庭成員">
-          <i class="fa-regular fa-pen-to-square" aria-hidden="true"></i>
-        </RouterLink>
+        <h2 id="settings-title" class="block__title">{{ isEditing || editingPlanId ? '修改用餐設定' : '用餐設定' }}</h2>
       </header>
 
       <p v-if="requestedRecipeIds.length" class="imported-recipe" role="status">
@@ -527,6 +569,7 @@ function chooseOtherDate() {
           label="日期"
           placeholder="請選擇或輸入"
           :min="today"
+          :marked="plannedDates"
           :error="shownErrors.date"
           class="fields__date"
         />
@@ -616,7 +659,7 @@ function chooseOtherDate() {
 
       <!-- 餐單生成失敗 -->
       <div v-else-if="status === 'error'" class="placeholder is-error" role="alert">
-        <i class="fa-solid fa-utensils placeholder__icon" aria-hidden="true"></i>
+        <AppIcon name="tableware" class="placeholder__icon" />
         <p class="placeholder__title">餐單生成失敗</p>
         <p class="placeholder__desc">
           系統暫時無法產生餐單，可能是網路不穩或伺服器忙碌。<br />你的用餐設定都已保留，請稍後再試一次。
@@ -656,14 +699,14 @@ function chooseOtherDate() {
 
       <!-- 條件太嚴，一道都配不出來 -->
       <div v-else-if="menu" class="placeholder is-error" role="alert">
-        <i class="fa-solid fa-utensils placeholder__icon" aria-hidden="true"></i>
+        <AppIcon name="tableware" class="placeholder__icon" />
         <p class="placeholder__title">找不到符合條件的料理</p>
         <p class="placeholder__desc">這次的忌口與飲食限制把所有菜色都排除了，請調整本次訪客或用餐成員後再試一次。</p>
       </div>
 
       <!-- 空畫面 -->
       <div v-else class="placeholder">
-        <i class="fa-solid fa-utensils placeholder__icon" aria-hidden="true"></i>
+        <AppIcon name="tableware" class="placeholder__icon" />
         <p class="placeholder__title">尚未建立餐單</p>
         <p class="placeholder__desc">按下「建立餐單」後，料理卡片（菜名／烹調時間／食材／食譜）會顯示於此</p>
       </div>
@@ -676,7 +719,7 @@ function chooseOtherDate() {
     <BaseDialog
       v-model:open="conflictOpen"
       :title="`${formatMonthDay(settings.date)} ${MEAL_TYPE}已經有餐單了`"
-      description="儲存新的餐單前，請選擇要如何處理原本的餐單。"
+      description="建立新的餐單前，請選擇要如何處理原本的餐單。"
       :width="560"
     >
       <p class="conflict__label">目前已儲存的餐單</p>
@@ -690,7 +733,7 @@ function chooseOtherDate() {
       <p class="conflict__warning">選擇「取代原餐單」後，原本的餐單與採買清單將被新的餐單覆蓋，無法復原。</p>
       <template #footer>
         <BaseButton variant="secondary" @click="chooseOtherDate">改存其他日期</BaseButton>
-        <BaseButton @click="saveToJournal({ replace: true })">取代原餐單</BaseButton>
+        <BaseButton @click="confirmReplace">取代原餐單</BaseButton>
       </template>
     </BaseDialog>
   </section>
