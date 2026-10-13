@@ -21,7 +21,6 @@ import {
   hasGuestSettings,
   hasNeeds,
   planMenu,
-  suggestDishCount,
   swapCandidates,
 } from '@/utils/menuPlanner'
 import dietTypes from '@/data/dietTypes.json'
@@ -57,10 +56,10 @@ function defaultSettings() {
   return {
     memberIds: [],
     date: '',
-    people: 1,
+    people: 0,
     // 份量仍供配餐計算使用，但不列在 Figma 空狀態的四個欄位中。
     size: 'normal',
-    dishCount: 1,
+    dishCount: 0,
     soupCount: 0,
     guest: emptyGuest(),
     needs: emptyNeeds(),
@@ -87,7 +86,7 @@ function restoreSettings(plan) {
   return {
     memberIds: [...(plan.memberIds ?? [])],
     date: plan.date,
-    people: plan.people ?? plan.servings ?? 1,
+    people: plan.people ?? plan.servings ?? 0,
     size: plan.size ?? 'normal',
     dishCount: plan.dishCount ?? dishes.filter((dish) => dish.type === 'dish').length,
     soupCount: plan.soupCount ?? dishes.filter((dish) => dish.type === 'soup').length ?? 0,
@@ -122,24 +121,24 @@ function isSelected(id) {
   return settings.memberIds.includes(id)
 }
 
-// 勾選家人時，人數跟著變（之前手動多加的訪客人數保留）
+// 勾選家人時，人數跟著變（之前手動多加的訪客人數保留）；未選任何人時可回到 0。
 function toggleMember(id, checked) {
   const before = settings.memberIds.length
-  const extra = Math.max(0, (Number(settings.people) || 1) - before)
+  const extra = Math.max(0, Number(settings.people) - before)
   settings.memberIds = checked
     ? [...settings.memberIds, id]
     : settings.memberIds.filter((memberId) => memberId !== id)
   const after = settings.memberIds.length
-  settings.people = Math.max(1, after + extra)
+  settings.people = Math.min(20, Math.max(0, after + extra))
 }
 
 function updatePeople(value) {
   const count = Number(value)
-  settings.people = Number.isInteger(count) ? Math.min(20, Math.max(1, count)) : 1
+  settings.people = Number.isInteger(count) ? Math.min(20, Math.max(0, count)) : 0
 }
 
 function changePeople(change) {
-  settings.people = Math.min(20, Math.max(1, (Number(settings.people) || 1) + change))
+  settings.people = Math.min(20, Math.max(0, (Number(settings.people) || 0) + change))
 }
 
 function updateSoupCount(value) {
@@ -151,17 +150,13 @@ function changeSoupCount(change) {
   settings.soupCount = Math.min(20, Math.max(0, (Number(settings.soupCount) || 0) + change))
 }
 function updateDishCount(value) {
-  if (value === '') {
-    settings.dishCount = ''
-    return
-  }
   const count = Number(value)
-  settings.dishCount = Number.isInteger(count) ? Math.min(20, Math.max(1, count)) : ''
+  settings.dishCount = Number.isInteger(count) ? Math.min(20, Math.max(0, count)) : 0
 }
 
 function changeDishCount(change) {
   const current = Number(settings.dishCount) || 0
-  settings.dishCount = Math.min(20, Math.max(1, current + change))
+  settings.dishCount = Math.min(20, Math.max(0, current + change))
 }
 
 const guestSubtitle = computed(() =>
@@ -186,6 +181,7 @@ const errors = computed(() => ({
   members: settings.memberIds.length ? '' : '請至少選擇 1 位用餐的家庭成員',
   date: !settings.date ? '請選擇用餐日期' : settings.date < today ? '用餐日期不能早於今天' : '',
   people: settings.people < 1 ? '人數至少為 1 位' : '',
+  dishCount: settings.dishCount < 1 ? '菜數至少為 1 道' : '',
 }))
 
 const shownErrors = computed(() => (submitted.value ? errors.value : {}))
@@ -228,10 +224,8 @@ async function buildMenu() {
   submitted.value = true
   if (errorCount.value || status.value === 'loading') return
 
-  // 沒選的欄位幫忙填上建議值，使用者看得到這次用了什麼
+  // 未選份量時補上正常份量；人數與菜數必須由使用者明確設定至少 1。
   if (settings.size === '') settings.size = 'normal'
-  if (settings.dishCount === '') settings.dishCount = suggestDishCount(settings.people)
-  if (settings.soupCount === '') settings.soupCount = 1
   guestOpen.value = false
   needsOpen.value = false
 
@@ -537,11 +531,12 @@ function chooseOtherDate() {
           class="fields__date"
         />
         <label class="custom-dish-field">人數
-          <span><button type="button" aria-label="減少人數" :disabled="settings.people <= 1" @click="changePeople(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.people" type="number" min="1" max="20" inputmode="numeric" @input="updatePeople($event.target.value)" /><button type="button" aria-label="增加人數" :disabled="settings.people >= 20" @click="changePeople(1)"><i class="fa-solid fa-plus"></i></button></span>
+          <span><button type="button" aria-label="減少人數" :disabled="settings.people <= 0" @click="changePeople(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.people" type="number" min="0" max="20" inputmode="numeric" @input="updatePeople($event.target.value)" /><button type="button" aria-label="增加人數" :disabled="settings.people >= 20" @click="changePeople(1)"><i class="fa-solid fa-plus"></i></button></span>
           <small v-if="shownErrors.people" class="field-error">{{ shownErrors.people }}</small>
         </label>
         <label class="custom-dish-field">菜數
-          <span><button type="button" aria-label="減少菜數" @click="changeDishCount(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.dishCount" type="number" min="1" max="20" inputmode="numeric" placeholder="1–20" @input="updateDishCount($event.target.value)" /><button type="button" aria-label="增加菜數" @click="changeDishCount(1)"><i class="fa-solid fa-plus"></i></button></span>
+          <span><button type="button" aria-label="減少菜數" :disabled="settings.dishCount <= 0" @click="changeDishCount(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.dishCount" type="number" min="0" max="20" inputmode="numeric" @input="updateDishCount($event.target.value)" /><button type="button" aria-label="增加菜數" :disabled="settings.dishCount >= 20" @click="changeDishCount(1)"><i class="fa-solid fa-plus"></i></button></span>
+          <small v-if="shownErrors.dishCount" class="field-error">{{ shownErrors.dishCount }}</small>
         </label>
         <label class="custom-dish-field">湯數
           <span><button type="button" aria-label="減少湯數" :disabled="settings.soupCount <= 0" @click="changeSoupCount(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.soupCount" type="number" min="0" max="20" inputmode="numeric" @input="updateSoupCount($event.target.value)" /><button type="button" aria-label="增加湯數" :disabled="settings.soupCount >= 20" @click="changeSoupCount(1)"><i class="fa-solid fa-plus"></i></button></span>
