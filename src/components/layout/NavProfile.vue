@@ -2,7 +2,7 @@
 // Figma：profile/login ＋ Menu/帳號（帳號選單-含帳號設定）＋ Dialog/確定要登出嗎？
 // 未登入：顯示「立即登入」連到登入頁
 // 已登入：點頭貼打開帳號選單（帳號設定、通知設定、登出）
-//   placement="top"（桌機側欄，選單往上開）／"inline"（手機選單裡直接展開在下方）
+//   placement="top"（桌機側欄，選單往上開）／"down"（手機／平板頂部列，選單往下開）／"inline"（手機選單裡直接展開在下方）
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
@@ -13,7 +13,7 @@ const props = defineProps({
   placement: {
     type: String,
     default: 'top',
-    validator: (v) => ['top', 'inline'].includes(v),
+    validator: (v) => ['top', 'down', 'inline'].includes(v),
   },
 })
 
@@ -38,7 +38,7 @@ function onDocumentClick(event) {
 }
 
 watch(menuOpen, (open) => {
-  if (props.placement !== 'top') return
+  if (props.placement === 'inline') return
   if (open) document.addEventListener('click', onDocumentClick)
   else document.removeEventListener('click', onDocumentClick)
 })
@@ -163,6 +163,15 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick))
   border-radius: 12px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
   text-align: left;
+}
+
+/* 手機／平板頂部列：選單往下開，右側對齊頭貼 */
+.is-down .account-menu {
+  position: absolute;
+  top: calc(100% + var(--space-12));
+  right: 0;
+  z-index: 30;
+  width: min(240px, calc(100vw - 32px));
 }
 
 /* 桌機側欄：選單往上開，左側對齊頭貼 */

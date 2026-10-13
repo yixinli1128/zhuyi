@@ -1,5 +1,6 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import PageTitle from '@/components/layout/PageTitle.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import { useFamilyStore } from '@/stores/family'
@@ -35,6 +36,8 @@ const portionOptions = [
 const dietOptions = ['全素', '蛋素', '奶素', '奶蛋素', '植物五辛素']
 const form = reactive({ name: '', portionFactor: 1, spiceLevel: 'none', dietaryNote: '', allergies: [], avoids: [], avatar: '' })
 const members = computed(() => familyStore.activeMembers)
+// 帳號本人的暱稱跟帳號同步，只能在帳號設定改
+const isOwnerForm = computed(() => Boolean(editingId.value && familyStore.getMember(editingId.value)?.ownerEmail))
 const totalPortions = computed(() => familyStore.totalPortionFactor.toFixed(1))
 
 function resetForm(member = null) {
@@ -47,6 +50,16 @@ function resetForm(member = null) {
 
 function openAdd() { editingId.value = null; resetForm(); dialog.value = 'form' }
 function openEdit(member) { editingId.value = member.id; resetForm(member); dialog.value = 'form' }
+
+// 第一次登入提示按「現在設定」會帶 ?edit=成員 id，進來直接打開該成員的編輯視窗
+const route = useRoute()
+const router = useRouter()
+watch(() => route.query.edit, (id) => {
+  const member = typeof id === 'string' ? familyStore.getMember(id) : null
+  if (!member) return
+  openEdit(member)
+  router.replace({ query: { ...route.query, edit: undefined } })
+}, { immediate: true })
 
 function addCustomPreference() {
   const source = customAvoid
@@ -107,7 +120,7 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
         <header><h2 id="member-list-title">家庭成員名冊</h2><span>共 {{ members.length }} 位成員</span></header>
         <div class="member-grid">
           <article v-for="member in members" :key="member.id" class="member-card">
-            <header><span class="avatar"><img v-if="member.avatar" :src="member.avatar" alt="" /><template v-else>{{ member.name.slice(0, 1) }}</template></span><div><h3>{{ member.name }}</h3><small>份量：{{ member.portionFactor.toFixed(1) }}x</small></div><div class="card-actions"><button type="button" :aria-label="`編輯 ${member.name}`" @click="openEdit(member)"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button><button type="button" :aria-label="`刪除 ${member.name}`" @click="confirmDelete(member)"><i class="fa-regular fa-trash-can" aria-hidden="true"></i></button></div></header>
+            <header><span class="avatar"><img v-if="member.avatar" :src="member.avatar" alt="" /><template v-else>{{ member.name.slice(0, 1) }}</template></span><div><h3>{{ member.name }}<span v-if="member.ownerEmail" class="owner-tag">本人</span></h3><small>份量：{{ member.portionFactor.toFixed(1) }}x</small></div><div class="card-actions"><button type="button" :aria-label="`編輯 ${member.name}`" @click="openEdit(member)"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button><button v-if="!member.ownerEmail" type="button" :aria-label="`刪除 ${member.name}`" @click="confirmDelete(member)"><i class="fa-regular fa-trash-can" aria-hidden="true"></i></button></div></header>
             <dl><div><dt>過敏食材</dt><dd><span v-if="!member.allergies.length" class="tag">無</span><span v-for="item in member.allergies" :key="item" class="tag">{{ item }}</span></dd></div><div><dt>忌口食材</dt><dd><span v-if="!member.avoids.length" class="tag">無</span><span v-for="item in member.avoids" :key="item" class="tag">{{ item }}</span></dd></div><div class="two-column"><div><dt>飲食需求</dt><dd>{{ member.dietaryNote || '無' }}</dd></div><div><dt>辣度偏好</dt><dd>{{ spiceLevels.find((item) => item.value === member.spiceLevel)?.label }}</dd></div></div></dl>
             <footer>最近更新：{{ dateLabel(member.updatedAt) }}</footer>
           </article>
@@ -120,9 +133,9 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
       <form v-if="dialog === 'form'" class="dialog" @submit.prevent="saveMember">
         <header class="modal-heading"><div><h2>{{ editingId ? '編輯家庭成員' : '新增家庭成員' }}</h2><p>{{ editingId ? '修改後，之後的配餐會依新的設定調整。' : '填寫飲食限制與份量，系統於配餐時將避開禁忌食材。' }}</p></div><button class="close" type="button" aria-label="關閉" @click="dialog = null"><img :src="closeIconUrl" alt="" /></button></header>
         <div class="modal-body"><button class="avatar-picker" type="button" @click="photoInput?.click()"><span><img :src="form.avatar || avatarPlaceholderUrl" alt="" /></span><small>更換頭貼</small></button><input ref="photoInput" class="photo-input" type="file" accept="image/*" @change="choosePhoto" />
-        <label>暱稱<input v-model="form.name" maxlength="20" required placeholder="請輸入" /></label>
+        <label>暱稱<input v-model="form.name" maxlength="20" required placeholder="請輸入" :readonly="isOwnerForm" :title="isOwnerForm ? '本人的暱稱與帳號同步，請到帳號設定修改' : undefined" /></label>
         <fieldset><legend>每餐建議份量 <small>自動計算買菜總量</small></legend><div class="portions"><button v-for="item in portionOptions" :key="item.value" type="button" :class="{ selected: form.portionFactor === item.value }" @click="form.portionFactor = item.value"><b>{{ item.value.toFixed(1) }}x</b><span>{{ item.label }}</span></button></div></fieldset>
-        <fieldset><legend>過敏與忌口食材 <small>點擊選擇</small></legend><div class="chips"><button v-for="name in commonIngredients" :key="name" type="button" :class="{ selected: hasRestrictedFood(name) }" @click="toggleRestrictedFood(name)">{{ name }}</button></div><div v-if="[...form.allergies, ...form.avoids].some((name) => !commonIngredients.includes(name))" class="chosen"><button v-for="name in [...new Set([...form.allergies, ...form.avoids])].filter((item) => !commonIngredients.includes(item))" :key="name" type="button" @click="toggleRestrictedFood(name)"><span>{{ name }}</span><img :src="tagRemoveIconUrl" alt="移除" /></button></div><div class="custom"><input v-model="customAvoid" placeholder="例如：茄子、木耳、苦瓜…" @keydown.enter.prevent="addCustomPreference" /><button type="button" @click="addCustomPreference">新增</button></div></fieldset>
+        <fieldset><legend>過敏與忌口食材 <small>點擊選擇</small></legend><div class="chips"><button v-for="name in commonIngredients" :key="name" type="button" :class="{ selected: hasRestrictedFood(name) }" @click="toggleRestrictedFood(name)">{{ name }}</button><button v-for="name in [...new Set([...form.allergies, ...form.avoids])].filter((item) => !commonIngredients.includes(item))" :key="`custom-${name}`" type="button" class="chip-custom" @click="toggleRestrictedFood(name)"><span>{{ name }}</span><img :src="tagRemoveIconUrl" alt="移除" /></button></div><div class="custom"><input v-model="customAvoid" placeholder="例如：茄子、木耳、苦瓜…" @keydown.enter.prevent="addCustomPreference" /><button type="button" @click="addCustomPreference">新增</button></div></fieldset>
         <fieldset><legend>特殊飲食需求 <small>點擊選擇</small></legend><div class="chips"><button v-for="diet in dietOptions" :key="diet" type="button" :class="{ selected: form.dietaryNote === diet }" @click="form.dietaryNote = form.dietaryNote === diet ? '' : diet">{{ diet }}</button></div></fieldset>
         <fieldset><legend>辣度偏好</legend><div class="spice"><button v-for="level in spiceLevels" :key="level.value" type="button" :class="{ selected: form.spiceLevel === level.value }" @click="form.spiceLevel = level.value">{{ level.label }}</button></div></fieldset>
         <p v-if="formError" class="error">{{ formError }}</p></div><footer class="modal-footer"><BaseButton variant="secondary" type="button" @click="dialog = null">取消</BaseButton><BaseButton type="submit">{{ editingId ? '儲存變更' : '儲存成員' }}</BaseButton></footer>
@@ -170,7 +183,11 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .modal-heading p { margin-top: 2px; color: var(--text-secondary); font-size: 11px; line-height: 1.35; }
 .close { align-self: flex-start; color: var(--text-secondary); font-size: 22px; line-height: 1; }
 /* 正常桌機高度不會捲動；只有可視高度不足時才由這裡安全捲動。 */
-.modal-body { inline-size: fit-content; max-inline-size: calc(100vw - 32px); overflow-y: auto; padding: 10px 18px 8px; }
+.modal-body { inline-size: auto; max-inline-size: calc(100vw - 32px); overflow-y: auto; padding: 10px 18px 8px; }
+/* 平板、桌機的編輯視窗固定寬度，內容撐滿；不跟著字型或捲軸寬度變動，左右留白才會一致 */
+@media (min-width: 641px) {
+  form.dialog { inline-size: min(510px, calc(100vw - 32px)); }
+}
 .avatar-picker { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 0 auto 7px; color: var(--text-body); font-size: 13px; }
 .avatar-picker span { display: block; width: 60px; height: 60px; overflow: hidden; border-radius: 50%; }
 .avatar-picker img { display: block; width: 60px; height: 60px; object-fit: cover; }
@@ -278,4 +295,20 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .card-actions { gap: 6px; }
   .card-actions button { width: 20px; height: 20px; font-size: 15px; }
 }
+
+/* 手機：提示條縮小並維持單行。 */
+@media (max-width: 640px) {
+  .toast { max-width: calc(100vw - 24px); padding: 8px 14px; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+  .toast button { margin-left: 8px; }
+}
+
+/* 自訂的忌口標籤直接接在預設標籤後面，不另起一列。 */
+.chips .chip-custom { display: inline-flex; align-items: center; gap: 6px; background: var(--brand-secondary); }
+.chips .chip-custom img { display: block; width: 12px; height: 12px; }
+/* 手機：標籤收緊間距，九個預設標籤加自訂標籤盡量維持兩排。 */
+@media (max-width: 640px) {
+  .chips { gap: 5px; }
+  .chips button { padding: 5px 7px; }
+}
+.owner-tag { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 11px; line-height: 16px; vertical-align: middle; }
 </style>

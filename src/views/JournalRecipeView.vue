@@ -6,7 +6,7 @@ import PageTitle from '@/components/layout/PageTitle.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import { useMealPlanStore } from '@/stores/mealPlans'
 import { useRecipeStore } from '@/stores/recipes'
-import { formatAmount } from '@/utils/amount'
+import { formatAmount, formatNote } from '@/utils/amount'
 
 const route = useRoute()
 const router = useRouter()
@@ -180,7 +180,7 @@ function backToJournal() {
           <section v-for="group in ingredientGroups" :key="group.name" class="ingredient-group">
             <h3>{{ group.name }}</h3>
             <ul :class="{ 'ingredient-list--highlight': group.name === '主要食材' }">
-              <li v-for="item in group.items" :key="`${item.no}-${item.name}`"><span>{{ item.name }}</span><b>{{ formatAmount(item, servings / recipe.servings) }}<em v-if="item.note">（{{ item.note }}）</em></b></li>
+              <li v-for="item in group.items" :key="`${item.no}-${item.name}`"><span>{{ item.name }}</span><b>{{ formatAmount(item, servings / recipe.servings) }}<em v-if="item.note">（{{ formatNote(item, servings / recipe.servings) }}）</em></b></li>
             </ul>
           </section>
           <aside v-if="recipe.prepNote" class="ingredient-tip"><strong>備料小提醒</strong><span>{{ recipe.prepNote }}</span></aside>

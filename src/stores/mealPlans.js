@@ -1,11 +1,72 @@
 import { ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { load, save } from './storage'
+import { toDateKey } from '@/utils/date'
+
+// 示範用烹飪紀錄：前一個月與前兩個月沒有已完成的餐單時自動帶入，
+// 讓歷史紀錄、月份分頁與常煮 TOP 3 一開始就有資料（[月份偏移, 日, 菜色 id]）
+const DEMO_HISTORY = [
+  [1, 3, ['ZY007', 'ZY006', 'ZY009']],
+  [1, 6, ['ZY001', 'ZY013', 'ZY030']],
+  [1, 9, ['ZY007', 'ZY003', 'ZY029']],
+  [1, 12, ['ZY006', 'ZY024', 'ZY009']],
+  [1, 15, ['ZY007', 'ZY006', 'ZY027']],
+  [1, 18, ['ZY012', 'ZY015', 'ZY009']],
+  [1, 21, ['ZY023', 'ZY013', 'ZY028']],
+  [1, 24, ['ZY007', 'ZY017', 'ZY039']],
+  [1, 27, ['ZY006', 'ZY002', 'ZY040']],
+  [2, 4, ['ZY002', 'ZY013', 'ZY005']],
+  [2, 8, ['ZY024', 'ZY011', 'ZY029']],
+  [2, 13, ['ZY002', 'ZY016', 'ZY039']],
+  [2, 19, ['ZY013', 'ZY018', 'ZY029']],
+  [2, 23, ['ZY002', 'ZY024', 'ZY009']],
+  [2, 28, ['ZY013', 'ZY020', 'ZY028']],
+]
+
+function demoPlan(date, recipeIds) {
+  const cookedAt = new Date(`${date}T19:30:00`).toISOString()
+  return {
+    id: `demo-${date}`,
+    date,
+    mealType: '晚餐',
+    servings: 3,
+    people: 3,
+    size: 'normal',
+    dishCount: recipeIds.length - 1,
+    soupCount: 1,
+    memberIds: [],
+    guest: {},
+    needs: {},
+    useFridge: false,
+    dishes: recipeIds.map((recipeId, index) => ({ recipeId, type: index === recipeIds.length - 1 ? 'soup' : 'dish' })),
+    groceryChecked: [],
+    status: 'cooked',
+    savedAt: cookedAt,
+    cookedAt,
+    demo: true,
+  }
+}
+
+function withDemoHistory(list) {
+  const now = new Date()
+  const added = []
+  ;[1, 2].forEach((offset) => {
+    const first = new Date(now.getFullYear(), now.getMonth() - offset, 1)
+    const monthKey = toDateKey(first).slice(0, 7)
+    if (list.some((plan) => plan.status === 'cooked' && plan.date?.startsWith(monthKey))) return
+    DEMO_HISTORY.filter(([monthOffset]) => monthOffset === offset).forEach(([, day, recipeIds]) => {
+      const date = toDateKey(new Date(first.getFullYear(), first.getMonth(), day))
+      if (list.some((plan) => plan.date === date && plan.mealType === '晚餐')) return
+      added.push(demoPlan(date, recipeIds))
+    })
+  })
+  return added.length ? [...list, ...added] : list
+}
 
 // 餐食日誌：每天一筆晚餐餐單（來點煮意按「儲存到餐桌日誌」時寫入）
 // { id, date, mealType, servings, memberIds, guest, needs, useFridge, dishes, groceryChecked, status, savedAt }
 export const useMealPlanStore = defineStore('mealPlans', () => {
-  const plans = ref(load('mealPlans', []))
+  const plans = ref(withDemoHistory(load('mealPlans', [])))
 
   watch(plans, (value) => save('mealPlans', value), { deep: true })
 

@@ -4,7 +4,8 @@
 // - 重新整理：畫面中央滴下一個墨點，暈開成 logo 的墨色底，再用筆刷一筆一筆刷出圖標和「煮意」
 // 網址加 ?intro 可以重看開場；點一下或按任意鍵可以略過；系統設定「減少動態」時都不播
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import logoUrl from '@/assets/zhuyi-img/logo/logo_pc.png'
+// 高解析 logo（內含 2000px 去背圖），放大到開場尺寸仍清楚
+import logoUrl from '@/assets/zhuyi-img/logo/logo_1.svg'
 import IntroOpening from './IntroOpening.vue'
 
 const STORAGE_KEY = 'zhuyi:intro-seen'

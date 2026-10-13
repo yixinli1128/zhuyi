@@ -2,7 +2,9 @@
 // Figma Form/Select、Form/Date：標題＋下拉選單（或日期）＋錯誤訊息
 //   <BaseSelect v-model="people" label="人數" :options="[{ value: 1, label: '1 人' }]" :error="errors.people" />
 //   <BaseSelect v-model="date" label="日期" type="date" />
-import { computed, useId } from 'vue'
+import { computed, ref, useId } from 'vue'
+import DatePickerDialog from './DatePickerDialog.vue'
+import AppIcon from './AppIcon.vue'
 
 const model = defineModel({ type: [String, Number], default: '' })
 
@@ -22,10 +24,14 @@ defineProps({
     default: '請選擇',
   },
   min: String,
+  // 日期欄位：已有安排的日期，月曆數字下方加小點
+  marked: { type: Array, default: () => [] },
   error: String,
 })
 
 const id = useId()
+const pickerOpen = ref(false)
+const boxEl = ref(null)
 
 const dateText = computed(() => {
   if (!model.value) return ''
@@ -37,21 +43,21 @@ const dateText = computed(() => {
 <template>
   <div class="select-field" :class="{ 'has-error': error }">
     <label v-if="label" :for="id" class="select-field__label">{{ label }}</label>
-    <div class="select-field__box">
-      <input
+    <div ref="boxEl" class="select-field__box">
+      <!-- 日期改用自訂月曆彈窗（DatePickerDialog），不使用瀏覽器原生日期選擇器 -->
+      <button
         v-if="type === 'date'"
         :id="id"
-        v-model="model"
-        type="date"
+        type="button"
         class="select-field__control"
         :class="{ 'is-empty': !model }"
-        :min="min"
         :aria-invalid="!!error"
-      />
+        @click="pickerOpen = true"
+      ></button>
       <span v-if="type === 'date'" class="select-field__date-value" :class="{ 'is-placeholder': !model }">
         {{ dateText || placeholder }}
       </span>
-      <i v-if="type === 'date'" class="select-field__date-icon fa-regular fa-calendar" aria-hidden="true"></i>
+      <AppIcon v-if="type === 'date'" name="calendar" class="select-field__date-icon" />
       <select
         v-else
         :id="id"
@@ -66,6 +72,16 @@ const dateText = computed(() => {
       <i v-if="type !== 'date'" class="select-field__icon fa-solid fa-chevron-down" aria-hidden="true"></i>
     </div>
     <p v-if="error" class="select-field__error">{{ error }}</p>
+    <DatePickerDialog
+      v-if="type === 'date'"
+      v-model:open="pickerOpen"
+      :anchor="boxEl"
+      :value="model ? String(model) : ''"
+      :min="min"
+      :marked="marked"
+      :title="label || '選擇日期'"
+      @confirm="model = $event"
+    />
   </div>
 </template>
 
@@ -108,24 +124,10 @@ const dateText = computed(() => {
   color: var(--text-placeholder);
 }
 
-/* 日期欄位保留瀏覽器原生日期選擇器。先前把日曆按鈕撐滿整個輸入框，
-   Chrome 在部分桌機版會多開一個空白的選擇器外框。 */
-.select-field__control[type='date'] {
-  appearance: auto;
-  -webkit-appearance: auto;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-}
-
-/* 日期由同一個顯示層統一呈現，避免 Chrome 的 yyyy/mm/dd 與提示文字重疊。 */
-.select-field__control[type='date']::-webkit-calendar-picker-indicator {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  opacity: 0;
-  cursor: pointer;
+/* 日期欄位是按鈕，文字由 .select-field__date-value 顯示 */
+button.select-field__control {
+  display: block;
+  text-align: left;
 }
 
 .select-field__control:hover {
