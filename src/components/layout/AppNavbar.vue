@@ -260,9 +260,20 @@ watch(
     color: var(--brand-primary);
   }
 
-  .tablet-nav__item.is-active::after {
+.tablet-nav__item.is-active::after {
     opacity: 1;
     transform: scaleX(1);
+  }
+
+  @media (hover: hover) {
+    .tablet-nav__item:hover {
+      color: var(--brand-primary);
+    }
+
+    .tablet-nav__item:hover::after {
+      opacity: .65;
+      transform: scaleX(1);
+    }
   }
 
   .mobile-bottom-nav {

@@ -80,7 +80,9 @@ const year = new Date().getFullYear()
 
     <div class="footer-brand">
       <div class="footer-tagline">
-        <img class="footer-logo" :src="logoMark" alt="煮意 ZHUYI" width="60" height="60" />
+        <RouterLink class="footer-logo-link" to="/" aria-label="回到煮意首頁">
+          <img class="footer-logo" :src="logoMark" alt="煮意 ZHUYI" width="60" height="60" />
+        </RouterLink>
         <p class="footer-caption">日常備餐・靈感與心意 // COOK WITH CARE &amp; IDEA</p>
       </div>
       <p class="footer-slogan">每天一點煮意，一桌家的心意。</p>
@@ -172,6 +174,33 @@ const year = new Date().getFullYear()
   flex-shrink: 0;
   width: 60px;
   height: 60px;
+}
+
+.footer-logo-link {
+  display: flex;
+  border-radius: 4px;
+}
+
+.footer-logo-link:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 4px;
+}
+
+@media (hover: hover) {
+  .footer-logo-link:hover .footer-logo {
+    filter: drop-shadow(0 4px 5px rgb(52 38 28 / 16%));
+    transform: translateY(-2px) rotate(-2deg);
+  }
+}
+
+.footer-logo {
+  transition: filter 180ms ease, transform 180ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-logo {
+    transition: none;
+  }
 }
 
 .footer-caption,

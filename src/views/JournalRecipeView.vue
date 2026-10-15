@@ -151,7 +151,8 @@ function backToJournal() {
 
 <template>
   <section v-if="recipe" class="page recipe-page">
-    <PageTitle :title="`食譜步驟・${recipe.name}`" description="從食材準備到料理完成的清楚步驟指引，享受從容舒心的下廚時光。">
+    <PageTitle class="recipe-page-title" :title="`食譜步驟・${recipe.name}`" description="從食材準備到料理完成的清楚步驟指引，享受從容舒心的下廚時光。">
+      <template #title><span class="recipe-page-title__prefix">食譜步驟</span><span class="recipe-page-title__name">{{ recipe.name }}</span></template>
       <template #actions><BaseButton class="recipe-back" icon="fa-solid fa-arrow-left" @click="backToJournal">返回餐食日誌</BaseButton></template>
     </PageTitle>
 
@@ -212,6 +213,7 @@ function backToJournal() {
 .recipe-side { display: grid; align-content: start; gap: 40px; }.recipe-overview { box-sizing: border-box; overflow: hidden; height: 336px; padding: 21px; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; background: var(--bg-surface); }.recipe-overview img { display: block; width: 100%; height: 292px; border-radius: 8px; object-fit: cover; }.ingredient-card { display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; background: var(--bg-surface); padding: 20px; box-shadow: 0 4px 2px rgba(0, 0, 0, .02); }.ingredient-card header { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--brand-secondary); }.ingredient-card h2 { color: var(--text-body); font-size: 14px; font-weight: 400; }.ingredient-card header span { width: 88px; color: var(--text-placeholder); font-size: 10px; text-align: right; }.ingredient-group { display: grid; gap: 6px; }.ingredient-group h3 { color: var(--text-body); font-size: 12px; font-weight: 400; }.ingredient-card ul { overflow: hidden; margin: 0; padding: 0; border: 1px solid var(--brand-secondary); border-radius: 12px; list-style: none; }.ingredient-card li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 12px; border-top: 1px solid var(--brand-secondary); color: var(--text-body); font-size: 12px; }.ingredient-card li:first-child { border-top: 0; }.ingredient-card ul.ingredient-list--highlight { border: 0; background: var(--brand-secondary-light); }.ingredient-list--highlight li { border-top: 0; }.ingredient-card b { color: var(--text-secondary); font-weight: 400; text-align: right; }.ingredient-card em { color: var(--text-secondary); font-style: normal; }.ingredient-tip { display: grid; gap: 4px; padding: 10px; border: 1px solid var(--brand-secondary); border-radius: 12px; background: var(--brand-secondary-light); color: var(--text-on-secondary); }.ingredient-tip strong { font-size: 10px; font-weight: 400; }.ingredient-tip span { font-size: 9px; line-height: 1.45; }
 .timer-launch, .floating-timer { position: fixed; right: 60px; bottom: 96px; z-index: 20; }.timer-launch, .timer-collapse { display: inline-flex; align-items: center; gap: 8px; height: 45px; padding: 0 20px 0 18px; border-radius: 999px; background: var(--brand-primary); box-shadow: 0 8px 24px rgba(52, 38, 28, .18); color: var(--text-on-primary); font-size: 16px; font-weight: 700; }.timer-launch i, .timer-collapse i { font-size: 20px; }.timer-launch.is-finished { animation: timer-pulse 1s ease-in-out infinite; }.floating-timer { display: grid; justify-items: center; width: 300px; }.timer-dial { position: relative; display: grid; width: 300px; height: 300px; place-items: center; overflow: hidden; border: 1px solid var(--brand-primary-border); border-radius: 50%; background: conic-gradient(var(--brand-secondary-active) var(--timer-progress), var(--brand-secondary) 0); box-shadow: 0 10px 26px rgba(52, 38, 28, .14); }.timer-dial::before { position: absolute; inset: 15px; border-radius: inherit; background: var(--brand-secondary-light); content: ''; }.timer-dial > * { position: relative; z-index: 1; }.timer-dial.is-paused { animation: none; }.timer-dial.is-finished { background: conic-gradient(var(--brand-secondary-active) 100%, var(--brand-secondary-active) 0); }.timer-adjuster { position: absolute; top: 48px; display: flex; align-items: center; gap: 18px; padding: 11px 22px; border-radius: 999px; background: var(--brand-secondary); color: var(--text-body); }.timer-adjuster button { color: var(--text-body); font-family: Inter, sans-serif; font-size: 22px; font-weight: 700; line-height: 1; }.timer-adjuster span { font-size: 16px; white-space: nowrap; }.timer-time, .timer-time-input { position: absolute; top: 116px; width: 210px; border: 0; background: transparent; color: var(--text-title); font-family: Inter, sans-serif; font-size: 68px; font-weight: 700; letter-spacing: -3px; line-height: 1; text-align: center; }.timer-time { cursor: text; }.timer-time:hover { color: var(--brand-primary); }.timer-time-input { outline: 1px solid var(--brand-primary-border); border-radius: 8px; background: #fff; font-size: 58px; }.timer-controls { position: absolute; bottom: 30px; display: flex; gap: 18px; }.timer-controls button { display: grid; width: 60px; height: 60px; place-items: center; border-radius: 50%; box-shadow: 0 2px 8px rgba(52, 38, 28, .16); }.timer-toggle { background: var(--brand-primary); color: var(--text-on-primary); font-size: 20px; }.timer-toggle:disabled { background: var(--brand-greige); color: var(--brand-secondary); }.timer-reset { border: 2px solid var(--brand-primary-border); background: var(--bg-surface); color: var(--brand-primary); font-size: 20px; }.timer-collapse { margin-top: 16px; }@keyframes timer-pulse { 50% { opacity: .82; transform: scale(.98); } }
 .recipe-not-found { display: grid; gap: 24px; place-items: start; }
+.recipe-page-title__prefix::after { content: '・'; }
 @media (min-width: 641px) and (max-width: 1024px) { .recipe-layout { grid-template-columns: 1fr; padding: 24px 16px 60px; }.recipe-banner { align-items: flex-start; flex-direction: column; }.recipe-overview { min-height: 0; }.timer-launch, .floating-timer { right: 16px; bottom: 22px; }.floating-timer { transform: scale(.82); transform-origin: right bottom; } }
 @media (min-width: 641px) and (max-width: 1024px) {
   /* 食譜步驟沒有通用 .page 包裝，補上與家庭管理／冰箱相同的外層頁面留白。 */
@@ -245,6 +247,11 @@ function backToJournal() {
   /* 食譜步驟補上通用 .page 外層，頁首對齊冰箱／家庭管理。 */
   .recipe-page { box-sizing: border-box; padding: var(--page-padding-y) var(--page-padding-x) 0; }
   .recipe-page :deep(.page-title) { padding: var(--space-28) var(--space-20) 24px; }
+  /* 手機將功能名稱與菜名拆為兩行，讓長菜名不用與「食譜步驟」搶同一行。 */
+  .recipe-page-title__prefix, .recipe-page-title__name { display: block; }
+  .recipe-page-title__prefix::after { content: ''; }
+  .recipe-page-title__prefix { font-size: 18px; line-height: 1.25; }
+  .recipe-page-title__name { margin-top: 3px; font-size: 16px; line-height: 1.3; letter-spacing: .04em; }
   /* 標題區塊沿用全站 PageTitle；僅縮小回上一頁按鈕本身。 */
   .recipe-page :deep(.recipe-back) { min-height: 36px; padding: 6px 10px; font-size: 12px; }
   /* 手機先展示成品照，再閱讀步驟，最後才是食材明細。 */
@@ -259,12 +266,14 @@ function backToJournal() {
   .recipe-banner h2 { font-size: 19px; }
   .step-card { grid-template-columns: 28px minmax(0, 1fr); gap: 10px; min-height: 0; padding: 14px; }
   .step-card__number { width: 28px; height: 28px; border-radius:9px; font-size: 13px; }
-  .step-card div { padding-bottom: 18px; }
+  /* 計時器改隨內容排列，不再為每張步驟卡預留一整段底部空白。 */
+  .step-card div { padding-bottom: 0; }
   .step-card header { gap: 8px; }
   .step-card h2 { font-size: 14px; }
   .step-card header span { padding: 3px 6px; font-size: 11px; }
   .step-card div > p { margin-top: 6px; font-size: 11px; }
   .step-card small, .step-timer { font-size: 10px; }
+  .step-timer { position: static; display: inline-flex; align-items: center; gap: 4px; margin-top: 7px; }
   .recipe-overview { height: auto; padding: 14px; }
   .recipe-overview img { height: 210px; }
   .ingredient-card { gap: 8px; padding: 14px; }

@@ -1,12 +1,16 @@
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { load, save } from './storage'
-import { toDateKey } from '@/utils/date'
+import { load, save, loadForAccount, saveForAccount } from './storage'
+import { useUserStore } from './user'
+import { addDays, toDateKey } from '@/utils/date'
 
 const STORAGE_KEY = 'fridge-ingredients'
+const OLIVER_EMAIL = 'oliver@example.com'
+const OLIVER_DEMO_SEED_KEY = 'oliver-demo-fridge-seeded'
 const ZONES = ['冷藏', '冷凍', '蔬果室', '常溫/調味']
 const UNITS = ['份', '顆', '個', '根', '把', '束', '片', '塊', '條', '包', '袋', '盒', '罐', '瓶', 'g（公克）', 'kg（公斤）', 'ml（毫升）', 'L（公升）', '大匙', '茶匙', '杯']
-const createId = () => crypto.randomUUID()
+// iPhone 透過區網 HTTP 測試時不一定提供 crypto.randomUUID；缺少時仍可安全建立示範食材。
+const createId = () => globalThis.crypto?.randomUUID?.() ?? `ingredient-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 const now = () => new Date().toISOString()
 
 const normaliseUnit = (unit = '') => String(unit).trim().toLowerCase()
@@ -25,6 +29,20 @@ const isPantryStaple = (name = '') => /^(飲用)?水(（.*）)?$/.test(name) || 
 const namesMatch = (a = '', b = '') => a === b || (Math.min(a.length, b.length) > 1 && (a.includes(b) || b.includes(a)))
 const displayAmount = (amount) => Math.round((Number(amount) + Number.EPSILON) * 10) / 10
 
+// Oliver 是手機版面測試用的示範帳號。只在一個全新的瀏覽器儲存空間建立一次；
+// 已有資料（包含使用者自行清空後的狀態）絕不覆寫，也不影響首次使用引導帳號。
+const OLIVER_DEMO_INGREDIENTS = [
+  ['雞蛋', 4, '顆', '常溫/調味', 87],
+  ['牛番茄', 2, '顆', '蔬果室', 2],
+  ['豬梅花肉片', 4, '盒', '冷凍', 27],
+  ['醬油', 2, '瓶', '常溫/調味', 87],
+  ['蒜頭', 2, '顆', '常溫/調味', 87],
+  ['嫩豆腐', 1, '盒', '冷藏', 0],
+  ['白糖', 200, 'g（公克）', '常溫/調味', 87],
+  ['高麗菜', 2, '顆', '蔬果室', 2],
+  ['米酒', 1, '瓶', '常溫/調味', 87],
+]
+
 function normaliseIngredient(input, existing = {}) {
   return {
     id: existing.id ?? createId(),
@@ -40,8 +58,30 @@ function normaliseIngredient(input, existing = {}) {
 }
 
 export const useFridgeStore = defineStore('fridge', () => {
-  const ingredients = ref(load(STORAGE_KEY, []))
+  const userStore = useUserStore()
+  const accountEmail = computed(() => userStore.user?.email?.toLowerCase() ?? '')
+  const ingredients = ref(loadForAccount(STORAGE_KEY, accountEmail.value, []))
   const activeIngredients = computed(() => ingredients.value.filter((item) => !item.deletedAt))
+
+  function ensureOliverDemoInventory(email) {
+    if (email !== OLIVER_EMAIL) return
+    const seeded = load(OLIVER_DEMO_SEED_KEY, {})
+    // 不將 seed 標記當成唯一條件：舊版若在 ID 建立失敗時中斷，
+    // 仍可能留下空白庫存。只要已有任一筆（包含軟刪除）就不覆寫。
+    if (ingredients.value.length) {
+      if (!seeded[email]) save(OLIVER_DEMO_SEED_KEY, { ...seeded, [email]: true })
+      return
+    }
+    const today = toDateKey()
+    ingredients.value = OLIVER_DEMO_INGREDIENTS.map(([name, amount, unit, zone, offset]) => normaliseIngredient({
+      name,
+      amount,
+      unit,
+      zone,
+      expiry: addDays(today, offset),
+    }))
+    save(OLIVER_DEMO_SEED_KEY, { ...seeded, [email]: true })
+  }
 
   function validate(input) {
     const name = input.name?.trim() ?? ''
@@ -221,7 +261,12 @@ export const useFridgeStore = defineStore('fridge', () => {
     return consumed
   }
 
-  watch(ingredients, (value) => save(STORAGE_KEY, value), { deep: true })
+  ensureOliverDemoInventory(accountEmail.value)
+  watch(accountEmail, (email) => {
+    ingredients.value = loadForAccount(STORAGE_KEY, email, [])
+    ensureOliverDemoInventory(email)
+  })
+  watch(ingredients, (value) => saveForAccount(STORAGE_KEY, accountEmail.value, value), { deep: true })
 
   return {
     ingredients,

@@ -23,7 +23,9 @@ const recipes = useRecipeStore()
 const fridge = useFridgeStore()
 const toast = useToastStore()
 const view = ref('calendar')
-const historyFilter = ref('all')
+// 歷史紀錄預設聚焦目前月份；即使本月還沒有完成烹飪，也要保留該月份分頁與空狀態。
+const currentHistoryMonth = toDateKey().slice(0, 7)
+const historyFilter = ref(currentHistoryMonth)
 const historyPage = ref(1)
 const finishDialogOpen = ref(false)
 const scheduleDialogOpen = ref(false)
@@ -112,15 +114,15 @@ const completionDateLabel = computed(() => {
   const date = fromDateKey(selectedDate.value)
   return `${date.getMonth() + 1}月${date.getDate()}日 晚餐`
 })
-const pageTitle = computed(() => view.value === 'calendar' ? '餐食日誌・餐單行事曆' : '餐食日誌・歷史烹飪紀錄')
+const pageTitle = computed(() => view.value === 'calendar' ? '餐食日誌・餐單行事曆' : '餐食日誌・歷史紀錄')
 const pageDescription = computed(() => view.value === 'calendar'
   ? '掌握全月份配餐與料理歷程，選取日期即時檢視專屬菜單與生鮮採買清單。'
   : '料理足跡已歸檔至飲食歷史紀錄，隨時可一鍵複製重煮。')
-// 月份分頁依實際烹飪紀錄產生（新到舊），不寫死月份
-const historyFilters = computed(() => ['all', ...new Set(mealPlans.plans
+// 月份分頁依實際烹飪紀錄產生（新到舊），並永遠保留目前月份，讓本月可顯示空狀態。
+const historyFilters = computed(() => ['all', ...new Set([currentHistoryMonth, ...mealPlans.plans
   .filter((plan) => plan.status === 'cooked')
   .map((plan) => plan.date.slice(0, 7))
-  .sort((a, b) => b.localeCompare(a)))])
+  .sort((a, b) => b.localeCompare(a))])])
 const historyFilterLabel = (filter) => filter === 'all' ? '全部紀錄' : filter.replace('-', '/')
 const visibleHistoryPlans = computed(() => mealPlans.plans
   .filter((plan) => plan.status === 'cooked')
@@ -387,7 +389,7 @@ watch(selectedDate, async () => {
 .dish-guide { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px 10px; border-radius: 12px; background: var(--brand-secondary-light); }
 .dish-guide p { min-width: 0; overflow: hidden; color: var(--text-secondary); font-size: 14px; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }.dish-guide b { color: var(--text-body); font-weight: 500; }
 .dish-guide button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 4px; padding: 4px; border-radius: 999px; background: var(--brand-special); color: #fff; font-size: 12px; line-height: 1; }.dish-guide button i { display: grid; width: 8px; height: 16px; place-items: center; font-size: 8px; }.dish-guide button:hover { filter: brightness(.97); }
-.meal-banner__actions { display: flex; align-items: center; gap: 8px; }.complete-menu { padding: 5px 10px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 10px; white-space: nowrap; }.complete-menu:hover { background: var(--brand-primary-hover); }.complete-menu--footer { width: 308px; min-height: 45px; align-self: flex-end; margin-top: 16px; border-radius: 999px; font-size: 12px; }
+.meal-banner__actions { display: flex; align-items: center; gap: 8px; }.complete-menu { padding: 5px 10px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 10px; white-space: nowrap; }.complete-menu:hover { background: var(--brand-primary-hover); }.complete-menu--footer { display: inline-flex; align-items: center; gap: 6px; width: fit-content; min-height: 45px; align-self: flex-end; margin-top: 16px; border-radius: 999px; font-size: 12px; }
 .grocery-list, .stock-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
 .grocery-list li button { display: grid; width: 100%; grid-template-columns: 14px minmax(0, 1fr) minmax(84px, 38%); align-items: center; gap: 10px; padding: 9px 8px; border: 0; border-radius: 10px; background: transparent; color: var(--text-body); font-size: 11px; text-align: left; cursor: pointer; }
 .grocery-list li button>i { display: grid; width: 14px; height: 14px; place-items: center; border: 1px solid var(--brand-primary-border); border-radius: 2px; color: transparent; font-size: 8px; }.grocery-list li button.is-checked { color: var(--text-placeholder); text-decoration: line-through; }.grocery-list li button.is-checked>i { border-color: var(--brand-primary); background: var(--brand-primary); color: var(--text-on-primary); }
@@ -489,7 +491,7 @@ watch(selectedDate, async () => {
   .dish-guide{gap:8px;padding:7px 9px}
   .dish-guide p{font-size:11px}
   .dish-guide button{padding:5px 6px;font-size:10px}
-  .complete-menu--footer{width:100%;min-height:38px;margin-top:12px;font-size:10px}
+  .complete-menu--footer{width:fit-content;min-height:38px;margin-top:12px;font-size:10px}
 }
 @media(min-width:641px) and (max-width:1024px){
   /* 日誌沒有通用 .page 包裝，補上與家庭管理／冰箱相同的外層頁面留白。 */
@@ -520,6 +522,14 @@ watch(selectedDate, async () => {
   .history-ledger h2{font-size:15px}
   .history-dishes{font-size:13px}
   .top-recipes{min-height:0;padding:16px}
+}
+
+/* 空狀態說明保留卡片內的閱讀安全區，避免文字貼近外框。 */
+.meal-empty{box-sizing:border-box;padding-right:32px;padding-left:32px}
+.meal-empty p{width:100%;max-width:680px}
+@media(max-width:640px){
+  .meal-empty{padding-right:20px;padding-left:20px}
+  .meal-empty p{max-width:100%}
 }
 /* 僅手機使用 icon；平板與桌機保留完整文字。 */
 @media(max-width:640px){
@@ -613,4 +623,50 @@ watch(selectedDate, async () => {
 /* 兩張常煮排名卡上下排列，共用右側欄位。 */
 .top-recipes .top-recipes__empty { padding: 28px 0; border: 0; background: none; color: var(--text-placeholder); font-size: 13px; text-align: center; }
 .top-recipes-stack { display: grid; min-width: 0; align-self: start; gap: 16px; }
+
+/* iPhone 16 等 400px 以下螢幕：日誌料理卡與日曆沿用同一個緊湊尺度，
+   避免大縮圖與 17px 菜名把單欄卡片撐得過高。 */
+@media (max-width: 400px) {
+  .journal-page :deep(.page-title) { padding: 24px 16px 20px; }
+  .journal-page :deep(.page-title__heading) { font-size: 22px; line-height: 1.25; letter-spacing: .06em; }
+  .journal-page :deep(.page-title__desc) { font-size: 11px; line-height: 1.55; }
+  .journal-layout, .history-layout { gap: 14px; padding: 16px 12px 28px; }
+
+  .planned-meal { gap: 9px; margin-top: 9px; }
+  .planned-dish { gap: 8px; padding: 10px; }
+  .planned-dish__main { gap: 8px; }
+  .planned-dish__main > img, .dish-placeholder { width: 76px; height: 68px; flex-basis: 76px; border-radius: 8px; }
+  .dish-placeholder { font-size: 15px; }
+  .planned-dish__copy { min-height: 68px; }
+  .planned-dish__heading { gap: 6px; }
+  .planned-dish__heading p { font-size: 9px; }
+  .planned-dish h3 { margin-top: 1px; font-size: 15px; line-height: 1.25; }
+  .dish-time { padding: 3px 5px; font-size: 9px; white-space: nowrap; }
+  .dish-intro { margin-top: 3px; font-size: 10px; line-height: 1.35; }
+  .dish-ingredients { gap: 4px; margin-top: 4px; }
+  .dish-ingredients span { padding: 3px 5px; font-size: 9px; }
+  .dish-guide { gap: 6px; padding: 6px 7px; }
+  .dish-guide p { font-size: 10px; line-height: 1.35; }
+  .dish-guide button { padding: 4px 5px; font-size: 9px; }
+
+  .side-card { padding: 10px; }
+  .month-day { height: 24px; font-size: 9px; }
+  .history-ledger > li { padding: 10px 0; }
+
+  /* 393px 寬度仍讓餐期、份量與預估時間留在同一閱讀列。 */
+  .meal-banner { gap: 4px; min-height: 0; padding: 0 8px; }
+  .meal-banner__copy { flex-wrap: nowrap; gap: 4px; font-size: 11px; white-space: nowrap; }
+  .meal-banner__copy h2 { font-size: 15px; letter-spacing: 0; }
+  .meal-banner__copy i { font-size: 10px; }
+  .meal-banner__actions { padding-top: 0; }
+  .edit-menu { padding: 5px 7px; font-size: 9px; }
+}
+
+/* 行動版把「編輯餐單」固定在餐期標題同一行；人份與時間自然落到標題下方。 */
+@media (max-width: 640px) {
+  .meal-banner { flex-wrap: nowrap; align-items: flex-start; gap: 8px; }
+  .meal-banner__copy { flex: 1 1 auto; min-width: 0; }
+  .meal-banner__copy h2 { width: auto; flex: 0 0 auto; }
+  .meal-banner__actions { flex: 0 0 auto; margin-left: 0; padding-top: 1px; }
+}
 </style>

@@ -148,12 +148,19 @@ defineEmits(['swap', 'view'])
 }
 
 @media (max-width: 640px) {
+  /* 兩欄餐單卡改用較高的 3:2 圖片，菜色辨識更清楚。 */
+  .recipe-card__image { aspect-ratio: 3 / 2; }
   .recipe-card__badge { top: 8px; left: 8px; padding: 2px 6px; font-size: 10px; }
   .recipe-card__body { gap: 8px; padding: 10px; }
   .recipe-card__name { font-size: 14px; line-height: 1.3; }
   .recipe-card__ingredients { gap: 4px; font-size: 11px; line-height: 1.35; }
   .recipe-card__fridge { gap: 4px; font-size: 10px; }
-  .recipe-card__actions { flex-direction: column; gap: 6px; }
-  .recipe-card__actions :deep(.btn) { width: 100%; min-height: 32px; padding: 5px 6px; font-size: 11px; }
+  /* 兩欄餐單卡的時間／熱量必須同列，字級與 icon 同步縮小。 */
+  .recipe-card :deep(.recipe-meta) { flex-wrap: nowrap; gap: 5px; font-size: 9px; white-space: nowrap; }
+  .recipe-card :deep(.recipe-meta span) { gap: 3px; }
+  .recipe-card :deep(.recipe-meta i) { font-size: 9px; }
+  /* 兩個操作同列，避免窄版餐單卡因直排按鈕變得又高又窄。 */
+  .recipe-card__actions { flex-direction: row; gap: 5px; }
+  .recipe-card__actions :deep(.btn) { width: auto; min-width: 0; flex: 1; min-height: 32px; padding: 5px 4px; font-size: 10px; white-space: nowrap; }
 }
 </style>

@@ -101,21 +101,66 @@ function scoreRecipe(recipe, needs, fridgeMatches, jitter = 1.5) {
   return score
 }
 
-// 依分數挑 count 道，盡量不要同一類重複（例：三道都是蛋料理），其次避開同一種主食材（例：兩道都是豬肉）
-// locked：一定要保留的菜，先放進去，只補不足的道數
-function pick(candidates, count, locked = []) {
+const ANIMAL_PROTEINS = ['雞肉', '豬肉', '牛肉', '海鮮']
+const PLANT_PROTEIN_WORDS = ['豆腐', '豆干', '豆皮', '豆包', '毛豆', '豆類']
+
+// 食譜早期資料有 group，後續補的資料只標 categories；兩者都納入，才不會讓新食譜全部被當成蔬菜。
+function nutritionRole(recipe) {
+  const categories = recipe.categories ?? []
+  const ingredients = recipe.mainIngredients ?? []
+  const hasPlantProtein = ingredients.some((name) => PLANT_PROTEIN_WORDS.some((word) => name.includes(word)))
+  if (categories.some((category) => ANIMAL_PROTEINS.includes(category)) || recipe.group === '肉類' || recipe.group === '蛋類' || hasPlantProtein) {
+    return 'protein'
+  }
+  return 'vegetable'
+}
+
+// 除了蛋白質／蔬菜比例，也盡量不重複同一種蛋白質來源，例如兩道肉類優先改為雞肉＋魚或蛋。
+function nutritionSource(recipe) {
+  const category = (recipe.categories ?? []).find((item) => ANIMAL_PROTEINS.includes(item))
+  if (category) return `protein:${category}`
+  if (recipe.group === '蛋類' || (recipe.mainIngredients ?? []).some((name) => name.includes('蛋'))) return 'protein:蛋類'
+  const plant = (recipe.mainIngredients ?? []).find((name) => PLANT_PROTEIN_WORDS.some((word) => name.includes(word)))
+  if (plant) return 'protein:植物性蛋白'
+  return `vegetable:${recipe.mainIngredients?.[0] ?? recipe.id}`
+}
+
+// 兩道以上的晚餐預設至少包含一份蛋白質；四道菜則以 2 份蛋白質＋2 份蔬菜為優先。
+// 若過敏／忌口後沒有足夠候選，才會自動以可吃的菜色補足，絕不為了比例推薦不適合的料理。
+function nextBalancedRole(chosen, count) {
+  if (count < 2) return null
+  const proteinTarget = Math.max(1, Math.floor(count / 2))
+  const vegetableTarget = count - proteinTarget
+  const proteinCount = chosen.filter((item) => nutritionRole(item.recipe) === 'protein').length
+  const vegetableCount = chosen.filter((item) => nutritionRole(item.recipe) === 'vegetable').length
+
+  if (proteinCount >= proteinTarget) return vegetableCount < vegetableTarget ? 'vegetable' : null
+  if (vegetableCount >= vegetableTarget) return 'protein'
+  // 交錯選取兩種類型，讓 4 道菜不會依排序一次塞入同類料理。
+  return proteinCount / proteinTarget <= vegetableCount / vegetableTarget ? 'protein' : 'vegetable'
+}
+
+// 依分數挑 count 道。主菜會先照營養類別分散，湯品則維持原本的偏好／庫存排序。
+// locked：一定要保留的菜，先放進去，只補不足的道數。
+function pick(candidates, count, locked = [], { balance = false } = {}) {
   const chosen = candidates.filter((item) => locked.includes(item)).slice(0, count)
   const pool = candidates.filter((item) => !chosen.includes(item))
   while (chosen.length < count && pool.length) {
-    pool.sort((a, b) => adjusted(b) - adjusted(a))
-    chosen.push(pool.shift())
+    const targetRole = balance ? nextBalancedRole(chosen, count) : null
+    const rolePool = targetRole ? pool.filter((item) => nutritionRole(item.recipe) === targetRole) : pool
+    // 篩選後可能沒有可用的蛋白質或蔬菜（例如忌口），此時安全地退回所有可吃候選。
+    const available = rolePool.length ? rolePool : pool
+    const next = [...available].sort((a, b) => adjusted(b) - adjusted(a))[0]
+    chosen.push(next)
+    pool.splice(pool.indexOf(next), 1)
   }
   return chosen
 
   function adjusted(item) {
     const groupRepeats = chosen.filter((c) => c.recipe.group && c.recipe.group === item.recipe.group).length
-    const mainRepeats = chosen.filter((c) => c.recipe.categories[0] === item.recipe.categories[0]).length
-    return item.score - groupRepeats * 6 - mainRepeats * 2.5
+    const mainRepeats = chosen.filter((c) => c.recipe.categories?.[0] === item.recipe.categories?.[0]).length
+    const sourceRepeats = chosen.filter((c) => nutritionSource(c.recipe) === nutritionSource(item.recipe)).length
+    return item.score - groupRepeats * 6 - mainRepeats * 2.5 - sourceRepeats * 4
   }
 }
 
@@ -135,7 +180,7 @@ export function planMenu({ recipes, members, guest, needs, dishCount, soupCount,
 
   // 原本餐單的菜（例：排餐至某天後想再加一道）不換掉；不符合這次過敏／忌口的才不保留
   const locked = scored.filter((s) => lockedRecipeIds.includes(s.recipe.id))
-  const dishes = pick(scored.filter((s) => s.recipe.type === 'dish'), dishCount, locked)
+  const dishes = pick(scored.filter((s) => s.recipe.type === 'dish'), dishCount, locked, { balance: true })
   const soups = pick(scored.filter((s) => s.recipe.type === 'soup'), soupCount, locked)
 
   return {

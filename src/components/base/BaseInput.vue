@@ -15,6 +15,7 @@ const props = defineProps({
   placeholder: String,
   error: String,
   autocomplete: String,
+  maxlength: Number,
   disabled: Boolean,
 })
 
@@ -37,6 +38,7 @@ const inputType = computed(() => (isPassword.value && showPassword.value ? 'text
         :type="inputType"
         :placeholder="placeholder"
         :autocomplete="autocomplete"
+        :maxlength="maxlength"
         :disabled="disabled"
         :aria-invalid="!!error"
         :aria-describedby="error ? `${id}-error` : undefined"

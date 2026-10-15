@@ -29,3 +29,35 @@ button {
   border: none;
   cursor: pointer;
 }
+
+/* 共同互動回饋：滑鼠裝置才顯示浮起效果，手機維持穩定的點擊版面。 */
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :where(.recipe, .recipe-card, .planned-dish, .member-grid > .member-card, .member-grid > .add-card, .metrics article, .summary article, .step-card, .ingredient-card, .view-switch button, .tabs button) {
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease, color 180ms ease;
+  }
+}
+
+@media (hover: hover) {
+  :where(.recipe, .recipe-card, .planned-dish, .member-grid > .member-card, .member-grid > .add-card, .metrics article, .summary article, .step-card, .ingredient-card):hover {
+    border-color: var(--brand-primary-border);
+    box-shadow: 0 8px 18px rgb(52 38 28 / 8%);
+    transform: translateY(-2px);
+  }
+
+  :where(.view-switch button, .tabs button):not(.active):not(.is-active):hover {
+    background: var(--brand-secondary-hover);
+    color: var(--brand-primary);
+    transform: translateY(-1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.recipe, .recipe-card, .planned-dish, .member-grid > .member-card, .member-grid > .add-card, .metrics article, .summary article, .step-card, .ingredient-card, .view-switch button, .tabs button) {
+    transition: none;
+  }
+}

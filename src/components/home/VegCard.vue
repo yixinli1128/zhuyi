@@ -49,6 +49,7 @@ defineEmits(['select'])
 
 /* 左上、右下圓角，與 Figma 圖片一致 */
 .veg-card__image {
+  position: relative;
   aspect-ratio: 10 / 9;
   overflow: hidden;
   border-radius: 12px 0;
@@ -125,7 +126,17 @@ defineEmits(['select'])
 }
 
 .veg-card.is-active .veg-card__image {
-  box-shadow: 0 0 0 2px var(--brand-primary-border);
+  outline: none;
+}
+
+/* 固定 8px 藍線／8px 留白，直接錨定在圖片邊界。 */
+.veg-card.is-active .veg-card__image::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='100' height='100' rx='8' fill='none' stroke='%23b0bfd2' stroke-width='4' stroke-linecap='round' stroke-dasharray='8 8' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
 }
 
 .veg-card__intro {

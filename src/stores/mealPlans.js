@@ -1,6 +1,7 @@
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { load, save } from './storage'
+import { loadForAccount, saveForAccount } from './storage'
+import { useUserStore } from './user'
 import { toDateKey } from '@/utils/date'
 
 // 示範用烹飪紀錄：前一個月與前兩個月沒有已完成的餐單時自動帶入，
@@ -66,9 +67,13 @@ function withDemoHistory(list) {
 // 餐食日誌：每天一筆晚餐餐單（來點煮意按「儲存到餐桌日誌」時寫入）
 // { id, date, mealType, servings, memberIds, guest, needs, useFridge, dishes, groceryChecked, status, savedAt }
 export const useMealPlanStore = defineStore('mealPlans', () => {
-  const plans = ref(withDemoHistory(load('mealPlans', [])))
+  const userStore = useUserStore()
+  const accountEmail = computed(() => userStore.user?.email?.toLowerCase() ?? '')
+  const plansForAccount = (email) => withDemoHistory(loadForAccount('mealPlans', email, []))
+  const plans = ref(plansForAccount(accountEmail.value))
 
-  watch(plans, (value) => save('mealPlans', value), { deep: true })
+  watch(accountEmail, (email) => { plans.value = plansForAccount(email) })
+  watch(plans, (value) => saveForAccount('mealPlans', accountEmail.value, value), { deep: true })
 
   function getPlan(date, mealType = '晚餐') {
     return plans.value.find((plan) => plan.date === date && plan.mealType === mealType) ?? null

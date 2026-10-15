@@ -10,6 +10,8 @@ import closeIconUrl from '@/assets/figma/icon-close.svg'
 import tagRemoveIconUrl from '@/assets/figma/icon-tag-remove.svg'
 import trainLocomotiveUrl from '@/assets/family-train-locomotive-ink-v3.png'
 import trainCarriageUrl from '@/assets/family-train-carriage-ink-v3.png'
+import trainCarriageLongUrl from '@/assets/family-train-carriage-long-ink-v1.png'
+import { NICKNAME_MAX_INPUT_LENGTH, nicknameUnits, trimNicknameToUnits } from '@/utils/nickname'
 
 const familyStore = useFamilyStore()
 const dialog = ref(null)
@@ -106,12 +108,13 @@ function deleteMember() {
 function showToast(message, undoId = null) { toast.value = { message, undoId }; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toast.value = null }, 5000) }
 function undoDelete() { if (toast.value?.undoId) familyStore.restoreMember(toast.value.undoId); toast.value = null; clearTimeout(toastTimer) }
 function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - new Date(value).getTime()) / 86400000)); return days === 0 ? '剛剛' : `${days} 天前` }
+function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
 </script>
 
 <template>
   <section class="page">
     <PageTitle title="家庭成員與飲食偏好" description="設定每位成員的食量係數、過敏源與個人偏好，系統配餐時將自動為全家量身調整。">
-      <template #actions><BaseButton @click="openAdd">＋ 新增成員</BaseButton></template>
+      <template #actions><BaseButton data-onboarding-target="family-add" @click="openAdd">＋ 新增成員</BaseButton></template>
     </PageTitle>
     <main class="content">
       <section class="summary" aria-label="家庭飲食摘要">
@@ -120,11 +123,13 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
       </section>
       <section class="members" aria-labelledby="member-list-title">
         <aside class="family-train" :aria-label="`家庭列車，目前 ${members.length} 位成員`">
-          <div class="train-route">
-            <span class="train-engine" :style="{ zIndex: members.length + 2 }" aria-hidden="true"><img :src="trainLocomotiveUrl" alt="" /><small>煮意號</small></span>
-            <span v-for="(member, index) in members" :key="member.id" class="train-car" :style="{ zIndex: members.length - index + 1 }" :aria-label="member.name">
-              <span class="train-car__body"><img :src="trainCarriageUrl" alt="" /><span class="train-car__window"><b>{{ member.name }}</b></span></span>
-            </span>
+          <div class="train-route" :style="{ '--train-count': members.length, '--train-long-count': members.filter((member) => usesLongTrainCar(member.name)).length }">
+            <div class="train-convoy">
+              <span class="train-engine" :style="{ zIndex: members.length + 2 }" aria-hidden="true"><span class="train-smoke"><i></i><i></i><i></i></span><img :src="trainLocomotiveUrl" alt="" /><small>煮意號</small></span>
+              <span v-for="(member, index) in members" :key="member.id" :class="['train-car', { 'train-car--long': usesLongTrainCar(member.name) }]" :style="{ zIndex: members.length - index + 1, '--train-name-length': member.name.length }" :aria-label="member.name">
+                <span class="train-car__body"><img :src="usesLongTrainCar(member.name) ? trainCarriageLongUrl : trainCarriageUrl" alt="" /><span class="train-car__window"><b>{{ member.name }}</b></span></span>
+              </span>
+            </div>
           </div>
         </aside>
         <header><h2 id="member-list-title">家庭成員名冊</h2><span>共 {{ members.length }} 位成員</span></header>
@@ -139,11 +144,11 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
       </section>
     </main>
     <div v-if="toast" class="toast" role="status">✓ {{ toast.message }} <button v-if="toast.undoId" type="button" @click="undoDelete">復原</button></div>
-    <div v-if="dialog" class="overlay" @click.self="dialog = null">
+    <div v-if="dialog" :class="['overlay', { 'overlay--confirm': dialog === 'delete' }]" @click.self="dialog = null">
       <form v-if="dialog === 'form'" class="dialog" @submit.prevent="saveMember">
         <header class="modal-heading"><div><h2>{{ editingId ? '編輯家庭成員' : '新增家庭成員' }}</h2><p>{{ editingId ? '修改後，之後的配餐會依新的設定調整。' : '填寫飲食限制與份量，系統於配餐時將避開禁忌食材。' }}</p></div><button class="close" type="button" aria-label="關閉" @click="dialog = null"><img :src="closeIconUrl" alt="" /></button></header>
         <div class="modal-body"><button class="avatar-picker" type="button" @click="photoInput?.click()"><span><img :src="form.avatar || avatarPlaceholderUrl" alt="" /></span><small>更換頭貼</small></button><input ref="photoInput" class="photo-input" type="file" accept="image/*" @change="choosePhoto" />
-        <label>暱稱<input v-model="form.name" maxlength="20" required placeholder="請輸入" :readonly="isOwnerForm" :title="isOwnerForm ? '本人的暱稱與帳號同步，請到帳號設定修改' : undefined" /></label>
+        <label>暱稱<input v-model="form.name" :maxlength="NICKNAME_MAX_INPUT_LENGTH" required placeholder="請輸入" :readonly="isOwnerForm" :title="isOwnerForm ? '本人的暱稱與帳號同步，請到帳號設定修改' : undefined" @input="form.name = trimNicknameToUnits(form.name)" /></label>
         <fieldset><legend>每餐建議份量 <small>自動計算買菜總量</small></legend><div class="portions"><button v-for="item in portionOptions" :key="item.value" type="button" :class="{ selected: form.portionFactor === item.value }" @click="form.portionFactor = item.value"><b>{{ item.value.toFixed(1) }}x</b><span>{{ item.label }}</span></button></div></fieldset>
         <fieldset><legend>過敏與忌口食材 <small>點擊選擇</small></legend><div class="chips"><button v-for="name in commonIngredients" :key="name" type="button" :class="{ selected: hasRestrictedFood(name) }" @click="toggleRestrictedFood(name)">{{ name }}</button><button v-for="name in [...new Set([...form.allergies, ...form.avoids])].filter((item) => !commonIngredients.includes(item))" :key="`custom-${name}`" type="button" class="chip-custom" @click="toggleRestrictedFood(name)"><span>{{ name }}</span><img :src="tagRemoveIconUrl" alt="移除" /></button></div><div class="custom"><input v-model="customAvoid" placeholder="例如：茄子、木耳、苦瓜…" @keydown.enter.prevent="addCustomPreference" /><button type="button" @click="addCustomPreference">新增</button></div></fieldset>
         <fieldset><legend>特殊飲食需求 <small>點擊選擇</small></legend><div class="chips"><button v-for="diet in dietOptions" :key="diet" type="button" :class="{ selected: form.dietaryNote === diet }" @click="form.dietaryNote = form.dietaryNote === diet ? '' : diet">{{ diet }}</button></div></fieldset>
@@ -171,17 +176,32 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .train-caption { display: flex; align-items: baseline; gap: 8px; color: var(--text-body); white-space: nowrap; }
 .train-caption small { color: #4a3930; font-size: 11px; font-weight: 500; letter-spacing: .16em; }
 .train-caption strong { font-size: 18px; font-weight: 400; }
-.train-route { position: relative; display: flex; min-width: 0; height: 122px; align-items: flex-start; gap: 0; overflow-x: auto; overflow-y: hidden; margin-top: 8px; padding: 0 5px; scrollbar-width: thin; }
-.train-route::before { position: absolute; z-index: 0; top: 100px; right: 0; left: 0; height: 10px; opacity: .76; background: repeating-linear-gradient(90deg, transparent 0 9px, #9d8979 9px 14px, transparent 14px 19px) 0 3px / 100% 5px no-repeat, linear-gradient(90deg, #665044, #80695b 24%, #5a473d 60%, #705b4d) 0 0 / 100% 2px no-repeat, linear-gradient(90deg, #665044, #80695b 24%, #5a473d 60%, #705b4d) 0 8px / 100% 2px no-repeat; content: ''; }
+.train-route { --train-loop-entry: calc(100vw - var(--navbar-width) - var(--navbar-width) - 16px); position: relative; display: flex; min-width: 0; height: 122px; align-items: flex-start; gap: 0; overflow: hidden; margin-top: 8px; padding: 0 5px; }
+.train-route::-webkit-scrollbar { display: none; }
+.train-route::before { position: absolute; z-index: 0; top: 100px; left: 0; width: max(100%, calc(140px + var(--train-count) * 110px + var(--train-long-count) * 40px)); height: 10px; opacity: .76; background: repeating-linear-gradient(90deg, transparent 0 9px, #9d8979 9px 14px, transparent 14px 19px) 0 3px / 100% 5px no-repeat, linear-gradient(90deg, #665044, #80695b 24%, #5a473d 60%, #705b4d) 0 0 / 100% 2px no-repeat, linear-gradient(90deg, #665044, #80695b 24%, #5a473d 60%, #705b4d) 0 8px / 100% 2px no-repeat; content: ''; }
+.train-convoy { position: relative; z-index: 1; display: flex; flex: 0 0 auto; align-items: flex-start; min-width: max-content; }
+@media (prefers-reduced-motion: no-preference) {
+  .train-convoy { animation: train-convoy-loop 13s linear infinite; }
+}
+@keyframes train-convoy-loop { 0% { opacity: 0; transform: translateX(var(--train-loop-entry)); } 4% { opacity: 1; transform: translateX(calc(var(--train-loop-entry) - 22px)); } 86% { opacity: 1; transform: translateX(calc(-100% - 20px)); } 89%, 100% { opacity: 0; transform: translateX(calc(-100% - 20px)); } }
 .train-engine, .train-car { position: relative; z-index: 1; display: flex; flex: 0 0 auto; flex-direction: column; align-items: center; color: var(--text-secondary); font-size: 10px; line-height: 1.2; text-align: center; }
 .train-engine { width: 130px; margin-top: 24px; }
 .train-engine > img { display: block; width: 124px; height: 85px; object-fit: contain; object-position: center bottom; transform: scaleX(-1); mix-blend-mode: multiply; opacity: .78; filter: saturate(.55) brightness(1.16) contrast(.8); }
-.train-engine > small { position: absolute; top: -13px; left: 50%; font-size: inherit; white-space: nowrap; transform: translateX(-50%); }
+.train-engine > small { position: absolute; z-index: 3; top: -13px; left: 50%; font-size: inherit; white-space: nowrap; transform: translateX(-50%); }
+.train-smoke { position: absolute; z-index: 2; top: -44px; left: 6px; width: 42px; height: 58px; pointer-events: none; }
+.train-smoke i { position: absolute; bottom: 0; left: 50%; display: block; width: 12px; height: 12px; border-radius: 50%; background: #80776e; filter: blur(1.4px); mix-blend-mode: multiply; opacity: 0; animation: train-smoke-rise 3.8s ease-out infinite; }
+.train-smoke i:nth-child(2) { width: 15px; height: 15px; animation-delay: 1.25s; }
+.train-smoke i:nth-child(3) { width: 10px; height: 10px; animation-delay: 2.5s; }
+@keyframes train-smoke-rise { 0% { opacity: 0; transform: translate(0, 0) scale(.35); } 18% { opacity: .38; } 100% { opacity: 0; transform: translate(-17px, -35px) scale(1.45); } }
 .train-car { width: 101px; margin-top: 23px; margin-left: 9px; }
 .train-car__body { position: relative; z-index: 1; display: block; width: 137px; height: 91px; margin-left: -46px; }
 .train-car__body > img { display: block; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; opacity: .84; filter: saturate(.55) brightness(1.18) contrast(.82); }
 .train-car__window { position: absolute; top: 32%; left: 65%; display: grid; width: 48px; height: 22px; place-items: center; transform: translateX(-50%); }
 .train-car__window > b { color: #4a3930; font-size: 10px; font-weight: 400; line-height: 1; white-space: nowrap; }
+.train-car--long { width: 141px; margin-top: 31px; }
+.train-car--long .train-car__body { width: 177px; height: 75px; }
+.train-car--long .train-car__window { top: 30%; left: 60%; width: 88px; height: 18px; }
+.train-car--long .train-car__window > b { font-size: clamp(6px, calc(16px - var(--train-name-length) * .75px), 10px); }
 .members > header { display: flex; align-items: baseline; justify-content: space-between; }
 .members h2 { color: var(--text-title); font-size: 24px; font-weight: 400; }
 .member-grid { display: grid; grid-auto-rows: 312px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
@@ -203,10 +223,12 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .overlay { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; overflow: auto; padding: 16px; background: rgba(52, 38, 28, .35); }
 /* Figma 的卡片以內容寬度為基準（440px），窄螢幕才隨視窗縮小。 */
 .dialog { position: relative; display: flex; inline-size: fit-content; min-inline-size: min(27.5rem, calc(100vw - 32px)); max-inline-size: calc(100vw - 32px); max-height: calc(100dvh - 32px); flex-direction: column; padding: 0; border-radius: 12px 0 12px; background: #fff; box-shadow: 0 18px 44px rgba(52, 38, 28, .24); }
-.modal-heading { display: flex; justify-content: space-between; gap: 18px; padding: 12px 18px; border-bottom: 1px solid var(--brand-secondary); }
+.modal-heading { position: relative; display: flex; justify-content: space-between; gap: 18px; padding: 16px 58px 16px 18px; border-bottom: 1px solid var(--brand-secondary); }
 .modal-heading h2 { color: var(--text-title); font-size: 20px; font-weight: 400; line-height: 1.25; }
 .modal-heading p { margin-top: 2px; color: var(--text-secondary); font-size: 11px; line-height: 1.35; }
 .close { align-self: flex-start; color: var(--text-secondary); font-size: 22px; line-height: 1; }
+.modal-heading > .close { position: absolute; top: 20px; right: 20px; display: grid; width: 24px; height: 24px; place-items: center; padding: 0; }
+.modal-heading > .close img { display: block; width: 24px; height: 24px; }
 /* 正常桌機高度不會捲動；只有可視高度不足時才由這裡安全捲動。 */
 .modal-body { inline-size: auto; max-inline-size: calc(100vw - 32px); overflow-y: auto; padding: 10px 18px 8px; }
 /* 平板、桌機的編輯視窗固定寬度，內容撐滿；不跟著字型或捲軸寬度變動，左右留白才會一致 */
@@ -240,13 +262,15 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
 .spice .selected { background: #fff; box-shadow: 0 1px 2px rgba(52, 38, 28, .08); }
 .error { margin: 8px 0; color: #b9534e; font-size: 12px; }
 .modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 8px 18px; }
-.confirm { position: relative; padding: 28px; }
-.confirm > .close { position: absolute; top: 18px; right: 18px; }
-.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.confirm { position: relative; min-height: 0; height: auto; padding: 24px; }
+.confirm > .close { position: absolute; top: 20px; right: 20px; }
+.confirm h2 { padding-right: 36px; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
 .toast { position: fixed; z-index: 40; top: 22px; left: 50%; padding: 12px 18px; border-radius: 999px; background: var(--brand-primary-active); box-shadow: 0 8px 24px rgba(0, 0, 0, .18); color: #fff; transform: translateX(-50%); }
 .toast button { margin-left: 12px; color: #fff; text-decoration: underline; font-weight: 700; }
 
 @media (min-width: 641px) and (max-width: 1024px) {
+  .train-route { --train-loop-entry: calc(100vw - 16px); }
   .content { padding: 24px 28px 48px; }
   .summary { gap: 16px; }
   .summary article { height: 106px; padding: 14px; }
@@ -279,14 +303,19 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .train-caption { gap: 6px; }
   .train-caption small { font-size: 9px; }
   .train-caption strong { font-size: 15px; }
-  .train-route { height: 102px; margin-top: 7px; }
-  .train-route::before { top: 84px; }
+  .train-route { --train-loop-entry: calc(100vw - 16px); height: 102px; margin-top: 7px; }
+  .train-route::before { top: 84px; width: max(100%, calc(114px + var(--train-count) * 87px + var(--train-long-count) * 30px)); }
   .train-engine { width: 104px; margin-top: 20px; font-size: 9px; }
   .train-engine > img { width: 100px; height: 69px; }
+  .train-smoke { top: -39px; left: 2px; transform: scale(.8); transform-origin: bottom left; }
   .train-car { width: 80px; margin-top: 20px; margin-left: 7px; font-size: 9px; }
   .train-car__body { width: 104px; height: 69px; margin-left: -35px; }
   .train-car__window { width: 34px; height: 15px; }
   .train-car__window > b { font-size: 8px; }
+  .train-car--long { width: 110px; margin-top: 26px; }
+  .train-car--long .train-car__body { width: 134px; height: 57px; }
+  .train-car--long .train-car__window { top: 30%; left: 60%; width: 68px; height: 14px; }
+  .train-car--long .train-car__window > b { font-size: clamp(5px, calc(11px - var(--train-name-length) * .35px), 8px); }
   .train-add { width: 32px; margin-top: 44px; margin-left: 0; }
   .train-add > span { width: 20px; height: 20px; font-size: 14px; }
   .members h2 { font-size: 20px; }
@@ -352,4 +381,49 @@ function dateLabel(value) { const days = Math.max(0, Math.round((Date.now() - ne
   .chips button { padding: 5px 7px; }
 }
 .owner-tag { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 11px; line-height: 16px; vertical-align: middle; }
+
+@media (prefers-reduced-motion: reduce) {
+  .train-smoke i { animation: none; opacity: .18; transform: translate(-8px, -17px) scale(.8); }
+  .train-convoy { animation: none; }
+}
+
+/* 393px 以下的兩欄成員名冊採接近正方形的資訊卡；稍加高度以完整保留最近更新。 */
+@media (max-width: 400px) {
+  .content { padding: 16px 16px 36px; }
+  .summary { gap: 8px; }
+  .summary article { height: 88px; padding: 10px; }
+  .summary span, .summary p { font-size: 10px; }
+  .summary strong { font-size: 19px; }
+  .summary strong small { font-size: 11px; }
+
+  .members { margin-top: 16px; }
+  .family-train { margin-bottom: 10px; }
+  .members h2 { font-size: 18px; }
+  .members > header > span { font-size: 11px; }
+
+  /* 忌口標籤增加時，由該列內容撐高；同列卡片隨之對齊，不裁切頁尾。 */
+  .member-grid { grid-auto-rows: minmax(188px, auto); gap: 10px; margin-top: 12px; }
+  .member-card, .add-card {
+    min-height: 188px;
+    height: auto;
+    aspect-ratio: auto;
+  }
+  .member-card { overflow: visible; padding: 10px; }
+  .member-card > header { gap: 4px; padding-bottom: 5px; }
+  .avatar { width: 28px; height: 28px; font-size: 12px; }
+  .member-card h3 { font-size: 14px; line-height: 1.15; white-space: nowrap; }
+  .owner-tag { margin-left: 4px; padding: 1px 5px; font-size: 8px; line-height: 12px; }
+  .card-actions { gap: 2px; }
+  .card-actions button { width: 16px; height: 16px; font-size: 12px; }
+  .member-card small, .member-card dt, .member-card footer, .member-card dd { font-size: 10px; line-height: 1.25; }
+  .member-card dl { gap: 4px; padding: 6px 0; }
+  .member-card dd { margin-top: 2px; }
+  .two-column { gap: 5px; }
+  .tag { margin: 0 2px 1px 0; padding: 1px 4px; font-size: 9px; }
+  .member-card footer { padding-top: 5px; overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+
+  .add-card { gap: 6px; padding: 10px; font-size: 13px; }
+  .add-card img { width: 18px; height: 18px; }
+  .add-card small { font-size: 10px; text-align: center; }
+}
 </style>

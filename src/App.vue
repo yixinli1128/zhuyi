@@ -10,6 +10,7 @@ import FloatingBackdrop from './components/layout/FloatingBackdrop.vue'
 import IntroSplash from './components/layout/IntroSplash.vue'
 import BaseDialog from './components/base/BaseDialog.vue'
 import BaseButton from './components/base/BaseButton.vue'
+import OnboardingTour from './components/onboarding/OnboardingTour.vue'
 
 const route = useRoute()
 // 登入、註冊等頁面：桌機不顯示左側 navbar，內容滿版
@@ -65,6 +66,7 @@ function startOwnerSetup() {
         <BaseButton @click="startOwnerSetup">現在設定</BaseButton>
       </template>
     </BaseDialog>
+    <OnboardingTour :blocked="ownerSetupOpen" />
   </div>
 </template>
 

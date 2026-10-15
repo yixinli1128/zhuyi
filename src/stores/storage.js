@@ -18,6 +18,36 @@ export function save(key, value) {
   }
 }
 
+function accountStorageKey(key, email) {
+  return `${key}:account:${String(email).trim().toLowerCase()}`
+}
+
+// 假登入版也依帳號隔離家庭、庫存與餐單資料。首次升級時，將既有未分帳號的資料交給當下登入者一次。
+export function loadForAccount(key, email, fallback) {
+  const account = String(email ?? '').trim().toLowerCase()
+  if (!account) return fallback
+
+  const scopedKey = accountStorageKey(key, account)
+  const scoped = load(scopedKey, null)
+  if (scoped !== null) return scoped
+
+  const migratedOwnerKey = `${key}:legacy-owner`
+  const migratedOwner = load(migratedOwnerKey, '')
+  const legacy = load(key, fallback)
+  const hasLegacyData = Array.isArray(legacy) ? legacy.length > 0 : Boolean(legacy && Object.keys(legacy).length)
+  if (!migratedOwner && hasLegacyData) {
+    save(migratedOwnerKey, account)
+    save(scopedKey, legacy)
+    return legacy
+  }
+  return fallback
+}
+
+export function saveForAccount(key, email, value) {
+  const account = String(email ?? '').trim().toLowerCase()
+  if (account) save(accountStorageKey(key, account), value)
+}
+
 // 清除煮意存在這個瀏覽器的資料（刪除帳號時用），keep 內的 key 保留
 export function clearAppData(keep = []) {
   try {

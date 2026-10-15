@@ -333,7 +333,8 @@ const pillars = [
   padding: 2px 10px;
   border-radius: 12px;
   background: var(--brand-primary);
-  font-size: var(--fs-caption-2);
+  /* 手機公告只是輔助資訊，避免和首頁主內容搶視覺焦點 */
+  font-size: 10px;
   color: var(--text-on-primary);
 }
 
@@ -359,7 +360,8 @@ const pillars = [
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
-  font-size: var(--fs-caption-2);
+  /* 公告內文比標籤再小一級，避免在窄手機上顯得像正文。 */
+  font-size: 9px;
   line-height: 1.5;
   color: var(--text-secondary);
   mask-image: linear-gradient(to right, transparent, #000 12px, #000 calc(100% - 24px), transparent);
@@ -672,6 +674,11 @@ const pillars = [
 
   .home-notice {
     margin-top: 0;
+  }
+
+  .home-notice__badge,
+  .home-notice__text {
+    font-size: var(--fs-caption-2);
   }
 
   /* 平板以上放得下，直接顯示全文，不跑馬燈 */

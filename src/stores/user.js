@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { load, save, clearAppData } from './storage'
+import { load, save, saveForAccount, clearAppData } from './storage'
 
 // 會員（假登入）：帳號和登入狀態都只存在瀏覽器裡，沒有後端
 // 示範帳號：oliver@example.com ／ zhuyi1234
@@ -11,7 +11,115 @@ const DEMO_ACCOUNTS = [
     name: 'Oliver',
     linked: { google: true, line: false },
   },
+  {
+    email: 'an@example.com',
+    password: 'zhuyi1234',
+    name: '小安',
+    linked: { google: false, line: false },
+  },
+  {
+    email: 'qing@example.com',
+    password: 'zhuyi1234',
+    name: '小晴',
+    linked: { google: false, line: false },
+  },
+  {
+    email: 'yu@example.com',
+    password: 'zhuyi1234',
+    name: '小宇',
+    linked: { google: false, line: false },
+  },
+  {
+    email: 'test1@example.com',
+    password: 'zhuyi1234',
+    name: '測試一',
+    linked: { google: false, line: false },
+  },
+  {
+    email: 'test2@example.com',
+    password: 'zhuyi1234',
+    name: '測試二',
+    linked: { google: false, line: false },
+  },
 ]
+
+// 這三組帳號是首次使用流程的測試帳號。版本升級後只重置一次，
+// 讓每次測試都從「本人卡片已建立、其餘資料為空」開始。
+const RESETTABLE_DEMO_EMAILS = ['an@example.com', 'qing@example.com', 'yu@example.com']
+const DEMO_RESET_VERSION = 'first-use-tour-v4'
+const EMPTY_DEMO_EMAILS = ['test1@example.com', 'test2@example.com']
+const EMPTY_DEMO_RESET_VERSION = 'empty-test-accounts-v1'
+
+function resetDemoAccountsOnce() {
+  if (load('demo-account-reset-version', '') === DEMO_RESET_VERSION) return false
+
+  RESETTABLE_DEMO_EMAILS.forEach((email) => {
+    // 寫入空陣列而非移除 key，避免舊版未分帳號資料被再次遷移進測試帳號。
+    saveForAccount('family-members', email, [])
+    saveForAccount('fridge-ingredients', email, [])
+    saveForAccount('mealPlans', email, [])
+  })
+
+  const resetEmails = new Set(RESETTABLE_DEMO_EMAILS)
+  const savedAccounts = load('accounts', [])
+  const otherAccounts = Array.isArray(savedAccounts)
+    ? savedAccounts.filter((account) => !resetEmails.has(account.email?.toLowerCase()))
+    : []
+  const resetAccounts = DEMO_ACCOUNTS.filter((account) => resetEmails.has(account.email))
+  save('accounts', [...otherAccounts, ...resetAccounts])
+
+  const guard = load('loginGuard', {})
+  RESETTABLE_DEMO_EMAILS.forEach((email) => delete guard[email])
+  save('loginGuard', guard)
+
+  const resetTokens = load('resetTokens', {})
+  Object.entries(resetTokens).forEach(([token, record]) => {
+    if (resetEmails.has(record?.email?.toLowerCase())) delete resetTokens[token]
+  })
+  save('resetTokens', resetTokens)
+
+  const tours = load('first-use-tour', {})
+  RESETTABLE_DEMO_EMAILS.forEach((email) => delete tours[email])
+  save('first-use-tour', tours)
+
+  // 若目前正登入其中一組帳號，也同步還原顯示名稱，毋須重新登入。
+  const savedUser = load('user', null)
+  const fixture = RESETTABLE_DEMO_EMAILS.includes(savedUser?.email?.toLowerCase())
+    ? DEMO_ACCOUNTS.find((account) => account.email === savedUser.email.toLowerCase())
+    : null
+  if (fixture) save('user', { ...savedUser, name: fixture.name, avatar: fixture.avatar ?? '' })
+
+  save('demo-account-reset-version', DEMO_RESET_VERSION)
+  return true
+}
+
+// 兩組純空白帳號供驗收使用；只初始化它們自己的資料，不影響既有示範帳號。
+function resetEmptyDemoAccountsOnce() {
+  if (load('empty-demo-account-reset-version', '') === EMPTY_DEMO_RESET_VERSION) return false
+
+  EMPTY_DEMO_EMAILS.forEach((email) => {
+    saveForAccount('family-members', email, [])
+    saveForAccount('fridge-ingredients', email, [])
+    saveForAccount('mealPlans', email, [])
+  })
+
+  const emptyEmails = new Set(EMPTY_DEMO_EMAILS)
+  const savedAccounts = load('accounts', [])
+  const otherAccounts = Array.isArray(savedAccounts)
+    ? savedAccounts.filter((account) => !emptyEmails.has(account.email?.toLowerCase()))
+    : []
+  const emptyAccounts = DEMO_ACCOUNTS.filter((account) => emptyEmails.has(account.email))
+  save('accounts', [...otherAccounts, ...emptyAccounts])
+
+  const guard = load('loginGuard', {})
+  EMPTY_DEMO_EMAILS.forEach((email) => delete guard[email])
+  save('loginGuard', guard)
+  save('empty-demo-account-reset-version', EMPTY_DEMO_RESET_VERSION)
+  return true
+}
+
+resetDemoAccountsOnce()
+resetEmptyDemoAccountsOnce()
 
 const MAX_ATTEMPTS = 5 // 連續輸錯幾次後鎖定
 const LOCK_MINUTES = 15 // 鎖定幾分鐘
@@ -35,6 +143,13 @@ function normalizeAccount(account) {
 // 登入狀態只放顯示用的資料，不放密碼
 function toProfile(account) {
   return { email: account.email, name: account.name, avatar: account.avatar }
+}
+
+// 既有瀏覽器已存帳號資料時，補進新增加的示範帳號，但不覆寫使用者建立或修改過的帳號。
+function withDemoAccounts(savedAccounts) {
+  const saved = Array.isArray(savedAccounts) ? savedAccounts : []
+  const savedEmails = new Set(saved.map((account) => account.email?.toLowerCase()).filter(Boolean))
+  return [...DEMO_ACCOUNTS.filter((account) => !savedEmails.has(account.email.toLowerCase())), ...saved]
 }
 
 // 沒勾「記住我」時，登入狀態只存在這個分頁（關掉就登出）
@@ -63,7 +178,7 @@ function createToken() {
 export const useUserStore = defineStore('user', () => {
   const remember = ref(load('remember', true))
   const user = ref(load('user', null) ?? loadSession()) // { email, name, avatar }
-  const accounts = ref(load('accounts', DEMO_ACCOUNTS).map(normalizeAccount))
+  const accounts = ref(withDemoAccounts(load('accounts', [])).map(normalizeAccount))
   // 每個信箱的失敗次數與鎖定時間：{ [email]: { failed, lockedUntil } }
   const guard = ref(load('loginGuard', {}))
   // 重設密碼連結：{ [token]: { email, expiresAt } }

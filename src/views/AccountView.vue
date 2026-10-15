@@ -1,7 +1,7 @@
 <script setup>
 // 帳號設定（Figma Desktop - 共用/帳號設定（新）1465:14769、刪除帳號確認（新）1465:15116）
 // 個人資料、修改密碼、通知設定、刪除帳號；資料都存在 user store（localStorage）
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
@@ -11,8 +11,8 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseSwitch from '@/components/base/BaseSwitch.vue'
 import BaseDialog from '@/components/base/BaseDialog.vue'
+import { NICKNAME_LIMIT_MESSAGE, NICKNAME_MAX_INPUT_LENGTH, isNicknameWithinLimit, trimNicknameToUnits } from '@/utils/nickname'
 
-const NAME_MAX = 20
 const AVATAR_SIZE = 160 // 頭貼縮成 160px 再存，避免塞爆 localStorage
 
 const userStore = useUserStore()
@@ -28,6 +28,11 @@ const profile = reactive({
 })
 const nameError = ref('')
 const avatarInput = ref(null)
+
+watch(() => profile.name, (name) => {
+  const trimmed = trimNicknameToUnits(name)
+  if (trimmed !== name) profile.name = trimmed
+})
 
 // 讀取圖片並縮小成正方形 JPEG
 function resizeImage(file) {
@@ -70,7 +75,7 @@ async function onAvatarChange(event) {
 
 function saveProfile() {
   const name = profile.name.trim()
-  nameError.value = !name ? '請輸入暱稱' : name.length > NAME_MAX ? `暱稱最多 ${NAME_MAX} 個字` : ''
+  nameError.value = !name ? '請輸入暱稱' : !isNicknameWithinLimit(name) ? NICKNAME_LIMIT_MESSAGE : ''
   if (nameError.value) return
   userStore.updateAccount({ name, avatar: profile.avatar })
   toast.show('已儲存變更')
@@ -155,7 +160,7 @@ function confirmDelete() {
           </div>
 
           <div class="profile__fields">
-            <BaseInput v-model="profile.name" label="暱稱" placeholder="請輸入暱稱" autocomplete="nickname" :error="nameError" />
+            <BaseInput v-model="profile.name" label="暱稱" placeholder="請輸入暱稱" autocomplete="nickname" :maxlength="NICKNAME_MAX_INPUT_LENGTH" :error="nameError" />
 
             <div class="info">
               <p class="info__label">電子信箱</p>

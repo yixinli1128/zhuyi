@@ -15,7 +15,7 @@ defineProps({
 <template>
   <header class="page-title">
     <div class="page-title__text">
-      <h1 class="page-title__heading">{{ title }}</h1>
+      <h1 class="page-title__heading"><slot name="title">{{ title }}</slot></h1>
       <p v-if="description" class="page-title__desc">{{ description }}</p>
     </div>
     <div v-if="$slots.actions" class="page-title__actions">
@@ -138,6 +138,31 @@ defineProps({
     /* 行動版保留與右側 icon 操作同寬的空白槽位。 */
     min-width: 36px;
     min-height: 36px;
+  }
+}
+
+/* 393px 等小螢幕（如 iPhone 16 的 CSS 可視寬度）不直接沿用 480px 的比例。
+   長標題要先維持同一行閱讀節奏，說明與右側操作也一起收緊。 */
+@media (max-width: 400px) {
+  .page-title {
+    row-gap: 10px;
+    padding: 24px 16px 20px;
+  }
+
+  .page-title__heading {
+    font-size: 22px;
+    line-height: 1.25;
+    letter-spacing: .06em;
+  }
+
+  .page-title__desc {
+    font-size: 11px;
+    line-height: 1.55;
+  }
+
+  .page-title__actions--empty {
+    min-width: 32px;
+    min-height: 32px;
   }
 }
 

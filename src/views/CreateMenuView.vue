@@ -4,14 +4,14 @@
 // 儲存到餐桌日誌成功／失敗）
 // 直接進入「來點煮意」時，永遠從 Figma 的每日空狀態開始。
 // 已儲存的餐單則由餐食日誌管理；未來從日誌編輯時會以明確的編輯參數帶入。
-import { computed, nextTick, reactive, ref, toRaw } from 'vue'
+import { computed, nextTick, reactive, ref, toRaw, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFamilyStore } from '@/stores/family'
 import { useFridgeStore } from '@/stores/fridge'
 import { useRecipeStore } from '@/stores/recipes'
 import { useMealPlanStore } from '@/stores/mealPlans'
 import { useToastStore } from '@/stores/toast'
-import { useUserStore } from '@/stores/user'
+import { useOnboardingStore } from '@/stores/onboarding'
 import { formatMonthDay, formatShort, formatWeekday, toDateKey } from '@/utils/date'
 import {
   FLAVOR_OPTIONS,
@@ -46,6 +46,7 @@ const familyStore = useFamilyStore()
 const fridgeStore = useFridgeStore()
 const recipeStore = useRecipeStore()
 const mealPlanStore = useMealPlanStore()
+const onboardingStore = useOnboardingStore()
 const toast = useToastStore()
 const router = useRouter()
 const route = useRoute()
@@ -54,19 +55,13 @@ const today = toDateKey()
 const MEAL_TYPE = '晚餐'
 
 // ---------- 用餐設定 ----------
-// 登入時預設勾選帳號本人
-function defaultMemberIds() {
-  const email = useUserStore().user?.email?.toLowerCase()
-  return email ? familyStore.activeMembers.filter((member) => member.ownerEmail === email).map((member) => member.id) : []
-}
-
 function defaultSettings() {
-  const memberIds = defaultMemberIds()
   return {
-    memberIds,
+    // 登入帳號不等於用餐成員；家人設定只在使用者主動勾選時才套用。
+    memberIds: [],
     // IA：用餐日期預設今天，可改選未來日期
     date: today,
-    people: memberIds.length,
+    people: 0,
     // 份量仍供配餐計算使用，但不列在 Figma 空狀態的四個欄位中。
     size: 'normal',
     dishCount: 0,
@@ -125,6 +120,13 @@ function restoreSettings(plan) {
 // 從歷史「帶入今日晚餐」時，網址日期必須優先於原始餐單日期；一般編輯餐單傳入的是同一天，結果不變。
 const settings = reactive({ ...defaultSettings(), ...restoreSettings(requestedPlan), ...(requestedDate ? { date: requestedDate } : {}) })
 const menu = ref(null) // { dishes, servings, shortage, settingsKey }
+
+// 讓首次引導依使用者實際完成的欄位往下走；不靠按「建立餐單」來觸發驗證錯誤。
+watch(
+  () => [settings.memberIds.length, settings.people, settings.dishCount],
+  ([members, people, dishCount]) => onboardingStore.setMenuSetup({ members, people, dishCount }),
+  { immediate: true },
+)
 
 const guestOpen = ref(false)
 const needsOpen = ref(false)
@@ -194,7 +196,6 @@ function clearNeeds() {
 const submitted = ref(false)
 
 const errors = computed(() => ({
-  members: settings.memberIds.length ? '' : '請至少選擇 1 位用餐的家庭成員',
   date: !settings.date ? '請選擇用餐日期' : settings.date < today ? '用餐日期不能早於今天' : '',
   people: settings.people < 1 ? '人數至少為 1 位' : '',
   dishCount: settings.dishCount < 1 ? '菜數至少為 1 道' : '',
@@ -254,6 +255,7 @@ async function buildMenu() {
   needsOpen.value = false
 
   status.value = 'loading'
+  onboardingStore.setMenuCreating(true)
   await nextTick()
   resultSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   await new Promise((resolve) => setTimeout(resolve, 1800)) // 模擬配餐中
@@ -261,6 +263,7 @@ async function buildMenu() {
   // 展示用：離線時當作配餐失敗
   if (!navigator.onLine) {
     status.value = 'error'
+    onboardingStore.setMenuCreating(false)
     return
   }
 
@@ -289,6 +292,7 @@ async function buildMenu() {
     settingsKey: settingsKey.value,
   }
   status.value = 'idle'
+  onboardingStore.markMenuBuilt()
 }
 
 function clearMenu() {
@@ -377,18 +381,27 @@ const reasons = computed(() => {
   }
 
   return [
-    {
-      label: '家庭飲食偏好',
-      title: `已套用 ${memberCount} 位成員設定`,
-      description: '已依本次用餐成員的忌口、過敏與個人偏好過濾不適合的料理。',
-      tag: '家庭條件已套用',
-    },
+    memberCount
+      ? {
+          label: '家庭飲食偏好',
+          title: `已套用 ${memberCount} 位成員設定`,
+          description: '已依本次用餐成員的忌口、過敏與個人偏好過濾不適合的料理。',
+          tag: '家庭條件已套用',
+        }
+      : {
+          label: '家庭飲食偏好',
+          title: '未套用家庭成員設定',
+          description: '這次沒有選擇家庭成員，會依手動人數、訪客與本次需求配餐。',
+          tag: '以本次設定配餐',
+        },
     needParts.length
       ? { label: '本次用餐需求', title: needTitle, description: `${needParts.join('；')}。`, tag: '臨時需求已套用' }
       : {
           label: '本次用餐需求',
           title: '沒有額外臨時需求',
-          description: '沒有設定訪客或臨時飲食需求，因此以家庭成員原有偏好為主。',
+          description: memberCount
+            ? '沒有設定訪客或臨時飲食需求，因此以家庭成員原有偏好為主。'
+            : '沒有設定訪客或臨時飲食需求，會依手動人數建立餐單。',
           tag: '無額外需求',
         },
     { label: '冰箱庫存', ...fridge },
@@ -545,7 +558,7 @@ function chooseOtherDate() {
       </p>
 
       <div class="field-group">
-        <p class="field-label">家庭成員</p>
+        <p class="field-label">家庭成員（選填）</p>
         <div v-if="familyStore.activeMembers.length" class="members">
           <MemberCheckCard
             v-for="member in familyStore.activeMembers"
@@ -556,9 +569,8 @@ function chooseOtherDate() {
           />
         </div>
         <p v-else class="members-empty">
-          還沒有家庭成員，<RouterLink to="/family">先到家庭管理新增家人</RouterLink>。
+          不選家庭成員也能建立餐單；如要套用家人的偏好，可先到<RouterLink to="/family">家庭管理新增家人</RouterLink>。
         </p>
-        <p v-if="shownErrors.members" class="field-error">{{ shownErrors.members }}</p>
       </div>
 
       <div class="fields">
@@ -573,11 +585,11 @@ function chooseOtherDate() {
           :error="shownErrors.date"
           class="fields__date"
         />
-        <label class="custom-dish-field">人數
+        <label class="custom-dish-field" data-onboarding-target="menu-people">人數
           <span><button type="button" aria-label="減少人數" :disabled="settings.people <= 0" @click="changePeople(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.people" type="number" min="0" max="20" inputmode="numeric" @input="updatePeople($event.target.value)" /><button type="button" aria-label="增加人數" :disabled="settings.people >= 20" @click="changePeople(1)"><i class="fa-solid fa-plus"></i></button></span>
           <small v-if="shownErrors.people" class="field-error">{{ shownErrors.people }}</small>
         </label>
-        <label class="custom-dish-field">菜數
+        <label class="custom-dish-field" data-onboarding-target="menu-dishes">菜數
           <span><button type="button" aria-label="減少菜數" :disabled="settings.dishCount <= 0" @click="changeDishCount(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.dishCount" type="number" min="0" max="20" inputmode="numeric" @input="updateDishCount($event.target.value)" /><button type="button" aria-label="增加菜數" :disabled="settings.dishCount >= 20" @click="changeDishCount(1)"><i class="fa-solid fa-plus"></i></button></span>
           <small v-if="shownErrors.dishCount" class="field-error">{{ shownErrors.dishCount }}</small>
         </label>
@@ -623,6 +635,7 @@ function chooseOtherDate() {
         <div class="actions__buttons">
           <BaseButton variant="secondary" @click="clearSettings">清除設定</BaseButton>
           <BaseButton
+            data-onboarding-target="menu-build"
             :disabled="submitted && errorCount > 0"
             :class="{ 'is-loading': status === 'loading' }"
             :aria-busy="status === 'loading'"
@@ -929,7 +942,8 @@ function chooseOtherDate() {
 }
 
 .actions__buttons :deep(.btn) {
-  min-width: 150px;
+  /* 用餐設定的雙操作鈕依文字內容決定寬度，不拉成滿版膠囊。 */
+  min-width: 0;
 }
 
 .is-loading {
@@ -944,6 +958,8 @@ function chooseOtherDate() {
 .recipes {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* 不讓同列較長的卡片把其他卡片拉高，避免出現不規則的留白。 */
+  align-items: start;
   gap: var(--space-20);
 }
 

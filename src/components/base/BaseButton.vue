@@ -4,7 +4,7 @@
 //            secondary 淺咖啡底（Button/sec、Type=Secondary、Button/add/small/mc）
 //            outline   白底細框（Button/outline，例：Google／LINE 登入）
 //            danger    紅底白字（刪除帳號彈窗的「永久刪除」）
-//   size     md 16px 字、padding 12（大按鈕）；sm 12px 字、padding 4/8（小膠囊 Button/add/small）
+//   size     md 一般操作按鈕固定高 36px；sm 12px 字、padding 4/8（小膠囊 Button/add/small）
 //   block    滿版寬度（例：登入按鈕）
 //   icon / iconRight  Font Awesome class，例：'fa-solid fa-plus'、'fa-solid fa-chevron-right'
 //   to       有值時渲染成 RouterLink
@@ -70,19 +70,34 @@ const classes = computed(() => [
   transition:
     background-color 0.2s,
     color 0.2s,
-    border-color 0.2s;
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+
+@media (hover: hover) {
+  .btn:not(:disabled):not(.is-disabled):hover {
+    box-shadow: 0 5px 10px rgb(52 38 28 / 12%);
+    transform: translateY(-1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
 }
 
 /* ---------- 尺寸 ---------- */
 .btn--md {
-  gap: var(--space-8);
-  padding: 11px; /* 12px 減掉 1px 邊框，總高 45px 同 Figma */
+  gap: 6px;
+  padding: 7px 10px; /* 7px 上下內距 + 20px 行高 + 2px 邊框 = 36px */
   font-size: var(--fs-body-1);
-  line-height: 21px;
+  line-height: 20px;
 }
 
 .btn--md .btn__icon {
-  font-size: 20px;
+  font-size: 16px;
 }
 
 .btn--sm {
@@ -137,8 +152,8 @@ const classes = computed(() => [
 }
 
 .btn--outline.btn--md {
-  gap: 10px;
-  padding: 12px 24px; /* 總高 47px 同 Figma Button/outline */
+  gap: 8px;
+  padding: 7px 16px;
 }
 
 /* Figma 沒畫 outline 的 hover／active，先用品牌淺色系 */
@@ -198,8 +213,7 @@ const classes = computed(() => [
   outline-offset: 2px;
 }
 
-/* 手機維持同一套元件比例：主要操作由桌機的 45px 收斂為 36px，
-   避免頁首「新增」按鈕在窄螢幕搶走標題與內容空間。 */
+/* 各斷點維持 36px 操作高度，只微調字級與水平內距。 */
 @media (max-width: 640px) {
   .btn--md {
     gap: 6px;
@@ -214,20 +228,20 @@ const classes = computed(() => [
 
   .btn--outline.btn--md {
     gap: 8px;
-    padding: 8px 14px;
+    padding: 7px 14px;
   }
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
   .btn--md {
-    gap: 7px;
-    padding: 9px 10px;
+    gap: 6px;
+    padding: 7px 10px;
     font-size: 14px;
     line-height: 20px;
   }
 
   .btn--md .btn__icon {
-    font-size: 18px;
+    font-size: 16px;
   }
 }
 </style>
