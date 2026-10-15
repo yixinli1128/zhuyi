@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { load, save, saveForAccount, clearAppData } from './storage'
+import { load, save, saveForAccount, releaseAccountHousehold, clearAppData } from './storage'
 
 // 會員（假登入）：帳號和登入狀態都只存在瀏覽器裡，沒有後端
 // 示範帳號：oliver@example.com ／ zhuyi1234
@@ -58,6 +58,7 @@ function resetDemoAccountsOnce() {
     saveForAccount('family-members', email, [])
     saveForAccount('fridge-ingredients', email, [])
     saveForAccount('mealPlans', email, [])
+    releaseAccountHousehold(email)
   })
 
   const resetEmails = new Set(RESETTABLE_DEMO_EMAILS)
@@ -101,6 +102,7 @@ function resetEmptyDemoAccountsOnce() {
     saveForAccount('family-members', email, [])
     saveForAccount('fridge-ingredients', email, [])
     saveForAccount('mealPlans', email, [])
+    releaseAccountHousehold(email)
   })
 
   const emptyEmails = new Set(EMPTY_DEMO_EMAILS)

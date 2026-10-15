@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import PageTitle from '@/components/layout/PageTitle.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import { useFamilyStore } from '@/stores/family'
+import { useUserStore } from '@/stores/user'
+import HouseholdShare from '@/components/family/HouseholdShare.vue'
 import addIconUrl from '@/assets/figma/icon-add-duotone.svg'
 import avatarPlaceholderUrl from '@/assets/figma/avatar-placeholder.svg'
 import closeIconUrl from '@/assets/figma/icon-close.svg'
@@ -14,6 +16,9 @@ import trainCarriageLongUrl from '@/assets/family-train-carriage-long-ink-v1.png
 import { NICKNAME_MAX_INPUT_LENGTH, nicknameUnits, trimNicknameToUnits } from '@/utils/nickname'
 
 const familyStore = useFamilyStore()
+const userStore = useUserStore()
+// 共用家庭裡每個帳號都有本人卡片：自己的標「本人」，其他帳號標「共用帳號」
+const myEmail = computed(() => userStore.user?.email?.toLowerCase() ?? '')
 const dialog = ref(null)
 const editingId = ref(null)
 const deletingMember = ref(null)
@@ -117,6 +122,7 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
       <template #actions><BaseButton data-onboarding-target="family-add" @click="openAdd">＋ 新增成員</BaseButton></template>
     </PageTitle>
     <main class="content">
+      <HouseholdShare />
       <section class="summary" aria-label="家庭飲食摘要">
         <article><span>常駐用餐人數</span><strong>{{ members.length }} <small>位</small></strong><p>平日晚餐共食家庭名冊</p></article>
         <article><span>每餐總份量</span><strong>{{ totalPortions }} <small>人份</small></strong><p>依成員食量係數動態加權</p></article>
@@ -135,7 +141,7 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
         <header><h2 id="member-list-title">家庭成員名冊</h2><span>共 {{ members.length }} 位成員</span></header>
         <div class="member-grid">
           <article v-for="member in members" :key="member.id" class="member-card">
-            <header><span class="avatar"><img v-if="member.avatar" :src="member.avatar" alt="" /><template v-else>{{ member.name.slice(0, 1) }}</template></span><div><h3>{{ member.name }}<span v-if="member.ownerEmail" class="owner-tag">本人</span></h3><small>份量：{{ member.portionFactor.toFixed(1) }}x</small></div><div class="card-actions"><button type="button" :aria-label="`編輯 ${member.name}`" @click="openEdit(member)"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button><button v-if="!member.ownerEmail" type="button" :aria-label="`刪除 ${member.name}`" @click="confirmDelete(member)"><i class="fa-regular fa-trash-can" aria-hidden="true"></i></button></div></header>
+            <header><span class="avatar"><img v-if="member.avatar" :src="member.avatar" alt="" /><template v-else>{{ member.name.slice(0, 1) }}</template></span><div><h3>{{ member.name }}<span v-if="member.ownerEmail" :class="['owner-tag', { 'owner-tag--shared': member.ownerEmail !== myEmail }]">{{ member.ownerEmail === myEmail ? '本人' : '共用帳號' }}</span></h3><small>份量：{{ member.portionFactor.toFixed(1) }}x</small></div><div class="card-actions"><button type="button" :aria-label="`編輯 ${member.name}`" @click="openEdit(member)"><i class="fa-regular fa-pen-to-square" aria-hidden="true"></i></button><button v-if="!member.ownerEmail" type="button" :aria-label="`刪除 ${member.name}`" @click="confirmDelete(member)"><i class="fa-regular fa-trash-can" aria-hidden="true"></i></button></div></header>
             <dl><div><dt>過敏食材</dt><dd><span v-if="!member.allergies.length" class="tag">無</span><span v-for="item in member.allergies" :key="item" class="tag">{{ item }}</span></dd></div><div><dt>忌口食材</dt><dd><span v-if="!member.avoids.length" class="tag">無</span><span v-for="item in member.avoids" :key="item" class="tag">{{ item }}</span></dd></div><div class="two-column"><div><dt>飲食需求</dt><dd>{{ member.dietaryNote || '無' }}</dd></div><div><dt>辣度偏好</dt><dd>{{ spiceLevels.find((item) => item.value === member.spiceLevel)?.label }}</dd></div></div></dl>
             <footer>最近更新：{{ dateLabel(member.updatedAt) }}</footer>
           </article>
@@ -380,6 +386,7 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
   .chips { gap: 5px; }
   .chips button { padding: 5px 7px; }
 }
+.owner-tag.owner-tag--shared { background: var(--brand-secondary); color: var(--text-body); }
 .owner-tag { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 11px; line-height: 16px; vertical-align: middle; }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,7 +1,8 @@
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { load, save, loadForAccount, saveForAccount } from './storage'
+import { load, save, loadForHousehold, saveForHousehold } from './storage'
 import { useUserStore } from './user'
+import { useHouseholdStore } from './household'
 import { addDays, toDateKey } from '@/utils/date'
 
 const STORAGE_KEY = 'fridge-ingredients'
@@ -58,13 +59,17 @@ function normaliseIngredient(input, existing = {}) {
 }
 
 export const useFridgeStore = defineStore('fridge', () => {
+  // 冰箱庫存綁在目前帳號所屬的家庭上；同家庭的帳號看到同一份冰箱
   const userStore = useUserStore()
+  const householdStore = useHouseholdStore()
   const accountEmail = computed(() => userStore.user?.email?.toLowerCase() ?? '')
-  const ingredients = ref(loadForAccount(STORAGE_KEY, accountEmail.value, []))
+  const householdId = computed(() => householdStore.householdId)
+  const ingredients = ref(loadForHousehold(STORAGE_KEY, householdId.value, []))
   const activeIngredients = computed(() => ingredients.value.filter((item) => !item.deletedAt))
 
   function ensureOliverDemoInventory(email) {
-    if (email !== OLIVER_EMAIL) return
+    // 只帶進 Oliver 自己的家庭，加入別人的家庭時不另外塞示範食材
+    if (email !== OLIVER_EMAIL || householdStore.current?.ownerEmail !== OLIVER_EMAIL) return
     const seeded = load(OLIVER_DEMO_SEED_KEY, {})
     // 不將 seed 標記當成唯一條件：舊版若在 ID 建立失敗時中斷，
     // 仍可能留下空白庫存。只要已有任一筆（包含軟刪除）就不覆寫。
@@ -261,12 +266,13 @@ export const useFridgeStore = defineStore('fridge', () => {
     return consumed
   }
 
+  watch(householdId, (id) => {
+    ingredients.value = loadForHousehold(STORAGE_KEY, id, [])
+    ensureOliverDemoInventory(accountEmail.value)
+  }, { flush: 'sync' })
+  // 同步寫入，避免換家庭的同一輪把舊家庭的庫存寫進新家庭
+  watch(ingredients, (value) => saveForHousehold(STORAGE_KEY, householdId.value, value), { deep: true, flush: 'sync' })
   ensureOliverDemoInventory(accountEmail.value)
-  watch(accountEmail, (email) => {
-    ingredients.value = loadForAccount(STORAGE_KEY, email, [])
-    ensureOliverDemoInventory(email)
-  })
-  watch(ingredients, (value) => saveForAccount(STORAGE_KEY, accountEmail.value, value), { deep: true })
 
   return {
     ingredients,

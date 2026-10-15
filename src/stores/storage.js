@@ -48,6 +48,34 @@ export function saveForAccount(key, email, value) {
   if (account) save(accountStorageKey(key, account), value)
 }
 
+// 共用家庭版：家庭成員、冰箱與餐單綁在「家庭」上，同一家庭的帳號讀寫同一份資料。
+// householdId 為空（訪客）時不寫入，維持訪客資料只在目前頁面使用。
+function householdStorageKey(key, householdId) {
+  return `${key}:household:${householdId}`
+}
+
+export function loadForHousehold(key, householdId, fallback) {
+  if (!householdId) return fallback
+  return load(householdStorageKey(key, householdId), fallback)
+}
+
+export function saveForHousehold(key, householdId, value) {
+  if (householdId) save(householdStorageKey(key, householdId), value)
+}
+
+// 測試帳號重置時使用：讓帳號離開所在的家庭；它自己建立且沒有其他人的家庭直接刪掉，
+// 下次登入會重新建立一個乾淨的家庭。
+export function releaseAccountHousehold(email) {
+  const account = String(email ?? '').trim().toLowerCase()
+  const households = load('households', [])
+  if (!Array.isArray(households)) return
+  const next = households
+    .map((household) => ({ ...household, memberEmails: (household.memberEmails ?? []).filter((item) => item !== account) }))
+    .filter((household) => !(household.ownerEmail === account && household.memberEmails.length === 0))
+    .map((household) => (household.ownerEmail === account ? { ...household, ownerEmail: household.memberEmails[0] } : household))
+  save('households', next)
+}
+
 // 清除煮意存在這個瀏覽器的資料（刪除帳號時用），keep 內的 key 保留
 export function clearAppData(keep = []) {
   try {

@@ -1,6 +1,9 @@
 <script setup>
 // 首頁（Figma Desktop - 首頁1 1238:30932）：主視覺、公告、品牌理念、當季時蔬
 import heroImg from '@/assets/zhuyi-img/home-hero.png'
+import heroImg2 from '@/assets/zhuyi-img/home-hero2.png'
+import heroImg3 from '@/assets/zhuyi-img/home-hero3.png'
+import heroImg4 from '@/assets/zhuyi-img/home-hero4.png'
 import conceptImg from '@/assets/zhuyi-img/home-Concept.png'
 import { onBeforeUnmount, ref } from 'vue'
 import seasonalData from '@/data/seasonal.json'
@@ -74,6 +77,20 @@ const vReveal = {
 
 onBeforeUnmount(() => revealObserver?.disconnect())
 
+// 主視覺輪播：每 5 秒換一張，大圖與標語卡底圖一起淡入淡出
+const heroSlides = [
+  { src: heroImg, alt: '木桌上擺著白飯、熱湯與幾道家常菜' },
+  { src: heroImg2, alt: '一桌家常料理' },
+  { src: heroImg3, alt: '一桌家常料理' },
+  { src: heroImg4, alt: '一桌家常料理' },
+]
+const heroIndex = ref(0)
+const heroTimer = setInterval(() => {
+  heroIndex.value = (heroIndex.value + 1) % heroSlides.length
+}, 5000)
+
+onBeforeUnmount(() => clearInterval(heroTimer))
+
 const announcement = '2026.10.01 「秋季當令餐單」上線：自動適配當季茭白筍、芋頭與蓮藕，減鹽低卡無負擔。'
 
 const pillars = [
@@ -88,11 +105,26 @@ const pillars = [
     <section class="home-hero">
       <div class="home-hero__stage">
         <div class="home-hero__photo">
-          <img :src="heroImg" alt="木桌上擺著白飯、熱湯與幾道家常菜" />
+          <img
+            v-for="(slide, index) in heroSlides"
+            :key="slide.src"
+            :src="slide.src"
+            :alt="index === heroIndex ? slide.alt : ''"
+            :aria-hidden="index !== heroIndex"
+            :class="{ 'is-current': index === heroIndex }"
+          />
         </div>
         <div class="home-hero__slot">
           <div class="home-hero__card">
-            <img class="home-hero__card-bg" :src="heroImg" alt="" aria-hidden="true" />
+            <img
+              v-for="(slide, index) in heroSlides"
+              :key="slide.src"
+              class="home-hero__card-bg"
+              :class="{ 'is-current': index === heroIndex }"
+              :src="slide.src"
+              alt=""
+              aria-hidden="true"
+            />
             <div class="home-hero__card-content">
               <h1 class="home-hero__title">
                 <span class="home-hero__title-strong"><HoverText text="每天一點煮意，" auto /></span>
@@ -205,15 +237,30 @@ const pillars = [
 }
 
 .home-hero__photo {
+  position: relative;
   aspect-ratio: 1427 / 640;
   overflow: hidden;
 }
 
+/* 輪播的幾張圖疊在一起，只有目前這張不透明 */
 .home-hero__photo img {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.home-hero__photo img,
+.home-hero__card-bg {
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.home-hero__photo img.is-current,
+.home-hero__card-bg.is-current {
+  opacity: 1;
 }
 
 .home-hero__card-bg {
@@ -305,6 +352,11 @@ const pillars = [
   .home-hero__card,
   .home-notice__dot {
     animation: none;
+  }
+
+  .home-hero__photo img,
+  .home-hero__card-bg {
+    transition: none;
   }
 
   .home-tag::after,

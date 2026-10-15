@@ -1,7 +1,7 @@
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { loadForAccount, saveForAccount } from './storage'
-import { useUserStore } from './user'
+import { loadForHousehold, saveForHousehold } from './storage'
+import { useHouseholdStore } from './household'
 import { toDateKey } from '@/utils/date'
 
 // 示範用烹飪紀錄：前一個月與前兩個月沒有已完成的餐單時自動帶入，
@@ -67,13 +67,15 @@ function withDemoHistory(list) {
 // 餐食日誌：每天一筆晚餐餐單（來點煮意按「儲存到餐桌日誌」時寫入）
 // { id, date, mealType, servings, memberIds, guest, needs, useFridge, dishes, groceryChecked, status, savedAt }
 export const useMealPlanStore = defineStore('mealPlans', () => {
-  const userStore = useUserStore()
-  const accountEmail = computed(() => userStore.user?.email?.toLowerCase() ?? '')
-  const plansForAccount = (email) => withDemoHistory(loadForAccount('mealPlans', email, []))
-  const plans = ref(plansForAccount(accountEmail.value))
+  // 餐單綁在目前帳號所屬的家庭上；同家庭的帳號看到同一份日誌
+  const householdStore = useHouseholdStore()
+  const householdId = computed(() => householdStore.householdId)
+  const plansForHousehold = (id) => withDemoHistory(loadForHousehold('mealPlans', id, []))
+  const plans = ref(plansForHousehold(householdId.value))
 
-  watch(accountEmail, (email) => { plans.value = plansForAccount(email) })
-  watch(plans, (value) => saveForAccount('mealPlans', accountEmail.value, value), { deep: true })
+  watch(householdId, (id) => { plans.value = plansForHousehold(id) }, { flush: 'sync' })
+  // 同步寫入，避免換家庭的同一輪把舊家庭的餐單寫進新家庭
+  watch(plans, (value) => saveForHousehold('mealPlans', householdId.value, value), { deep: true, flush: 'sync' })
 
   function getPlan(date, mealType = '晚餐') {
     return plans.value.find((plan) => plan.date === date && plan.mealType === mealType) ?? null

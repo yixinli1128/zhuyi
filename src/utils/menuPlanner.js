@@ -91,6 +91,29 @@ export function isAllowed(recipe, rules) {
   return ![...rules.allergens, ...rules.avoid].some((word) => recipeContains(recipe, word))
 }
 
+// 7 天內菜色盡量不重複：整理所選日期前後 windowDays 天內的餐單，回傳 { recipeId: 距離天數 }（同一道取最近的一次）
+// excludeIds：不列入比較的餐單，例如正在編輯或即將被覆蓋的那一筆
+export function recentRecipeDays(plans, date, { excludeIds = [], windowDays = 7 } = {}) {
+  const dayIndex = (key) => Date.UTC(...key.split('-').map((n, i) => Number(n) - (i === 1 ? 1 : 0))) / 86400000
+  const target = dayIndex(date)
+  const days = {}
+  for (const plan of plans) {
+    if (!plan.date || excludeIds.includes(plan.id)) continue
+    const distance = Math.abs(dayIndex(plan.date) - target)
+    if (distance > windowDays) continue
+    for (const dish of plan.dishes ?? []) {
+      days[dish.recipeId] = Math.min(days[dish.recipeId] ?? Infinity, distance)
+    }
+  }
+  return days
+}
+
+// 近期出現過的菜大幅扣分，排在所有沒出現過的菜後面；不得不重複時，距離越遠扣得越少
+function recentPenalty(recipeId, recentDays) {
+  const distance = recentDays[recipeId]
+  return distance == null ? 0 : 100 - distance
+}
+
 // jitter：加一點隨機，每次建立的組合才會有變化
 function scoreRecipe(recipe, needs, fridgeMatches, jitter = 1.5) {
   let score = Math.random() * jitter
@@ -168,14 +191,16 @@ function pick(candidates, count, locked = [], { balance = false } = {}) {
  * 建立餐單
  * @returns {{ dishes: Array<{ recipeId, type }>, shortage: boolean, rules }}
  */
-export function planMenu({ recipes, members, guest, needs, dishCount, soupCount, useFridge, findFridgeMatches, preferredRecipeIds = [], lockedRecipeIds = [] }) {
+export function planMenu({ recipes, members, guest, needs, dishCount, soupCount, useFridge, findFridgeMatches, preferredRecipeIds = [], lockedRecipeIds = [], recentDays = {} }) {
   const rules = collectRules(members, guest)
   const scored = recipes
     .filter((recipe) => isAllowed(recipe, rules))
     .map((recipe) => {
       const matches = useFridge ? findFridgeMatches(recipe.ingredients.map((i) => i.name)) : []
-      const preferredScore = preferredRecipeIds.includes(recipe.id) ? 1000 : 0
-      return { recipe, score: scoreRecipe(recipe, needs, matches) + preferredScore }
+      // 使用者指定的菜不受 7 天不重複限制
+      const preferred = preferredRecipeIds.includes(recipe.id)
+      const penalty = preferred ? 0 : recentPenalty(recipe.id, recentDays)
+      return { recipe, score: scoreRecipe(recipe, needs, matches) + (preferred ? 1000 : 0) - penalty }
     })
 
   // 原本餐單的菜（例：排餐至某天後想再加一道）不換掉；不符合這次過敏／忌口的才不保留

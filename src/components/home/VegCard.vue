@@ -1,6 +1,8 @@
 <script setup>
 // Figma 首頁「當季時蔬」下方食材卡：食材照片、編號產地、名稱、介紹
 // 整張卡可點，點了讓上方輪播換成這個食材的菜色
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+
 defineProps({
   veg: {
     type: Object,
@@ -13,12 +15,66 @@ defineProps({
 })
 
 defineEmits(['select'])
+
+// 選取時的藍色虛線：依圖片實際尺寸畫路徑，圓角跟圖片一樣只在左上、右下；
+// 線段長度微調到剛好整除周長，虛線不會在某個角擠在一起，四個角都落在線段正中央
+const imageEl = ref(null)
+const size = ref({ w: 0, h: 0 })
+let resizeObserver
+
+onMounted(() => {
+  resizeObserver = new ResizeObserver(([entry]) => {
+    size.value = { w: entry.contentRect.width, h: entry.contentRect.height }
+  })
+  resizeObserver.observe(imageEl.value)
+})
+onBeforeUnmount(() => resizeObserver?.disconnect())
+
+const STROKE = 2
+const RADIUS = 12
+const DASH = 8
+const GAP = 8
+
+const dashFrame = computed(() => {
+  const { w, h } = size.value
+  if (!w || !h) return null
+  const i = STROKE / 2
+  const r = RADIUS - i
+  const d = [
+    `M${w - i},${i}`,
+    `V${h - i - r}`,
+    `A${r},${r} 0 0 1 ${w - i - r},${h - i}`,
+    `H${i}`,
+    `V${i + r}`,
+    `A${r},${r} 0 0 1 ${i + r},${i}`,
+    'Z',
+  ].join(' ')
+  const length = 2 * (w - 2 * i) + 2 * (h - 2 * i) - 4 * r + Math.PI * r
+  const segments = Math.max(2, Math.round(length / ((DASH + GAP) * 2)) * 2)
+  const scale = length / (segments * (DASH + GAP))
+  // 圓頭線帽會讓每段兩端各多出半個線寬，先扣掉，看起來才是設定的線段長度與留白
+  const visible = DASH * scale - STROKE
+  return {
+    d,
+    viewBox: `0 0 ${w} ${h}`,
+    dasharray: `${visible} ${GAP * scale + STROKE}`,
+    dashoffset: visible / 2,
+  }
+})
 </script>
 
 <template>
   <article class="veg-card" :class="{ 'is-active': active }">
-    <div class="veg-card__image">
+    <div ref="imageEl" class="veg-card__image">
       <img :src="veg.imageUrl" :alt="veg.name" loading="lazy" />
+      <svg v-if="active && dashFrame" class="veg-card__frame" :viewBox="dashFrame.viewBox" aria-hidden="true">
+        <path
+          :d="dashFrame.d"
+          :stroke-width="STROKE"
+          :stroke-dasharray="dashFrame.dasharray"
+          :stroke-dashoffset="dashFrame.dashoffset"
+        />
+      </svg>
     </div>
 
     <div class="veg-card__body">
@@ -129,14 +185,17 @@ defineEmits(['select'])
   outline: none;
 }
 
-/* 固定 8px 藍線／8px 留白，直接錨定在圖片邊界。 */
-.veg-card.is-active .veg-card__image::after {
-  content: '';
+/* 選取虛線：路徑在 script 裡依圖片尺寸算好，這裡只管顏色 */
+.veg-card__frame {
   position: absolute;
   z-index: 1;
   inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='100' height='100' rx='8' fill='none' stroke='%23b0bfd2' stroke-width='4' stroke-linecap='round' stroke-dasharray='8 8' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  fill: none;
+  stroke: #b0bfd2;
+  stroke-linecap: round;
 }
 
 .veg-card__intro {

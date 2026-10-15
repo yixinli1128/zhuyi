@@ -22,6 +22,7 @@ import {
   hasGuestSettings,
   hasNeeds,
   planMenu,
+  recentRecipeDays,
   swapCandidates,
 } from '@/utils/menuPlanner'
 import dietTypes from '@/data/dietTypes.json'
@@ -282,6 +283,10 @@ async function buildMenu() {
     findFridgeMatches: fridgeStore.findMatches,
     preferredRecipeIds: requestedRecipeIds,
     lockedRecipeIds,
+    // 7 天內盡量不重複；正在編輯的這筆、同一天同餐別會被覆蓋的那筆不算
+    recentDays: recentRecipeDays(mealPlanStore.plans, settings.date, {
+      excludeIds: [requestedPlan?.id, mealPlanStore.getPlan(settings.date, MEAL_TYPE)?.id].filter(Boolean),
+    }),
   })
 
   menu.value = {
