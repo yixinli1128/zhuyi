@@ -9,8 +9,8 @@ import logoUrl from '@/assets/zhuyi-img/logo/logo_1.svg'
 import IntroOpening from './IntroOpening.vue'
 
 const STORAGE_KEY = 'zhuyi:intro-seen'
-// 開場不應讓首次造訪看起來像白屏；保留短暫聚焦後即交給可操作的頁面。
-const HOLD = { opening: 1800, refresh: 2200 }
+// 開場約 6 秒：停留 3 秒，再以 3 秒粒子消散；離場開始即可操作頁面。
+const HOLD = { opening: 3000, refresh: 2200 }
 
 const mode = ref(null)
 const leaving = ref(false)

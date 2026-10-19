@@ -12,8 +12,8 @@ const emit = defineEmits(['dissolved'])
 const canvas = ref(null)
 
 const INK = [90, 70, 54]
-// 保有粒子散開的層次，但不讓進站等待超過幾秒。
-const DISSOLVE_DURATION = 1400
+// 開場停留後以三秒完成粒子散開，維持可讀的層次。
+const DISSOLVE_DURATION = 3000
 
 let raf = 0
 let cleanup = null
