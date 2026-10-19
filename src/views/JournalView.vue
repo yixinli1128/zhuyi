@@ -687,5 +687,9 @@ watch(selectedDate, async () => {
   .meal-banner__copy { flex: 1 1 auto; min-width: 0; }
   .meal-banner__copy h2 { width: auto; flex: 0 0 auto; }
   .meal-banner__actions { flex: 0 0 auto; margin-left: 0; padding-top: 1px; }
+
+  /* 空月份的常煮卡也必須撐滿單欄，避免 history-layout 改為 flex 後由內容寬度收縮。 */
+  .top-recipes-stack { width: 100%; align-self: stretch; }
+  .top-recipes { box-sizing: border-box; width: 100%; }
 }
 </style>
