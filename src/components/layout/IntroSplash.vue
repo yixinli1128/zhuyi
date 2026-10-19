@@ -1,6 +1,6 @@
 <script setup>
 // 網站的兩種進場動畫
-// - 開場（每個分頁第一次打開網站）：點描版畫風，墨點繞成漩渦聚成一只湯鍋（IntroOpening），最後像布簾一樣往上收
+// - 開場（每個分頁第一次打開網站）：點描版畫風，墨點繞成漩渦聚成一只湯鍋（IntroOpening），最後淡化消散
 // - 重新整理：畫面中央滴下一個墨點，暈開成 logo 的墨色底，再用筆刷一筆一筆刷出圖標和「煮意」
 // 網址加 ?intro 可以重看開場；點一下或按任意鍵可以略過；系統設定「減少動態」時都不播
 import { onBeforeUnmount, onMounted, ref } from 'vue'
@@ -80,10 +80,10 @@ onBeforeUnmount(() => {
     :class="[`intro--${mode}`, { 'is-leaving': leaving }]"
     role="presentation"
     @click="leave"
-    @animationend.self="leaving && done()"
+    @animationend.self="mode === 'refresh' && leaving && done()"
   >
     <!-- ---------- 開場：點描版畫風的湯鍋 ---------- -->
-    <IntroOpening v-if="mode === 'opening'" />
+    <IntroOpening v-if="mode === 'opening'" :dissolving="leaving" @dissolved="done" />
 
     <!-- ---------- 重新整理：墨點筆刷 ---------- -->
     <svg v-else class="intro__logo" viewBox="0 0 202 404" role="img" aria-label="煮意 ZHUYI">
@@ -148,16 +148,15 @@ onBeforeUnmount(() => {
   animation: intro-out 0.6s ease forwards;
 }
 
-/* 開場結束時像布簾一樣往上收 */
+/* 開場離場由 IntroOpening 的鍋子解體與紙面淡去接手，父層保持透明讓首頁露出。 */
 .intro--opening.is-leaving {
-  animation: intro-curtain 0.8s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+  animation: none;
+  background: transparent;
+  cursor: default;
 }
 
-@keyframes intro-curtain {
-  to {
-    transform: translateY(-100%);
-    visibility: hidden;
-  }
+.intro--opening.is-leaving .intro__skip {
+  animation: intro-opening-skip-out 0.25s ease-out forwards;
 }
 
 .intro__logo {
@@ -254,6 +253,12 @@ onBeforeUnmount(() => {
   to {
     opacity: 0;
     visibility: hidden;
+  }
+}
+
+@keyframes intro-opening-skip-out {
+  to {
+    opacity: 0;
   }
 }
 

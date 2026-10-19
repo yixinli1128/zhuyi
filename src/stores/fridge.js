@@ -142,10 +142,9 @@ export const useFridgeStore = defineStore('fridge', () => {
     )
   }
 
-  // 用於「現有庫存可做料理」：必須同時符合食材名稱、單位與數量，且不能使用過期庫存。
-  // 回傳的是每一個食譜需求的實際扣抵結果，不再只用「名稱有出現」判斷 100% 匹配。
-  // skipStaples：冰箱推薦用，水、鹽、糖、油等基本品不列入缺少的食材。
-  function matchRecipeRequirements(requirements = [], { skipStaples = false } = {}) {
+  // 比對與實際扣庫必須共用同一筆配置結果：重量 (g/kg) 與容量 (ml/L) 可換算，
+  // 其他單位只能完全相同。這樣不會出現「顯示庫存足夠、完成烹飪卻沒有扣到」的假匹配。
+  function allocateRecipeRequirements(requirements = [], { skipStaples = false } = {}) {
     const available = activeIngredients.value
       .filter((item) => item.expiry >= toDateKey() && Number(item.amount) > 0)
       .map((item) => ({ ...item }))
@@ -153,6 +152,7 @@ export const useFridgeStore = defineStore('fridge', () => {
     const matchedIngredients = []
     const missingIngredients = []
     const requirementMatches = []
+    const deductions = []
     let totalRequirements = 0
     let matchedRequirements = 0
 
@@ -160,7 +160,8 @@ export const useFridgeStore = defineStore('fridge', () => {
       if (skipStaples && isPantryStaple(requirement.name)) return
       const needed = Number(requirement.qty ?? requirement.amount)
       const matchingItems = available.filter((item) => namesMatch(requirement.name, item.name))
-      // 「少許／適量」沒有可運算的單位時，至少需要有一項有效同名庫存。
+      // 「少許／適量」沒有可運算的用量時，至少需要有一項有效同名庫存。
+      // 因沒有可靠的扣除數量，這類食材不會產生扣庫；數量化食材則一定以 deductions 為準。
       if (!Number.isFinite(needed) || needed <= 0 || !requirement.unit) {
         const isFulfilled = matchingItems.length > 0
         totalRequirements += 1
@@ -188,17 +189,16 @@ export const useFridgeStore = defineStore('fridge', () => {
           const usedInIngredientUnit = displayAmount(used / source.factor)
           remaining.set(ingredient.id, displayAmount((remaining.get(ingredient.id) ?? 0) - usedInIngredientUnit))
           matchedIngredients.push({ ...ingredient, amountUsed: usedInIngredientUnit })
+          deductions.push({
+            id: ingredient.id,
+            name: ingredient.name,
+            amount: usedInIngredientUnit,
+            unit: ingredient.unit,
+            recipeName: requirement.name,
+          })
           remainingNeeded -= used
         })
 
-      // 單位無法換算時（例：冰箱記「牛番茄 3 顆」、食譜要「番茄 300 g」），有同名有效庫存就視為已有
-      if (remainingNeeded > 0) {
-        const countBased = matchingItems.find((ingredient) => unitDescriptor(ingredient.unit).group !== target.group && (remaining.get(ingredient.id) ?? 0) > 0)
-        if (countBased) {
-          matchedIngredients.push(countBased)
-          remainingNeeded = 0
-        }
-      }
       const missingQty = displayAmount(remainingNeeded / target.factor)
       const matchedQty = displayAmount(needed - missingQty)
       const isFulfilled = remainingNeeded <= 0
@@ -213,41 +213,22 @@ export const useFridgeStore = defineStore('fridge', () => {
       totalRequirements,
       matchedRequirements,
       requirementMatches,
+      deductions,
       isComplete: totalRequirements > 0 && missingIngredients.length === 0,
     }
   }
 
-  // 依食譜用量預覽可從冰箱扣除的食材。重量、容量會自動換算；其他單位需相同才會扣除。
+  // 用於「現有庫存可做料理」：必須同時符合食材名稱、單位與數量，且不能使用過期庫存。
+  // 回傳的是每一個食譜需求的實際扣抵結果，不再只用「名稱有出現」判斷 100% 匹配。
+  // skipStaples：冰箱推薦用，水、鹽、糖、油等基本品不列入缺少的食材。
+  function matchRecipeRequirements(requirements = [], options = {}) {
+    const { deductions, ...match } = allocateRecipeRequirements(requirements, options)
+    return match
+  }
+
+  // 依食譜用量預覽可從冰箱扣除的食材；與上方的庫存匹配使用完全相同的配置規則。
   function previewConsumption(requirements = []) {
-    const remaining = new Map(activeIngredients.value.map((item) => [item.id, Number(item.amount)]))
-    const deductions = []
-
-    requirements.forEach((requirement) => {
-      const needed = Number(requirement.qty ?? requirement.amount)
-      if (!Number.isFinite(needed) || needed <= 0) return
-      const target = unitDescriptor(requirement.unit)
-      let remainingNeeded = needed * target.factor
-
-      findMatches([requirement.name]).forEach((ingredient) => {
-        if (remainingNeeded <= 0) return
-        const source = unitDescriptor(ingredient.unit)
-        if (source.group !== target.group) return
-        const available = (remaining.get(ingredient.id) ?? 0) * source.factor
-        const used = Math.min(available, remainingNeeded)
-        if (used <= 0) return
-        const usedInIngredientUnit = displayAmount(used / source.factor)
-        remaining.set(ingredient.id, displayAmount((remaining.get(ingredient.id) ?? 0) - usedInIngredientUnit))
-        deductions.push({
-          id: ingredient.id,
-          name: ingredient.name,
-          amount: usedInIngredientUnit,
-          unit: ingredient.unit,
-          recipeName: requirement.name,
-        })
-        remainingNeeded -= used
-      })
-    })
-    return deductions
+    return allocateRecipeRequirements(requirements).deductions
   }
 
   // 扣除前再次以目前庫存核對，避免多視窗操作導致庫存出現負數。

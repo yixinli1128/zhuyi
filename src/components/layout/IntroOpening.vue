@@ -4,9 +4,15 @@
 // 四周配上細十字線和字距拉開的小字，像一張雜誌版畫
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
+const props = defineProps({
+  dissolving: Boolean,
+})
+const emit = defineEmits(['dissolved'])
+
 const canvas = ref(null)
 
 const INK = [90, 70, 54]
+const DISSOLVE_DURATION = 3000
 
 let raf = 0
 let cleanup = null
@@ -22,6 +28,10 @@ function seeded(seed) {
 
 const easeOut = (t) => 1 - (1 - t) ** 3
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v))
+const smoothstep = (from, to, value) => {
+  const t = clamp((value - from) / (to - from))
+  return t * t * (3 - 2 * t)
+}
 
 // ---------- 鍋子的點（以鍋身中心為原點，y 向下）----------
 const R = 120
@@ -116,6 +126,8 @@ onMounted(() => {
       w: (0.5 + rand() * 0.3) * (170 / rx),
       alpha: 0.25 + 0.65 * (1 - (rx - 150) / 420) * rand() ** 0.5,
       size: rand() < 0.02 ? 2.6 : 1 + rand() * 0.8,
+      phase: rand(),
+      tangent: rand() * 2 - 1,
     }
   })
 
@@ -123,6 +135,23 @@ onMounted(() => {
   const pot = potPoints(rand).map((p) => {
     const a = rand() * Math.PI * 2
     const r = 260 + rand() * 260
+    const localR = clamp(Math.hypot(p.x / (R * 1.06), (p.y + 15) / 150))
+    const phase = rand()
+    // 用兩層低頻紙紋決定消散順序：由中心往外，但邊界不會是規律圓形。
+    const paperGrain =
+      Math.sin(p.x * 0.038 + p.y * 0.052 + phase * Math.PI * 2) * 0.055
+      + Math.sin(p.x * 0.013 - p.y * 0.021 + phase * Math.PI * 4.2) * 0.045
+    const release = clamp(0.12 + localR * 0.28 + paperGrain + (rand() - 0.5) * 0.025, 0.08, 0.56)
+
+    // 只有很少的墨粉離開鍋身，讓視覺留在「淡墨被風帶走」而非爆炸。
+    const dust = rand() < 0.016
+    const normalX = p.x
+    const normalY = (p.y + 20) * 0.72
+    const normalLength = Math.hypot(normalX, normalY) || 1
+    // 保留一點由中心向外的力道，再疊加一股往右上方的紙面微風。
+    const flowX = normalX / normalLength * 0.35 + 0.38
+    const flowY = normalY / normalLength * 0.35 - 0.62
+    const flowLength = Math.hypot(flowX, flowY) || 1
     return {
       ...p,
       sx: Math.cos(a) * r,
@@ -130,6 +159,17 @@ onMounted(() => {
       delay: 0.8 + rand() * 1.1,
       keep: rand(),
       curl: (rand() - 0.5) * 80,
+      phase,
+      release,
+      erosionSpan: 0.28 + rand() * 0.08,
+      fragmentDelay: 0.16 + rand() * 0.12,
+      life: 0.34 + rand() * 0.12,
+      flowX: flowX / flowLength,
+      flowY: flowY / flowLength,
+      burstDistance: 12 + rand() * 46,
+      dust,
+      fiber: dust && rand() < 0.42,
+      fiberAngle: (rand() - 0.5) * 0.7,
     }
   })
 
@@ -139,6 +179,8 @@ onMounted(() => {
     t0: 2.3 + rand() * 2.6,
     life: 1.8 + rand() * 0.9,
     jitter: (rand() - 0.5) * 2.5,
+    phase: rand(),
+    tangent: rand() * 2 - 1,
   }))
 
   // 外圍幾條細的虛線弧
@@ -151,6 +193,8 @@ onMounted(() => {
 
   const start = performance.now()
   let last = start
+  let dissolveStart = null
+  let dissolveDone = false
 
   function frame(now) {
     const t = (now - start) / 1000
@@ -165,42 +209,75 @@ onMounted(() => {
     // 電腦版整體往下放，上方多留一些空白
     const cy = H * (W < 768 ? 0.5 : 0.56)
 
-    // 用透明度慢慢擦掉上一格，讓動的點留下拖尾，像漩渦的筆觸
-    ctx.globalCompositeOperation = 'destination-out'
-    ctx.fillStyle = 'rgba(0,0,0,0.22)'
-    ctx.fillRect(0, 0, W, H)
-    ctx.globalCompositeOperation = 'source-over'
+    // 結束時先定格；只有鍋子的墨點會逐顆解體成墨粉與紙纖維。
+    if (props.dissolving && dissolveStart === null) dissolveStart = now
+    const dissolveProgress = dissolveStart === null ? 0 : clamp((now - dissolveStart) / DISSOLVE_DURATION)
+    const sceneT = dissolveStart === null ? t : (dissolveStart - start) / 1000
+    const isDissolving = dissolveStart !== null
+    const decorationFade = 1 - easeOut(clamp((dissolveProgress - 0.03) / 0.16))
+    // 最後才把殘留的淡墨整體收掉，避免侵蝕途中出現一個太乾淨的白洞。
+    const finalInkFade = isDissolving
+      ? 1 - smoothstep(0.45, 0.9, dissolveProgress)
+      : 1
+    const burst = (p, x, y) => {
+      if (!isDissolving) return { x, y, alpha: 0, eased: 0 }
+      const rawLocal = (dissolveProgress - p.release - p.fragmentDelay) / p.life
+      const local = clamp(rawLocal)
+      const eased = easeOut(local)
+      const drift = p.burstDistance * (0.5 * eased + 0.5 * eased * eased) * s
+      const side = Math.sin(eased * Math.PI + p.phase * Math.PI * 2) * (1.5 + p.phase * 4) * eased * s
+      return {
+        x: x + p.flowX * drift - p.flowY * side,
+        y: y + p.flowY * drift + p.flowX * side,
+        alpha: Math.sin(Math.PI * local) ** 1.3 * 0.38,
+        eased,
+      }
+    }
+
+    // 平常留下極淡的筆觸；離場時每格重畫，避免粒子拖成不自然的殘影。
+    if (isDissolving) {
+      ctx.clearRect(0, 0, W, H)
+    } else {
+      ctx.globalCompositeOperation = 'destination-out'
+      ctx.fillStyle = 'rgba(0,0,0,0.22)'
+      ctx.fillRect(0, 0, W, H)
+      ctx.globalCompositeOperation = 'source-over'
+    }
 
     const ink = (a) => `rgba(${INK[0]},${INK[1]},${INK[2]},${a})`
 
     // 外圍虛線弧
-    const arcIn = easeOut(clamp((t - 0.3) / 1.4))
+    const arcIn = easeOut(clamp((sceneT - 0.3) / 1.4))
+    const arcFade = decorationFade
     ctx.setLineDash([1.2, 6])
     ctx.lineWidth = 1
     for (const arc of arcs) {
-      ctx.strokeStyle = ink(0.35 * arcIn)
+      ctx.strokeStyle = ink(0.35 * arcIn * arcFade)
       ctx.beginPath()
-      ctx.ellipse(cx, cy + 10 * s, arc.r * s, arc.r * s * 0.82, 0, arc.from + arc.w * t, arc.from + arc.w * t + arc.len * arcIn)
+      ctx.ellipse(cx, cy + 10 * s, arc.r * s, arc.r * s * 0.82, 0, arc.from + arc.w * sceneT, arc.from + arc.w * sceneT + arc.len * arcIn)
       ctx.stroke()
     }
     ctx.setLineDash([])
 
     // 漩渦：一開始散在外面，1.6 秒內收攏成圈
-    const gather = easeOut(clamp(t / 1.8))
-    const fadeIn = clamp(t / 0.5)
-    const potIn = clamp((t - 1.2) / 1.2)
+    const gather = easeOut(clamp(sceneT / 1.8))
+    const fadeIn = clamp(sceneT / 0.5)
+    const potIn = clamp((sceneT - 1.2) / 1.2)
+
+    if (!isDissolving) {
+      for (const p of rings) p.a += p.w * dt
+    }
 
     const drawRing = (front) => {
       for (const p of rings) {
-        p.a += p.w * dt
         const sin = Math.sin(p.a)
         if (front !== sin > 0) continue
         const spread = 1 + 1.6 * (1 - gather)
-        const x = cx + Math.cos(p.a) * p.rx * spread * s
-        const y = cy + (78 + sin * p.rx * 0.27 * spread) * s
+        let x = cx + Math.cos(p.a) * p.rx * spread * s
+        let y = cy + (78 + sin * p.rx * 0.27 * spread) * s
         // 鍋子成形後，被鍋身擋住的後排點就不畫
         if (!front && potIn > 0.5 && Math.abs(x - cx) < R * s && y < cy + BOT_Y * s) continue
-        ctx.fillStyle = ink(p.alpha * fadeIn)
+        ctx.fillStyle = ink(p.alpha * fadeIn * decorationFade)
         ctx.fillRect(x, y, p.size, p.size)
       }
     }
@@ -209,28 +286,63 @@ onMounted(() => {
 
     for (const p of pot) {
       if (p.keep > keep) continue
-      const k = clamp((t - p.delay) / 0.9)
+      const k = clamp((sceneT - p.delay) / 0.9)
       if (k <= 0) continue
       const e = easeOut(k)
       const bend = Math.sin(Math.PI * e) * p.curl
-      const x = cx + (p.sx + (p.x - p.sx) * e + bend) * s
-      const y = cy + (p.sy + (p.y - p.sy) * e - bend * 0.3) * s
-      ctx.fillStyle = ink(0.35 + 0.6 * e)
-      ctx.fillRect(x, y, p.size, p.size)
+      let x = cx + (p.sx + (p.x - p.sx) * e + bend) * s
+      let y = cy + (p.sy + (p.y - p.sy) * e - bend * 0.3) * s
+      // 主鍋以紙紋為節奏被侵蝕，讓「中心向外」真正落在鍋身上。
+      const eroded = isDissolving
+        ? smoothstep(p.release, p.release + p.erosionSpan, dissolveProgress)
+        : 0
+      const sourceAlpha = (0.35 + 0.6 * e) * (1 - eroded * 0.64) * finalInkFade
+      if (sourceAlpha > 0.01) {
+        ctx.fillStyle = ink(sourceAlpha)
+        ctx.fillRect(x, y, p.size, p.size)
+      }
+      if (!isDissolving || !p.dust) continue
+      const out = burst(p, x, y)
+      if (out.alpha <= 0.01) continue
+      // 柔邊的小橢圓墨粉比放大的方格更像紙面上被風帶走的淡墨。
+      const particleSize = p.size * (0.85 + out.eased * 0.75)
+      ctx.fillStyle = ink((0.36 + 0.18 * e) * out.alpha)
+      ctx.beginPath()
+      ctx.ellipse(out.x, out.y, particleSize, particleSize * 0.66, Math.atan2(p.flowY, p.flowX), 0, Math.PI * 2)
+      ctx.fill()
+      if (p.fiber && out.eased > 0.12) {
+        const fiberLength = (4 + p.phase * 9) * (0.6 + out.eased) * s
+        ctx.save()
+        ctx.translate(out.x, out.y)
+        ctx.rotate(Math.atan2(p.flowY, p.flowX) + p.fiberAngle)
+        ctx.strokeStyle = ink((0.3 + 0.38 * out.eased) * out.alpha)
+        ctx.lineWidth = 0.65
+        ctx.beginPath()
+        ctx.moveTo(-fiberLength / 2, 0)
+        ctx.lineTo(fiberLength / 2, 0)
+        ctx.stroke()
+        ctx.restore()
+      }
     }
 
     drawRing(true)
 
     // 熱氣
     for (const p of steam) {
-      const k = (t - p.t0) / p.life
+      const k = (sceneT - p.t0) / p.life
       if (k <= 0 || k >= 1) continue
       const rise = k * 90
       // 每一縷沿著同一條 S 形往上，點排起來就像一縷縷煙
-      const x = cx + (p.lane * 18 + Math.sin(rise * 0.075 + p.lane * 2 + t * 1.2) * (4 + rise * 0.1) + p.jitter) * s
-      const y = cy + (RIM_Y - RY - 92 - rise) * s
-      ctx.fillStyle = ink(0.75 * Math.sin(Math.PI * k))
+      let x = cx + (p.lane * 18 + Math.sin(rise * 0.075 + p.lane * 2 + sceneT * 1.2) * (4 + rise * 0.1) + p.jitter) * s
+      let y = cy + (RIM_Y - RY - 92 - rise) * s
+      ctx.fillStyle = ink(0.75 * Math.sin(Math.PI * k) * decorationFade)
       ctx.fillRect(x, y, 1.6, 1.6)
+    }
+
+    if (dissolveProgress >= 1 && !dissolveDone) {
+      dissolveDone = true
+      emit('dissolved')
+      return
     }
 
     raf = requestAnimationFrame(frame)
@@ -248,7 +360,8 @@ onBeforeUnmount(() => cleanup?.())
 </script>
 
 <template>
-  <div class="opening" aria-hidden="true">
+  <div class="opening" :class="{ 'is-dissolving': dissolving }" aria-hidden="true">
+    <span class="opening__paper"></span>
     <canvas ref="canvas" class="opening__canvas"></canvas>
 
     <span class="opening__line opening__line--h"></span>
@@ -279,6 +392,14 @@ onBeforeUnmount(() => cleanup?.())
   inset: 0;
   color: var(--ink);
   overflow: hidden;
+  isolation: isolate;
+}
+
+.opening__paper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--bg-default);
 }
 
 /* 紙的顆粒 */
@@ -289,6 +410,16 @@ onBeforeUnmount(() => cleanup?.())
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.36 0 0 0 0 0.3 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity: 0.35;
   mix-blend-mode: multiply;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.opening.is-dissolving::before {
+  animation: opening-grain-soft-out 0.62s ease-in 2.16s forwards;
+}
+
+.opening.is-dissolving .opening__paper {
+  animation: opening-paper-soft-out 0.94s cubic-bezier(0.22, 0.61, 0.36, 1) 2.02s forwards;
 }
 
 .opening__canvas {
@@ -296,6 +427,7 @@ onBeforeUnmount(() => cleanup?.())
   inset: 0;
   width: 100%;
   height: 100%;
+  z-index: 2;
 }
 
 /* ---------- 細十字線 ---------- */
@@ -303,6 +435,7 @@ onBeforeUnmount(() => cleanup?.())
   position: absolute;
   background: var(--ink);
   opacity: 0.35;
+  z-index: 3;
 }
 
 .opening__line--h {
@@ -333,6 +466,45 @@ onBeforeUnmount(() => cleanup?.())
   margin: 0;
   opacity: 0;
   animation: opening-text 1s ease forwards;
+  z-index: 3;
+}
+
+.opening.is-dissolving .opening__line {
+  opacity: 0.35;
+  animation: opening-detail-dissolve 0.42s ease-in 0.1s forwards;
+}
+
+.opening.is-dissolving .opening__line--h {
+  transform: scaleX(1);
+}
+
+.opening.is-dissolving .opening__line--v {
+  transform: scaleY(1);
+}
+
+.opening.is-dissolving .opening__title,
+.opening.is-dissolving .opening__side,
+.opening.is-dissolving .opening__coord,
+.opening.is-dissolving .opening__tagline {
+  opacity: 1;
+  filter: none;
+  animation: opening-detail-dissolve 0.5s ease-in forwards;
+}
+
+.opening.is-dissolving .opening__title {
+  animation-delay: 0.25s;
+}
+
+.opening.is-dissolving .opening__side {
+  animation-delay: 0.38s;
+}
+
+.opening.is-dissolving .opening__coord {
+  animation-delay: 0.5s;
+}
+
+.opening.is-dissolving .opening__tagline {
+  animation-delay: 0.62s;
 }
 
 .opening__title {
@@ -401,6 +573,30 @@ onBeforeUnmount(() => cleanup?.())
 @keyframes opening-text {
   to {
     opacity: 1;
+  }
+}
+
+@keyframes opening-paper-soft-out {
+  0% {
+    opacity: 1;
+  }
+  35% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes opening-grain-soft-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes opening-detail-dissolve {
+  to {
+    opacity: 0;
   }
 }
 

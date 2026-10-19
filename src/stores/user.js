@@ -1,6 +1,7 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { load, save, saveForAccount, releaseAccountHousehold, clearAppData } from './storage'
+import { load, save, saveForAccount, releaseAccountHousehold, deleteAccountData } from './storage'
+import { useHouseholdStore } from './household'
 
 // 會員（假登入）：帳號和登入狀態都只存在瀏覽器裡，沒有後端
 // 示範帳號：oliver@example.com ／ zhuyi1234
@@ -47,8 +48,12 @@ const DEMO_ACCOUNTS = [
 // 讓每次測試都從「本人卡片已建立、其餘資料為空」開始。
 const RESETTABLE_DEMO_EMAILS = ['an@example.com', 'qing@example.com', 'yu@example.com']
 const DEMO_RESET_VERSION = 'first-use-tour-v4'
-const EMPTY_DEMO_EMAILS = ['test1@example.com', 'test2@example.com']
-const EMPTY_DEMO_RESET_VERSION = 'empty-test-accounts-v1'
+export const EMPTY_DEMO_EMAILS = ['test1@example.com', 'test2@example.com']
+const EMPTY_DEMO_RESET_VERSION = 'empty-test-accounts-v2'
+
+export function isEmptyDemoAccount(email) {
+  return EMPTY_DEMO_EMAILS.includes(String(email ?? '').trim().toLowerCase())
+}
 
 function resetDemoAccountsOnce() {
   if (load('demo-account-reset-version', '') === DEMO_RESET_VERSION) return false
@@ -116,6 +121,24 @@ function resetEmptyDemoAccountsOnce() {
   const guard = load('loginGuard', {})
   EMPTY_DEMO_EMAILS.forEach((email) => delete guard[email])
   save('loginGuard', guard)
+
+  const resetTokens = load('resetTokens', {})
+  Object.entries(resetTokens).forEach(([token, record]) => {
+    if (EMPTY_DEMO_EMAILS.includes(record?.email?.toLowerCase())) delete resetTokens[token]
+  })
+  save('resetTokens', resetTokens)
+
+  const tours = load('first-use-tour', {})
+  EMPTY_DEMO_EMAILS.forEach((email) => delete tours[email])
+  save('first-use-tour', tours)
+
+  // 若更新時正登入空白測試帳號，同步清掉舊顯示資料；家庭 store 會只建立必要的本人卡片。
+  const savedUser = load('user', null)
+  const fixture = isEmptyDemoAccount(savedUser?.email)
+    ? DEMO_ACCOUNTS.find((account) => account.email === savedUser.email.toLowerCase())
+    : null
+  if (fixture) save('user', { ...savedUser, name: fixture.name, avatar: fixture.avatar ?? '' })
+
   save('empty-demo-account-reset-version', EMPTY_DEMO_RESET_VERSION)
   return true
 }
@@ -292,13 +315,20 @@ export const useUserStore = defineStore('user', () => {
     return { ok: true }
   }
 
-  // 刪除帳號：移除帳號本身，並清掉這個瀏覽器裡的家庭、冰箱、日誌等資料
+  // 刪除帳號：只清掉本人資料；共用家庭尚有其他帳號時，家庭成員、冰箱和日誌必須保留。
   function deleteAccount() {
     if (!account.value) return
     const email = account.value.email.toLowerCase()
+    // 同步清理目前 Pinia 記憶體，避免之後其他帳號登入時 watcher 又把舊的安全資料寫回 localStorage。
+    delete guard.value[email]
+    Object.entries(resetTokens.value).forEach(([token, record]) => {
+      if (record?.email?.toLowerCase() === email) delete resetTokens.value[token]
+    })
+    deleteAccountData(email)
+    // storage 已先清除資料；同步更新常駐的 household store，避免同一個分頁切換帳號時仍看到已刪帳號。
+    useHouseholdStore().removeDeletedAccount(email)
     accounts.value = accounts.value.filter((a) => a.email.toLowerCase() !== email)
     user.value = null
-    clearAppData(['accounts', 'remember', 'loginGuard', 'resetTokens'])
   }
 
   watch(

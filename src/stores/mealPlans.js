@@ -2,6 +2,7 @@ import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { loadForHousehold, saveForHousehold } from './storage'
 import { useHouseholdStore } from './household'
+import { isEmptyDemoAccount } from './user'
 import { toDateKey } from '@/utils/date'
 
 // 示範用烹飪紀錄：前一個月與前兩個月沒有已完成的餐單時自動帶入，
@@ -70,7 +71,15 @@ export const useMealPlanStore = defineStore('mealPlans', () => {
   // 餐單綁在目前帳號所屬的家庭上；同家庭的帳號看到同一份日誌
   const householdStore = useHouseholdStore()
   const householdId = computed(() => householdStore.householdId)
-  const plansForHousehold = (id) => withDemoHistory(loadForHousehold('mealPlans', id, []))
+  // 兩組驗收帳號必須維持無示範資料；若它們在某個家庭內，該家庭也不應被自動塞入歷史餐單。
+  const shouldSeedDemoHistory = (id) => {
+    const household = householdStore.current
+    return Boolean(id && household?.id === id && !(household.memberEmails ?? []).some(isEmptyDemoAccount))
+  }
+  const plansForHousehold = (id) => {
+    const stored = loadForHousehold('mealPlans', id, [])
+    return shouldSeedDemoHistory(id) ? withDemoHistory(stored) : stored
+  }
   const plans = ref(plansForHousehold(householdId.value))
 
   watch(householdId, (id) => { plans.value = plansForHousehold(id) }, { flush: 'sync' })
@@ -85,6 +94,9 @@ export const useMealPlanStore = defineStore('mealPlans', () => {
   function savePlan(plan, { replace = false } = {}) {
     const existing = getPlan(plan.date, plan.mealType)
     if (existing && !replace) return { ok: false, reason: 'exists', existing }
+    // 已完成餐單是歷史與庫存扣除的交易紀錄，不能被一般「儲存餐單」覆寫回 planned。
+    // 若要再煮，必須建立另一個日期的新餐單；修正歷史則需要獨立的更正流程。
+    if (existing?.status === 'cooked') return { ok: false, reason: 'cooked', existing }
 
     const saved = { ...plan, id: existing?.id ?? `p${Date.now()}`, savedAt: new Date().toISOString() }
     plans.value = existing
@@ -103,7 +115,7 @@ export const useMealPlanStore = defineStore('mealPlans', () => {
   // 餐單先是「已排定」，真正完成烹飪後才出現在歷史紀錄。
   function markCooked(id, inventoryConsumption = []) {
     const plan = plans.value.find((item) => item.id === id)
-    if (!plan) return null
+    if (!plan || plan.status === 'cooked') return null
     plan.status = 'cooked'
     plan.cookedAt = new Date().toISOString()
     plan.inventoryConsumption = inventoryConsumption

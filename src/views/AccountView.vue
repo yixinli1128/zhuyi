@@ -254,7 +254,7 @@ function confirmDelete() {
       <div class="card card--danger">
         <div class="card__head">
           <h2 class="card__title">刪除帳號</h2>
-          <p class="card__desc">刪除後，家庭成員、冰箱庫存與餐食日誌都會永久移除，無法復原。</p>
+          <p class="card__desc">你的帳號會永久移除；若家庭還有其他帳號，共用資料會保留給他們。</p>
         </div>
         <div>
           <BaseButton variant="secondary" @click="openDelete">刪除帳號</BaseButton>
@@ -262,12 +262,12 @@ function confirmDelete() {
       </div>
     </div>
 
-    <BaseDialog v-model:open="deleteOpen" title="確定要刪除帳號嗎？" description="這個動作無法復原，請確認後再繼續。" :width="520">
+    <BaseDialog v-model:open="deleteOpen" title="確定要刪除帳號嗎？" description="這個動作無法復原。若你是家庭最後一位帳號，該家庭的共用資料也會一併移除。" :width="520">
       <div class="will-delete">
         <p class="will-delete__title">以下資料將被永久刪除：</p>
-        <p>・家庭成員與飲食設定</p>
-        <p>・冰箱庫存食材</p>
-        <p>・餐食日誌與歷史紀錄</p>
+        <p>・你的帳號、登入安全與個人引導資料</p>
+        <p>・若無其他家庭帳號：家庭成員與飲食設定</p>
+        <p>・若無其他家庭帳號：冰箱庫存與餐食日誌</p>
       </div>
 
       <template #footer>

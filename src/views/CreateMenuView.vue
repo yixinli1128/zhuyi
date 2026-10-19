@@ -54,6 +54,7 @@ const route = useRoute()
 
 const today = toDateKey()
 const MEAL_TYPE = '晚餐'
+const MAX_PEOPLE = 20
 
 // ---------- 用餐設定 ----------
 function defaultSettings() {
@@ -79,12 +80,24 @@ const plannedDates = computed(() => mealPlanStore.plans.map((plan) => plan.date)
 const requestedDate = typeof route.query.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(route.query.date)
   ? route.query.date
   : null
-const requestedPlan = typeof route.query.planId === 'string'
+const rawRequestedPlan = typeof route.query.planId === 'string'
   ? mealPlanStore.plans.find((plan) => plan.id === route.query.planId) ?? null
   : null
+// 已完成餐單是不可變的歷史紀錄。只有明確指定「另一個日期」時，才把它當作複製來源；
+// 直接帶入原日期（或未帶日期）的網址一律回餐食日誌，避免覆寫 cooked 與既有扣庫紀錄。
+const isCookedPlanCopy = rawRequestedPlan?.status === 'cooked' && Boolean(requestedDate && requestedDate !== rawRequestedPlan.date)
+const blockedCookedPlanEdit = rawRequestedPlan?.status === 'cooked' && !isCookedPlanCopy
+const requestedPlan = blockedCookedPlanEdit ? null : rawRequestedPlan
 const requestedRecipeIds = typeof route.query.recipeId === 'string'
   ? route.query.recipeId.split(',').filter((id) => recipeStore.getRecipe(id))
   : []
+
+if (blockedCookedPlanEdit) {
+  nextTick(() => {
+    toast.show('已完成餐單不可直接編輯；如要再煮，請從歷史紀錄帶入另一個日期。', { variant: 'error' })
+    router.replace({ path: '/journal', query: { date: rawRequestedPlan.date } })
+  })
+}
 
 function restoreSettings(plan) {
   if (!plan) return {}
@@ -121,6 +134,9 @@ function restoreSettings(plan) {
 // 從歷史「帶入今日晚餐」時，網址日期必須優先於原始餐單日期；一般編輯餐單傳入的是同一天，結果不變。
 const settings = reactive({ ...defaultSettings(), ...restoreSettings(requestedPlan), ...(requestedDate ? { date: requestedDate } : {}) })
 const menu = ref(null) // { dishes, servings, shortage, settingsKey }
+const status = ref('idle') // idle → loading → idle；失敗時 error
+const isGenerating = computed(() => status.value === 'loading')
+const resultSection = ref(null)
 
 // 讓首次引導依使用者實際完成的欄位往下走；不靠按「建立餐單」來觸發驗證錯誤。
 watch(
@@ -135,6 +151,8 @@ const needsOpen = ref(false)
 const selectedMembers = computed(() =>
   familyStore.activeMembers.filter((member) => settings.memberIds.includes(member.id)),
 )
+// 人數包含已勾選的家人與額外手動人數；因此已勾選的人數是不可再往下減的下限。
+const minimumPeople = computed(() => selectedMembers.value.length)
 
 function isSelected(id) {
   return settings.memberIds.includes(id)
@@ -142,41 +160,68 @@ function isSelected(id) {
 
 // 勾選家人時，人數跟著變（之前手動多加的訪客人數保留）；未選任何人時可回到 0。
 function toggleMember(id, checked) {
-  const before = settings.memberIds.length
+  if (isGenerating.value) return
+
+  const before = selectedMembers.value.length
+  if (checked && before >= MAX_PEOPLE) {
+    toast.show(`每餐最多可選擇 ${MAX_PEOPLE} 位家庭成員。`, { variant: 'error' })
+    return
+  }
+
   const extra = Math.max(0, Number(settings.people) - before)
-  settings.memberIds = checked
+  const memberIds = checked
     ? [...settings.memberIds, id]
     : settings.memberIds.filter((memberId) => memberId !== id)
-  const after = settings.memberIds.length
-  settings.people = Math.min(20, Math.max(0, after + extra))
+  const after = familyStore.activeMembers.filter((member) => memberIds.includes(member.id)).length
+  settings.memberIds = memberIds
+  settings.people = clampPeople(after + extra, after)
 }
 
 function updatePeople(value) {
+  if (isGenerating.value) return
   const count = Number(value)
-  settings.people = Number.isInteger(count) ? Math.min(20, Math.max(0, count)) : 0
+  settings.people = Number.isInteger(count) ? clampPeople(count) : minimumPeople.value
 }
 
 function changePeople(change) {
-  settings.people = Math.min(20, Math.max(0, (Number(settings.people) || 0) + change))
+  if (isGenerating.value) return
+  settings.people = clampPeople((Number(settings.people) || 0) + change)
 }
 
 function updateSoupCount(value) {
+  if (isGenerating.value) return
   const count = Number(value)
-  settings.soupCount = Number.isInteger(count) ? Math.min(20, Math.max(0, count)) : 0
+  settings.soupCount = Number.isInteger(count) ? Math.min(MAX_PEOPLE, Math.max(0, count)) : 0
 }
 
 function changeSoupCount(change) {
-  settings.soupCount = Math.min(20, Math.max(0, (Number(settings.soupCount) || 0) + change))
+  if (isGenerating.value) return
+  settings.soupCount = Math.min(MAX_PEOPLE, Math.max(0, (Number(settings.soupCount) || 0) + change))
 }
 function updateDishCount(value) {
+  if (isGenerating.value) return
   const count = Number(value)
-  settings.dishCount = Number.isInteger(count) ? Math.min(20, Math.max(0, count)) : 0
+  settings.dishCount = Number.isInteger(count) ? Math.min(MAX_PEOPLE, Math.max(0, count)) : 0
 }
 
 function changeDishCount(change) {
+  if (isGenerating.value) return
   const current = Number(settings.dishCount) || 0
-  settings.dishCount = Math.min(20, Math.max(0, current + change))
+  settings.dishCount = Math.min(MAX_PEOPLE, Math.max(0, current + change))
 }
+
+function clampPeople(value, minimum = minimumPeople.value) {
+  return Math.min(MAX_PEOPLE, Math.max(minimum, Math.round(Number(value) || 0)))
+}
+
+// 舊餐單或其他頁面更新家庭名冊時，也不可讓已選成員數超過用餐人數。
+watch(
+  minimumPeople,
+  (minimum) => {
+    if (!isGenerating.value && settings.people < minimum) settings.people = minimum
+  },
+  { immediate: true },
+)
 
 const guestSubtitle = computed(() =>
   hasGuestSettings(settings.guest) ? '已設定成功，將會套用本餐' : '尚未設定，點此新增飲食需求',
@@ -186,26 +231,40 @@ const needsSubtitle = computed(() =>
 )
 
 function clearGuest() {
+  if (isGenerating.value) return
   settings.guest = emptyGuest()
 }
 
 function clearNeeds() {
+  if (isGenerating.value) return
   settings.needs = emptyNeeds()
 }
 
 // ---------- 驗證（Figma 錯誤-設定未完成） ----------
 const submitted = ref(false)
 
-const errors = computed(() => ({
-  date: !settings.date ? '請選擇用餐日期' : settings.date < today ? '用餐日期不能早於今天' : '',
-  people: settings.people < 1 ? '人數至少為 1 位' : '',
-  dishCount: settings.dishCount < 1 ? '菜數至少為 1 道' : '',
-}))
+function getErrors(value, selectedCount = minimumPeople.value) {
+  const minimum = Math.max(1, selectedCount)
+  const people = Number(value.people) || 0
+  const dishes = Number(value.dishCount) || 0
+  return {
+    date: !value.date ? '請選擇用餐日期' : value.date < today ? '用餐日期不能早於今天' : '',
+    people: people < minimum
+      ? selectedCount
+        ? `已選擇 ${selectedCount} 位家庭成員，人數不可少於 ${selectedCount} 位`
+        : '人數至少為 1 位'
+      : '',
+    dishCount: dishes < 1 ? '菜數至少為 1 道' : '',
+  }
+}
+
+const errors = computed(() => getErrors(settings))
 
 const shownErrors = computed(() => (submitted.value ? errors.value : {}))
 const errorCount = computed(() => Object.values(errors.value).filter(Boolean).length)
 
 function clearSettings() {
+  if (isGenerating.value) return
   Object.assign(settings, defaultSettings())
   clearMenu()
   submitted.value = false
@@ -227,24 +286,27 @@ if (requestedPlan) {
 }
 
 // ---------- 建立餐單 ----------
-const status = ref('idle') // idle → loading → idle；失敗時 error
-const resultSection = ref(null)
 
-// 每道菜要煮幾人份：家人的食量係數加總 ＋ 多出來的訪客各算 1 份，再乘上份量
-function calcServings() {
-  const memberPortion = selectedMembers.value.reduce((sum, member) => sum + (member.portionFactor ?? member.portion ?? 1), 0)
-  const guests = Math.max(0, settings.people - selectedMembers.value.length)
-  const factor = SIZE_OPTIONS.find((option) => option.value === settings.size)?.factor ?? 1
+// 每道菜要煮幾人份：家人的食量係數加總 ＋ 多出來的訪客各算 1 份，再乘上份量。
+// 生成時傳入快照，避免等待期間讀到被改動一半的設定。
+function calcServings(config = settings, members = selectedMembers.value) {
+  const memberPortion = members.reduce((sum, member) => sum + (member.portionFactor ?? member.portion ?? 1), 0)
+  const guests = Math.max(0, config.people - members.length)
+  const factor = SIZE_OPTIONS.find((option) => option.value === config.size)?.factor ?? 1
   return Math.max(1, Math.round((memberPortion + guests) * factor))
 }
 
 async function buildMenu() {
   submitted.value = true
-  if (errorCount.value || status.value === 'loading') return
+  if (errorCount.value || isGenerating.value) return
 
   // 同一天已經有餐單：先確認要取代或改其他日期，再開始配餐。
   const existing = findConflictPlan()
   if (existing) {
+    if (existing.status === 'cooked') {
+      toast.show('這一天的餐單已完成並存入歷史紀錄，不能直接取代；請選擇其他日期重新排餐。', { variant: 'error' })
+      return
+    }
     conflictPlan.value = existing
     conflictOpen.value = true
     return
@@ -254,6 +316,13 @@ async function buildMenu() {
   if (settings.size === '') settings.size = 'normal'
   guestOpen.value = false
   needsOpen.value = false
+
+  // 模擬生成會等待一段時間。先複製完整設定與成員，並在結束後再次核對，
+  // 即使日後有其他控制項繞過畫面鎖定，也不會把無效或過期的設定存成餐單。
+  const settingsSnapshot = structuredClone(toRaw(settings))
+  const membersSnapshot = selectedMembers.value.map((member) => structuredClone(toRaw(member)))
+  const snapshotKey = JSON.stringify(settingsSnapshot)
+  if (Object.values(getErrors(settingsSnapshot, membersSnapshot.length)).some(Boolean)) return
 
   status.value = 'loading'
   onboardingStore.setMenuCreating(true)
@@ -268,39 +337,48 @@ async function buildMenu() {
     return
   }
 
+  const currentErrors = getErrors(settings, minimumPeople.value)
+  if (settingsKey.value !== snapshotKey || Object.values(currentErrors).some(Boolean)) {
+    status.value = 'idle'
+    onboardingStore.setMenuCreating(false)
+    toast.show('用餐設定已變更或不完整，請確認後重新建立餐單。', { variant: 'error' })
+    return
+  }
+
   // 從已有餐單進來（編輯、排餐至、帶入今日晚餐）時，原本的菜保留，只補上新增的道數
   const lockedRecipeIds = requestedPlan
     ? (menu.value?.dishes ?? []).map((dish) => dish.recipeId).filter((id) => requestedPlan.dishes.some((dish) => dish.recipeId === id))
     : []
   const result = planMenu({
     recipes: recipeStore.recipes,
-    members: selectedMembers.value,
-    guest: settings.guest,
-    needs: settings.needs,
-    dishCount: settings.dishCount,
-    soupCount: settings.soupCount,
-    useFridge: settings.useFridge,
+    members: membersSnapshot,
+    guest: settingsSnapshot.guest,
+    needs: settingsSnapshot.needs,
+    dishCount: settingsSnapshot.dishCount,
+    soupCount: settingsSnapshot.soupCount,
+    useFridge: settingsSnapshot.useFridge,
     findFridgeMatches: fridgeStore.findMatches,
     preferredRecipeIds: requestedRecipeIds,
     lockedRecipeIds,
     // 7 天內盡量不重複；正在編輯的這筆、同一天同餐別會被覆蓋的那筆不算
-    recentDays: recentRecipeDays(mealPlanStore.plans, settings.date, {
-      excludeIds: [requestedPlan?.id, mealPlanStore.getPlan(settings.date, MEAL_TYPE)?.id].filter(Boolean),
+    recentDays: recentRecipeDays(mealPlanStore.plans, settingsSnapshot.date, {
+      excludeIds: [requestedPlan?.id, mealPlanStore.getPlan(settingsSnapshot.date, MEAL_TYPE)?.id].filter(Boolean),
     }),
   })
 
   menu.value = {
     dishes: result.dishes,
-    servings: calcServings(),
-    people: settings.people,
+    servings: calcServings(settingsSnapshot, membersSnapshot),
+    people: settingsSnapshot.people,
     shortage: result.shortage,
-    settingsKey: settingsKey.value,
+    settingsKey: snapshotKey,
   }
   status.value = 'idle'
   onboardingStore.markMenuBuilt()
 }
 
 function clearMenu() {
+  if (isGenerating.value) return
   menu.value = null
   status.value = 'idle'
 }
@@ -458,17 +536,25 @@ function openRecipe(recipe) {
 const conflictOpen = ref(false)
 const conflictPlan = ref(null)
 // 從餐食日誌「編輯餐單」進來時，同一天的原餐單就是正在修改的這份，不算重複。
-const editingPlanId = requestedPlan && route.query.source !== 'history' ? requestedPlan.id : null
+const editingPlanId = requestedPlan && !isCookedPlanCopy ? requestedPlan.id : null
 // 使用者在建立餐單前已確認取代的日期，儲存時不再重複詢問。
 const replaceApprovedDate = ref('')
 
 function findConflictPlan() {
   const existing = mealPlanStore.getPlan(settings.date, MEAL_TYPE)
-  if (!existing || existing.id === editingPlanId || replaceApprovedDate.value === settings.date) return null
+  if (!existing) return null
+  // 完成餐單即使正好是原本開啟的那一筆，也不能當作可取代的編輯目標。
+  if (existing.status === 'cooked') return existing
+  if (existing.id === editingPlanId || replaceApprovedDate.value === settings.date) return null
   return existing
 }
 
 function confirmReplace() {
+  if (conflictPlan.value?.status === 'cooked') {
+    conflictOpen.value = false
+    toast.show('已完成餐單不可取代，請選擇其他日期重新排餐。', { variant: 'error' })
+    return
+  }
   replaceApprovedDate.value = settings.date
   conflictOpen.value = false
   buildMenu()
@@ -501,7 +587,12 @@ function buildPlan() {
 }
 
 async function saveToJournal({ replace = false } = {}) {
-  if (saving.value) return
+  if (saving.value || isGenerating.value || !menu.value) return
+  submitted.value = true
+  if (errorCount.value) {
+    toast.show('用餐設定尚未完成，請確認後再儲存。', { variant: 'error' })
+    return
+  }
   if (isEditing.value) {
     toast.show('用餐設定已變更，請先重新建立餐單再儲存。', { variant: 'error' })
     return
@@ -511,6 +602,10 @@ async function saveToJournal({ replace = false } = {}) {
   if (!replace) {
     const existing = findConflictPlan()
     if (existing) {
+      if (existing.status === 'cooked') {
+        toast.show('這一天的餐單已完成並存入歷史紀錄，不能直接取代；請選擇其他日期重新排餐。', { variant: 'error' })
+        return
+      }
       conflictPlan.value = existing
       conflictOpen.value = true
       return
@@ -518,8 +613,14 @@ async function saveToJournal({ replace = false } = {}) {
   }
 
   saving.value = true
+  const saveSettingsKey = settingsKey.value
   await new Promise((resolve) => setTimeout(resolve, 500))
   saving.value = false
+
+  if (settingsKey.value !== saveSettingsKey || menu.value?.settingsKey !== saveSettingsKey) {
+    toast.show('用餐設定已變更，請先重新建立餐單再儲存。', { variant: 'error' })
+    return
+  }
 
   // 展示用：離線時當作儲存失敗
   if (!navigator.onLine) {
@@ -531,7 +632,13 @@ async function saveToJournal({ replace = false } = {}) {
   }
 
   const date = settings.date
-  mealPlanStore.savePlan(buildPlan(), { replace: true })
+  const saved = mealPlanStore.savePlan(buildPlan(), { replace: true })
+  if (!saved.ok) {
+    toast.show(saved.reason === 'cooked'
+      ? '這一天的餐單已完成並存入歷史紀錄，不能直接取代；請選擇其他日期重新排餐。'
+      : '儲存失敗，請重新確認餐單後再試一次。', { variant: 'error' })
+    return
+  }
   toast.show(`已儲存到 ${formatShort(date)} ${MEAL_TYPE}的餐食日誌`, {
     action: { label: '前往查看', onClick: () => router.push({ path: '/journal', query: { date } }) },
     duration: 5000,
@@ -562,6 +669,7 @@ function chooseOtherDate() {
         已從冰箱帶入「{{ requestedRecipeIds.map((id) => recipeStore.getRecipe(id)?.name).filter(Boolean).join('、') }}」，建立餐單時會優先保留。
       </p>
 
+      <fieldset class="settings-form" :disabled="isGenerating" :aria-busy="isGenerating">
       <div class="field-group">
         <p class="field-label">家庭成員（選填）</p>
         <div v-if="familyStore.activeMembers.length" class="members">
@@ -591,15 +699,15 @@ function chooseOtherDate() {
           class="fields__date"
         />
         <label class="custom-dish-field" data-onboarding-target="menu-people">人數
-          <span><button type="button" aria-label="減少人數" :disabled="settings.people <= 0" @click="changePeople(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.people" type="number" min="0" max="20" inputmode="numeric" @input="updatePeople($event.target.value)" /><button type="button" aria-label="增加人數" :disabled="settings.people >= 20" @click="changePeople(1)"><i class="fa-solid fa-plus"></i></button></span>
+          <span><button type="button" aria-label="減少人數" :disabled="isGenerating || settings.people <= minimumPeople" @click="changePeople(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.people" type="number" :min="minimumPeople" :max="MAX_PEOPLE" inputmode="numeric" @input="updatePeople($event.target.value)" /><button type="button" aria-label="增加人數" :disabled="isGenerating || settings.people >= MAX_PEOPLE" @click="changePeople(1)"><i class="fa-solid fa-plus"></i></button></span>
           <small v-if="shownErrors.people" class="field-error">{{ shownErrors.people }}</small>
         </label>
         <label class="custom-dish-field" data-onboarding-target="menu-dishes">菜數
-          <span><button type="button" aria-label="減少菜數" :disabled="settings.dishCount <= 0" @click="changeDishCount(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.dishCount" type="number" min="0" max="20" inputmode="numeric" @input="updateDishCount($event.target.value)" /><button type="button" aria-label="增加菜數" :disabled="settings.dishCount >= 20" @click="changeDishCount(1)"><i class="fa-solid fa-plus"></i></button></span>
+          <span><button type="button" aria-label="減少菜數" :disabled="isGenerating || settings.dishCount <= 0" @click="changeDishCount(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.dishCount" type="number" min="0" :max="MAX_PEOPLE" inputmode="numeric" @input="updateDishCount($event.target.value)" /><button type="button" aria-label="增加菜數" :disabled="isGenerating || settings.dishCount >= MAX_PEOPLE" @click="changeDishCount(1)"><i class="fa-solid fa-plus"></i></button></span>
           <small v-if="shownErrors.dishCount" class="field-error">{{ shownErrors.dishCount }}</small>
         </label>
         <label class="custom-dish-field">湯數
-          <span><button type="button" aria-label="減少湯數" :disabled="settings.soupCount <= 0" @click="changeSoupCount(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.soupCount" type="number" min="0" max="20" inputmode="numeric" @input="updateSoupCount($event.target.value)" /><button type="button" aria-label="增加湯數" :disabled="settings.soupCount >= 20" @click="changeSoupCount(1)"><i class="fa-solid fa-plus"></i></button></span>
+          <span><button type="button" aria-label="減少湯數" :disabled="isGenerating || settings.soupCount <= 0" @click="changeSoupCount(-1)"><i class="fa-solid fa-minus"></i></button><input :value="settings.soupCount" type="number" min="0" :max="MAX_PEOPLE" inputmode="numeric" @input="updateSoupCount($event.target.value)" /><button type="button" aria-label="增加湯數" :disabled="isGenerating || settings.soupCount >= MAX_PEOPLE" @click="changeSoupCount(1)"><i class="fa-solid fa-plus"></i></button></span>
         </label>
       </div>
 
@@ -638,10 +746,10 @@ function chooseOtherDate() {
           還有 {{ errorCount }} 項必填設定未完成，請補齊後再建立餐單
         </p>
         <div class="actions__buttons">
-          <BaseButton variant="secondary" @click="clearSettings">清除設定</BaseButton>
+          <BaseButton variant="secondary" :disabled="isGenerating" @click="clearSettings">清除設定</BaseButton>
           <BaseButton
             data-onboarding-target="menu-build"
-            :disabled="submitted && errorCount > 0"
+            :disabled="isGenerating || (submitted && errorCount > 0)"
             :class="{ 'is-loading': status === 'loading' }"
             :aria-busy="status === 'loading'"
             @click="buildMenu"
@@ -650,6 +758,7 @@ function chooseOtherDate() {
           </BaseButton>
         </div>
       </div>
+      </fieldset>
     </section>
 
     <!-- ========== 本次餐單 ========== -->
@@ -736,8 +845,8 @@ function chooseOtherDate() {
     <!-- 當日已有餐單 -->
     <BaseDialog
       v-model:open="conflictOpen"
-      :title="`${formatMonthDay(settings.date)} ${MEAL_TYPE}已經有餐單了`"
-      description="建立新的餐單前，請選擇要如何處理原本的餐單。"
+      :title="conflictPlan?.status === 'cooked' ? `${formatMonthDay(settings.date)} ${MEAL_TYPE}已完成` : `${formatMonthDay(settings.date)} ${MEAL_TYPE}已經有餐單了`"
+      :description="conflictPlan?.status === 'cooked' ? '已完成餐單與扣庫紀錄會保留，請選擇其他日期重新排餐。' : '建立新的餐單前，請選擇要如何處理原本的餐單。'"
       :width="560"
     >
       <p class="conflict__label">目前已儲存的餐單</p>
@@ -748,10 +857,11 @@ function chooseOtherDate() {
         </p>
         <p class="conflict__dishes">{{ conflictDishes }}</p>
       </div>
-      <p class="conflict__warning">選擇「取代原餐單」後，原本的餐單與採買清單將被新的餐單覆蓋，無法復原。</p>
+      <p v-if="conflictPlan?.status !== 'cooked'" class="conflict__warning">選擇「取代原餐單」後，原本的餐單與採買清單將被新的餐單覆蓋，無法復原。</p>
       <template #footer>
         <BaseButton variant="secondary" @click="chooseOtherDate">改存其他日期</BaseButton>
-        <BaseButton @click="confirmReplace">取代原餐單</BaseButton>
+        <BaseButton v-if="conflictPlan?.status !== 'cooked'" @click="confirmReplace">取代原餐單</BaseButton>
+        <BaseButton v-else @click="conflictOpen = false">知道了</BaseButton>
       </template>
     </BaseDialog>
   </section>
@@ -818,6 +928,19 @@ function chooseOtherDate() {
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
+}
+
+/* 生成期間要凍結整組設定，但 fieldset 本身不能改變既有版面。 */
+.settings-form {
+  display: contents;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.settings-form:disabled {
+  opacity: .72;
 }
 
 .field-label {

@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { load, save, loadForAccount, saveForHousehold } from './storage'
+import { load, save, loadForAccount, saveForHousehold, removeAccountFromHouseholdRecords } from './storage'
 import { useUserStore } from './user'
 
 // 共用家庭（模擬版）：沒有後端，所有帳號、家庭與邀請都存在同一個瀏覽器的 localStorage。
@@ -189,6 +189,15 @@ export const useHouseholdStore = defineStore('household', () => {
     return current.value.inviteCode
   }
 
+  // 帳號設定頁刪除帳號後，同步移除目前分頁記憶體中的家庭與邀請資料。
+  // 實際 localStorage 清理由 storage.deleteAccountData 處理，這裡只避免同一頁切換帳號時讀到舊狀態。
+  function removeDeletedAccount(email) {
+    const result = removeAccountFromHouseholdRecords(email, households.value, invites.value)
+    households.value = result.households
+    invites.value = result.invites
+    return result
+  }
+
   watch(households, (value) => save(HOUSEHOLDS_KEY, value), { deep: true, flush: 'sync' })
   watch(invites, (value) => save(INVITES_KEY, value), { deep: true, flush: 'sync' })
   // 登入（或換帳號）時立刻確定所屬家庭，家庭成員、冰箱、餐單 store 才讀得到正確的資料（放在儲存 watcher 之後，新建立的家庭才會寫入）
@@ -210,6 +219,7 @@ export const useHouseholdStore = defineStore('household', () => {
     previewCode,
     leaveHousehold,
     removeAccount,
+    removeDeletedAccount,
     renameHousehold,
     regenerateCode,
   }

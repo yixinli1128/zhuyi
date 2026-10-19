@@ -168,6 +168,10 @@ function selectDay(day) {
   if (!day.inMonth) { const date = fromDateKey(day.key); month.value = new Date(date.getFullYear(), date.getMonth(), 1) }
 }
 function openCreate() {
+  if (selectedPlan.value?.status === 'cooked') {
+    toast.show('已完成餐單不可直接編輯；如要再煮，請使用歷史紀錄的「帶入今日晚餐」或「排餐至」。', { variant: 'error' })
+    return
+  }
   router.push({
     path: '/create',
     query: selectedPlan.value ? { date: selectedDate.value, planId: selectedPlan.value.id } : { date: selectedDate.value },
@@ -188,9 +192,17 @@ function requestCompleteMeal() {
   finishDialogOpen.value = true
 }
 function confirmCompleteMeal() {
-  if (!selectedPlan.value) return
+  if (!selectedPlan.value || selectedPlan.value.status === 'cooked') {
+    finishDialogOpen.value = false
+    return
+  }
   const consumed = fridge.consumeIngredients(fridgeDeductions.value)
-  mealPlans.markCooked(selectedPlan.value.id, consumed)
+  const cooked = mealPlans.markCooked(selectedPlan.value.id, consumed)
+  if (!cooked) {
+    finishDialogOpen.value = false
+    toast.show('這份餐單已更新，請重新確認後再操作。', { variant: 'error' })
+    return
+  }
   finishDialogOpen.value = false
   toast.show(
     consumed.length ? `已扣除冰箱庫存 ${consumed.length} 項，並存入歷史紀錄` : '已存入歷史烹飪紀錄。',
@@ -212,7 +224,11 @@ function scheduleHistoryPlan(dateKey) {
     return
   }
   const { id, savedAt, cookedAt, inventoryConsumption, groceryChecked, ...copy } = source
-  mealPlans.savePlan({ ...copy, date: scheduleDate.value, status: 'planned', groceryChecked: [] })
+  const saved = mealPlans.savePlan({ ...copy, date: scheduleDate.value, status: 'planned', groceryChecked: [] })
+  if (!saved.ok) {
+    toast.show(saved.reason === 'cooked' ? '已完成餐單不可覆寫，請選擇其他日期。' : '這一天已有晚餐餐單，請選擇其他日期。', { variant: 'error' })
+    return
+  }
   scheduleDialogOpen.value = false
   view.value = 'calendar'
   selectedDate.value = scheduleDate.value
@@ -228,6 +244,10 @@ function historyDishes(plan) {
   return plan.dishes.map(({ recipeId }) => recipes.getRecipe(recipeId)?.name).filter(Boolean)
 }
 function bringHistoryToToday(plan) {
+  if (plan.date === today) {
+    toast.show('今日晚餐已完成；如要再煮，請使用「排餐至」選擇其他日期。', { variant: 'error' })
+    return
+  }
   router.push({ path: '/create', query: { date: today, planId: plan.id, source: 'history' } })
 }
 function setHistoryPage(page) {
@@ -269,7 +289,8 @@ watch(selectedDate, async () => {
             </template>
           </div>
           <div class="meal-banner__actions">
-            <button class="edit-menu" @click="openCreate"><i class="fa-regular fa-pen-to-square"></i> 編輯餐單</button>
+            <button v-if="selectedPlan?.status !== 'cooked'" class="edit-menu" @click="openCreate"><i class="fa-regular fa-pen-to-square"></i> 編輯餐單</button>
+            <span v-else class="cooked-menu-state"><i class="fa-solid fa-check"></i> 已存入歷史紀錄</span>
           </div>
         </header>
         <div v-if="selectedPlan && selectedRecipes.length" class="planned-meal">
@@ -389,7 +410,7 @@ watch(selectedDate, async () => {
 .dish-guide { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px 10px; border-radius: 12px; background: var(--brand-secondary-light); }
 .dish-guide p { min-width: 0; overflow: hidden; color: var(--text-secondary); font-size: 14px; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }.dish-guide b { color: var(--text-body); font-weight: 500; }
 .dish-guide button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 4px; padding: 4px; border-radius: 999px; background: var(--brand-special); color: #fff; font-size: 12px; line-height: 1; }.dish-guide button i { display: grid; width: 8px; height: 16px; place-items: center; font-size: 8px; }.dish-guide button:hover { filter: brightness(.97); }
-.meal-banner__actions { display: flex; align-items: center; gap: 8px; }.complete-menu { padding: 5px 10px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 10px; white-space: nowrap; }.complete-menu:hover { background: var(--brand-primary-hover); }.complete-menu--footer { display: inline-flex; align-items: center; gap: 6px; width: fit-content; min-height: 45px; align-self: flex-end; margin-top: 16px; border-radius: 999px; font-size: 12px; }
+.meal-banner__actions { display: flex; align-items: center; gap: 8px; }.cooked-menu-state { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-secondary); font-size: 10px; white-space: nowrap; }.complete-menu { padding: 5px 10px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 10px; white-space: nowrap; }.complete-menu:hover { background: var(--brand-primary-hover); }.complete-menu--footer { display: inline-flex; align-items: center; gap: 6px; width: fit-content; min-height: 45px; align-self: flex-end; margin-top: 16px; border-radius: 999px; font-size: 12px; }
 .grocery-list, .stock-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
 .grocery-list li button { display: grid; width: 100%; grid-template-columns: 14px minmax(0, 1fr) minmax(84px, 38%); align-items: center; gap: 10px; padding: 9px 8px; border: 0; border-radius: 10px; background: transparent; color: var(--text-body); font-size: 11px; text-align: left; cursor: pointer; }
 .grocery-list li button>i { display: grid; width: 14px; height: 14px; place-items: center; border: 1px solid var(--brand-primary-border); border-radius: 2px; color: transparent; font-size: 8px; }.grocery-list li button.is-checked { color: var(--text-placeholder); text-decoration: line-through; }.grocery-list li button.is-checked>i { border-color: var(--brand-primary); background: var(--brand-primary); color: var(--text-on-primary); }
