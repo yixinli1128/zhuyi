@@ -30,6 +30,7 @@ const chars = computed(() => props.text.match(/[「『（]*.[，。、！？：�
         :key="index"
         class="hover-text__char"
         :class="{ 'is-auto': auto }"
+        :data-char="auto ? char : undefined"
         :style="auto ? { '--char-index': start + index } : undefined"
         >{{ char }}</span
       >
@@ -67,23 +68,46 @@ const chars = computed(() => props.text.match(/[「『（]*.[，。、！？：�
   }
 }
 
-/* 自動播放：每個字輪流浮起一次，一輪 6 秒；前 1.5 秒先等主視覺進場 */
+/* 自動播放：每個字輪流浮起一次，一輪 6 秒；前 1.5 秒先等主視覺進場
+   只動 transform 和 opacity，交給 GPU 合成，不用每一格重畫文字（直接動 color 會讓整頁一直重算樣式、變卡）
+   變色是疊在字上的同一個字（::after，品牌色），用透明度淡入淡出 */
 @keyframes hover-text-wave {
   4% {
     transform: translateY(-6px);
-    color: var(--brand-primary);
   }
 
   16% {
     transform: none;
-    color: inherit;
+  }
+}
+
+@keyframes hover-text-tint {
+  4% {
+    opacity: 1;
+  }
+
+  16% {
+    opacity: 0;
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .hover-text__char.is-auto {
+    position: relative;
+    will-change: transform;
     animation: hover-text-wave 6s ease-in-out infinite;
     animation-delay: calc(1.5s + var(--char-index) * 0.14s);
+  }
+
+  .hover-text__char.is-auto::after {
+    content: attr(data-char);
+    position: absolute;
+    inset: 0;
+    color: var(--brand-primary);
+    opacity: 0;
+    will-change: opacity;
+    animation: hover-text-tint 6s ease-in-out infinite;
+    animation-delay: inherit;
   }
 }
 </style>

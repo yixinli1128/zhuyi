@@ -218,14 +218,17 @@ const items = computed(() =>
   pointer-events: none;
 }
 
+/* 漂浮只動外層，固定的傾斜角度放在裡面的 svg：
+   keyframes 裡不能用 var()，用了瀏覽器就無法交給 GPU，每一格都要重算，整站都會變卡 */
 .drift {
   position: absolute;
   opacity: 0.6;
-  transform: rotate(var(--r));
+  will-change: transform;
   animation: backdrop-drift 16s ease-in-out infinite;
 }
 
 .drift svg {
+  transform: rotate(var(--r));
   display: block;
   width: 100%;
   height: 100%;
@@ -245,13 +248,13 @@ const items = computed(() =>
 @keyframes backdrop-drift {
   0%,
   100% {
-    transform: translate(0, 0) rotate(var(--r));
+    transform: translate(0, 0) rotate(0deg);
   }
   30% {
-    transform: translate(10px, -14px) rotate(calc(var(--r) + 14deg));
+    transform: translate(10px, -14px) rotate(14deg);
   }
   65% {
-    transform: translate(-8px, -6px) rotate(calc(var(--r) - 10deg));
+    transform: translate(-8px, -6px) rotate(-10deg);
   }
 }
 
