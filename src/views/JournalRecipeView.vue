@@ -18,7 +18,8 @@ const plan = computed(() => typeof route.query.planId === 'string'
   ? mealPlans.plans.find((item) => item.id === route.query.planId) ?? null
   : null)
 const servings = computed(() => plan.value?.servings ?? recipe.value?.servings ?? 1)
-const ingredients = computed(() => recipe.value ? recipes.scaleIngredients(recipe.value.id, servings.value) : [])
+// 保留原始份量，畫面上由 formatAmount 依「餐單份數 ÷ 食譜份數」換算一次（先換算再傳比例會放大兩次）
+const ingredients = computed(() => recipe.value?.ingredients ?? [])
 // 擴充食譜資料尚未附圖片時，仍保留 Figma 的成品照卡版位；有原圖的食譜一律優先使用原圖。
 const recipeImage = computed(() => recipe.value?.imageUrl || recipes.recipes.find((item) => item.imageUrl)?.imageUrl || '')
 const ingredientGroups = computed(() => {

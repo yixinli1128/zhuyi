@@ -308,6 +308,7 @@ async function buildMenu() {
       return
     }
     conflictPlan.value = existing
+    conflictSource.value = 'build'
     conflictOpen.value = true
     return
   }
@@ -357,7 +358,7 @@ async function buildMenu() {
     dishCount: settingsSnapshot.dishCount,
     soupCount: settingsSnapshot.soupCount,
     useFridge: settingsSnapshot.useFridge,
-    findFridgeMatches: fridgeStore.findMatches,
+    findFridgeMatches: fridgeMatcher(calcServings(settingsSnapshot, membersSnapshot)),
     preferredRecipeIds: requestedRecipeIds,
     lockedRecipeIds,
     // 7 天內盡量不重複；正在編輯的這筆、同一天同餐別會被覆蓋的那筆不算
@@ -388,9 +389,14 @@ const menuRecipes = computed(() =>
   (menu.value?.dishes ?? []).map((dish) => recipeStore.getRecipe(dish.recipeId)).filter(Boolean),
 )
 
+// 依這次煮的份數換算食材需求，再用與餐食日誌、扣庫相同的規則比對冰箱（名稱、單位、數量都要對得上）
+function fridgeMatcher(servings) {
+  return (recipe) => fridgeStore.findMatches(recipeStore.scaleIngredients(recipe.id, servings || recipe.servings))
+}
+
 function fridgeItemsFor(recipe) {
   if (!settings.useFridge) return []
-  return fridgeStore.findMatches(recipe.ingredients.map((item) => item.name))
+  return fridgeMatcher(menu.value?.servings)(recipe)
 }
 
 const summary = computed(() => {
@@ -505,7 +511,7 @@ const candidates = computed(() => {
     guest: settings.guest,
     needs: settings.needs,
     useFridge: settings.useFridge,
-    findFridgeMatches: fridgeStore.findMatches,
+    findFridgeMatches: fridgeMatcher(menu.value.servings),
   })
 })
 
@@ -539,13 +545,19 @@ const conflictPlan = ref(null)
 const editingPlanId = requestedPlan && !isCookedPlanCopy ? requestedPlan.id : null
 // 使用者在建立餐單前已確認取代的日期，儲存時不再重複詢問。
 const replaceApprovedDate = ref('')
+// 衝突視窗是從「建立餐單」還是「儲存到餐食日誌」打開的；取代時要接回原本的動作
+const conflictSource = ref('build')
+// 從餐食日誌編輯的餐單：改了日期再儲存時，要把原日期那筆移走，而不是多複製一份
+const editingTargetId = ref(editingPlanId)
+// 這次已經存過的那筆；換菜後再存同一天，不算跟別的餐單衝突
+const lastSavedPlanId = ref(null)
 
 function findConflictPlan() {
   const existing = mealPlanStore.getPlan(settings.date, MEAL_TYPE)
   if (!existing) return null
   // 完成餐單即使正好是原本開啟的那一筆，也不能當作可取代的編輯目標。
   if (existing.status === 'cooked') return existing
-  if (existing.id === editingPlanId || replaceApprovedDate.value === settings.date) return null
+  if ([editingTargetId.value, lastSavedPlanId.value].includes(existing.id) || replaceApprovedDate.value === settings.date) return null
   return existing
 }
 
@@ -557,7 +569,8 @@ function confirmReplace() {
   }
   replaceApprovedDate.value = settings.date
   conflictOpen.value = false
-  buildMenu()
+  if (conflictSource.value === 'save') saveToJournal({ replace: true })
+  else buildMenu()
 }
 const saving = ref(false)
 
@@ -607,6 +620,7 @@ async function saveToJournal({ replace = false } = {}) {
         return
       }
       conflictPlan.value = existing
+      conflictSource.value = 'save'
       conflictOpen.value = true
       return
     }
@@ -639,6 +653,14 @@ async function saveToJournal({ replace = false } = {}) {
       : '儲存失敗，請重新確認餐單後再試一次。', { variant: 'error' })
     return
   }
+  // 編輯餐單時改了日期：新日期已存好，把原本日期那筆（尚未完成的）移除，避免變成兩筆
+  const previousId = editingTargetId.value
+  if (previousId && previousId !== saved.plan.id) {
+    const previous = mealPlanStore.plans.find((plan) => plan.id === previousId)
+    if (previous && previous.status !== 'cooked') mealPlanStore.removePlan(previousId)
+  }
+  if (editingTargetId.value) editingTargetId.value = saved.plan.id
+  lastSavedPlanId.value = saved.plan.id
   toast.show(`已儲存到 ${formatShort(date)} ${MEAL_TYPE}的餐食日誌`, {
     action: { label: '前往查看', onClick: () => router.push({ path: '/journal', query: { date } }) },
     duration: 5000,

@@ -29,6 +29,8 @@ const isPantryStaple = (name = '') => /^(飲用)?水(（.*）)?$/.test(name) || 
 // 名稱比對：一個字的名稱（例：油、蛋）只接受完全相同，避免「油」被當成「醬油」
 const namesMatch = (a = '', b = '') => a === b || (Math.min(a.length, b.length) > 1 && (a.includes(b) || b.includes(a)))
 const displayAmount = (amount) => Math.round((Number(amount) + Number.EPSILON) * 10) / 10
+// 扣庫計算用較細的精度（0.001），避免 1 kg 庫存扣 30 g 時被四捨五入成 0 而永遠扣不到
+const preciseAmount = (amount) => Math.round((Number(amount) + Number.EPSILON) * 1000) / 1000
 
 // Oliver 是手機版面測試用的示範帳號。只在一個全新的瀏覽器儲存空間建立一次；
 // 已有資料（包含使用者自行清空後的狀態）絕不覆寫，也不影響首次使用引導帳號。
@@ -132,14 +134,14 @@ export const useFridgeStore = defineStore('fridge', () => {
     return ingredient
   }
 
-  // 供「來點煮意」計算庫存符合度使用；名稱互相包含即視為對應。
-  // 食材名稱先去掉括號說明；單字食材（水、鹽）不反向比對，免得「水」對到「水餃」。
-  function findMatches(ingredientNames) {
-    const names = ingredientNames.map((name) => name.replace(/（.*）/, ''))
-    return activeIngredients.value.filter((item) =>
-      item.expiry >= toDateKey() && Number(item.amount) > 0 &&
-      names.some((name) => name.includes(item.name) || (name.length > 1 && item.name.includes(name))),
-    )
+  // 供「來點煮意」的配餐分數、卡片「冰箱現有」與摘要使用：傳入一道菜的食材需求，
+  // 回傳實際會用到的冰箱庫存。與餐食日誌、扣庫共用同一套配置規則（名稱、單位、數量），
+  // 不會出現這裡說「冰箱有」、日誌卻列在待採買的情況。
+  function findMatches(requirements = []) {
+    const used = new Map()
+    allocateRecipeRequirements(requirements, { skipStaples: true }).matchedIngredients
+      .forEach((item) => used.set(item.id, item))
+    return [...used.values()]
   }
 
   // 比對與實際扣庫必須共用同一筆配置結果：重量 (g/kg) 與容量 (ml/L) 可換算，
@@ -180,14 +182,14 @@ export const useFridgeStore = defineStore('fridge', () => {
 
       matchingItems
         .forEach((ingredient) => {
-          if (remainingNeeded <= 0) return
+          if (remainingNeeded <= 1e-6) return
           const source = unitDescriptor(ingredient.unit)
           if (source.group !== target.group) return
           const availableAmount = (remaining.get(ingredient.id) ?? 0) * source.factor
           const used = Math.min(availableAmount, remainingNeeded)
           if (used <= 0) return
-          const usedInIngredientUnit = displayAmount(used / source.factor)
-          remaining.set(ingredient.id, displayAmount((remaining.get(ingredient.id) ?? 0) - usedInIngredientUnit))
+          const usedInIngredientUnit = preciseAmount(used / source.factor)
+          remaining.set(ingredient.id, preciseAmount((remaining.get(ingredient.id) ?? 0) - usedInIngredientUnit))
           matchedIngredients.push({ ...ingredient, amountUsed: usedInIngredientUnit })
           deductions.push({
             id: ingredient.id,
@@ -201,7 +203,7 @@ export const useFridgeStore = defineStore('fridge', () => {
 
       const missingQty = displayAmount(remainingNeeded / target.factor)
       const matchedQty = displayAmount(needed - missingQty)
-      const isFulfilled = remainingNeeded <= 0
+      const isFulfilled = remainingNeeded <= 1e-6
       if (isFulfilled) matchedRequirements += 1
       else missingIngredients.push({ ...requirement, missingQty })
       requirementMatches.push({ requirement, matchedQty, missingQty, isFulfilled })
@@ -227,8 +229,8 @@ export const useFridgeStore = defineStore('fridge', () => {
   }
 
   // 依食譜用量預覽可從冰箱扣除的食材；與上方的庫存匹配使用完全相同的配置規則。
-  function previewConsumption(requirements = []) {
-    return allocateRecipeRequirements(requirements).deductions
+  function previewConsumption(requirements = [], options = {}) {
+    return allocateRecipeRequirements(requirements, options).deductions
   }
 
   // 扣除前再次以目前庫存核對，避免多視窗操作導致庫存出現負數。
@@ -239,7 +241,7 @@ export const useFridgeStore = defineStore('fridge', () => {
       if (!ingredient) return
       const amount = Math.min(Number(ingredient.amount), Number(deduction.amount))
       if (!Number.isFinite(amount) || amount <= 0) return
-      ingredient.amount = displayAmount(Number(ingredient.amount) - amount)
+      ingredient.amount = preciseAmount(Number(ingredient.amount) - amount)
       ingredient.updatedAt = now()
       if (ingredient.amount <= 0) ingredient.deletedAt = ingredient.updatedAt
       consumed.push({ ...deduction, amount })

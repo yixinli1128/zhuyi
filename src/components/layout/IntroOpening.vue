@@ -137,21 +137,16 @@ onMounted(() => {
     const r = 260 + rand() * 260
     const localR = clamp(Math.hypot(p.x / (R * 1.06), (p.y + 15) / 150))
     const phase = rand()
-    // 用兩層低頻紙紋決定消散順序：由中心往外，但邊界不會是規律圓形。
+    // 用兩層低頻紙紋決定消散順序：由中心往外一圈圈散開，但邊界不會是規律圓形。
     const paperGrain =
-      Math.sin(p.x * 0.038 + p.y * 0.052 + phase * Math.PI * 2) * 0.055
-      + Math.sin(p.x * 0.013 - p.y * 0.021 + phase * Math.PI * 4.2) * 0.045
-    const release = clamp(0.12 + localR * 0.28 + paperGrain + (rand() - 0.5) * 0.025, 0.08, 0.56)
+      Math.sin(p.x * 0.038 + p.y * 0.052 + phase * Math.PI * 2) * 0.04
+      + Math.sin(p.x * 0.013 - p.y * 0.021 + phase * Math.PI * 4.2) * 0.03
+    const release = clamp(localR * 0.1 + paperGrain * 0.6 + rand() * 0.04, 0, 0.16)
 
-    // 只有很少的墨粉離開鍋身，讓視覺留在「淡墨被風帶走」而非爆炸。
-    const dust = rand() < 0.016
-    const normalX = p.x
-    const normalY = (p.y + 20) * 0.72
-    const normalLength = Math.hypot(normalX, normalY) || 1
-    // 保留一點由中心向外的力道，再疊加一股往右上方的紙面微風。
-    const flowX = normalX / normalLength * 0.35 + 0.38
-    const flowY = normalY / normalLength * 0.35 - 0.62
-    const flowLength = Math.hypot(flowX, flowY) || 1
+    // 每一顆墨點都沿著「從鍋子中心往外」的方向飛出去，角度帶一點亂度；
+    // 少數飛得特別遠，散開時才有層次。
+    const outAngle = Math.atan2((p.y + 15) * 0.85, p.x) + (rand() - 0.5) * 0.9
+    const far = rand() < 0.06
     return {
       ...p,
       sx: Math.cos(a) * r,
@@ -161,15 +156,12 @@ onMounted(() => {
       curl: (rand() - 0.5) * 80,
       phase,
       release,
-      erosionSpan: 0.28 + rand() * 0.08,
-      fragmentDelay: 0.16 + rand() * 0.12,
-      life: 0.34 + rand() * 0.12,
-      flowX: flowX / flowLength,
-      flowY: flowY / flowLength,
-      burstDistance: 12 + rand() * 46,
-      dust,
-      fiber: dust && rand() < 0.42,
-      fiberAngle: (rand() - 0.5) * 0.7,
+      life: 0.5 + rand() * 0.2,
+      outX: Math.cos(outAngle),
+      outY: Math.sin(outAngle),
+      burstDistance: far ? 380 + rand() * 320 : 90 + rand() * 230,
+      swirl: (rand() - 0.5) * 0.7,
+      grow: 0.4 + rand() * 1.1,
     }
   })
 
@@ -209,29 +201,24 @@ onMounted(() => {
     // 電腦版整體往下放，上方多留一些空白
     const cy = H * (W < 768 ? 0.5 : 0.56)
 
-    // 結束時先定格；只有鍋子的墨點會逐顆解體成墨粉與紙纖維。
+    // 結束時先定格，再讓鍋子和漩渦的墨點由中心往外飛散、淡出。
     if (props.dissolving && dissolveStart === null) dissolveStart = now
     const dissolveProgress = dissolveStart === null ? 0 : clamp((now - dissolveStart) / DISSOLVE_DURATION)
     const sceneT = dissolveStart === null ? t : (dissolveStart - start) / 1000
     const isDissolving = dissolveStart !== null
     const decorationFade = 1 - easeOut(clamp((dissolveProgress - 0.03) / 0.16))
-    // 最後才把殘留的淡墨整體收掉，避免侵蝕途中出現一個太乾淨的白洞。
-    const finalInkFade = isDissolving
-      ? 1 - smoothstep(0.45, 0.9, dissolveProgress)
-      : 1
-    const burst = (p, x, y) => {
-      if (!isDissolving) return { x, y, alpha: 0, eased: 0 }
-      const rawLocal = (dissolveProgress - p.release - p.fragmentDelay) / p.life
-      const local = clamp(rawLocal)
-      const eased = easeOut(local)
-      const drift = p.burstDistance * (0.5 * eased + 0.5 * eased * eased) * s
-      const side = Math.sin(eased * Math.PI + p.phase * Math.PI * 2) * (1.5 + p.phase * 4) * eased * s
-      return {
-        x: x + p.flowX * drift - p.flowY * side,
-        y: y + p.flowY * drift + p.flowX * side,
-        alpha: Math.sin(Math.PI * local) ** 1.3 * 0.38,
-        eased,
-      }
+    // 漩渦跟著往外擴散、淡出
+    const ringOut = isDissolving ? dissolveProgress ** 1.4 : 0
+    const ringFade = 1 - smoothstep(0.04, 0.55, dissolveProgress)
+    // 墨點往外飛：先慢後快（像被一口氣吹開），越飛越淡
+    const scatter = (p, x, y) => {
+      const local = clamp((dissolveProgress - p.release) / p.life)
+      const push = 0.35 * easeOut(local) + 0.65 * local * local
+      const dist = p.burstDistance * push * s
+      const turn = p.swirl * push
+      const dirX = p.outX * Math.cos(turn) - p.outY * Math.sin(turn)
+      const dirY = p.outX * Math.sin(turn) + p.outY * Math.cos(turn)
+      return { x: x + dirX * dist, y: y + dirY * dist, local }
     }
 
     // 平常留下極淡的筆觸；離場時每格重畫，避免粒子拖成不自然的殘影。
@@ -272,12 +259,12 @@ onMounted(() => {
       for (const p of rings) {
         const sin = Math.sin(p.a)
         if (front !== sin > 0) continue
-        const spread = 1 + 1.6 * (1 - gather)
+        const spread = 1 + 1.6 * (1 - gather) + 1.1 * ringOut
         let x = cx + Math.cos(p.a) * p.rx * spread * s
         let y = cy + (78 + sin * p.rx * 0.27 * spread) * s
         // 鍋子成形後，被鍋身擋住的後排點就不畫
         if (!front && potIn > 0.5 && Math.abs(x - cx) < R * s && y < cy + BOT_Y * s) continue
-        ctx.fillStyle = ink(p.alpha * fadeIn * decorationFade)
+        ctx.fillStyle = ink(p.alpha * fadeIn * ringFade)
         ctx.fillRect(x, y, p.size, p.size)
       }
     }
@@ -292,37 +279,20 @@ onMounted(() => {
       const bend = Math.sin(Math.PI * e) * p.curl
       let x = cx + (p.sx + (p.x - p.sx) * e + bend) * s
       let y = cy + (p.sy + (p.y - p.sy) * e - bend * 0.3) * s
-      // 主鍋以紙紋為節奏被侵蝕，讓「中心向外」真正落在鍋身上。
-      const eroded = isDissolving
-        ? smoothstep(p.release, p.release + p.erosionSpan, dissolveProgress)
-        : 0
-      const sourceAlpha = (0.35 + 0.6 * e) * (1 - eroded * 0.64) * finalInkFade
-      if (sourceAlpha > 0.01) {
-        ctx.fillStyle = ink(sourceAlpha)
+      const baseAlpha = 0.35 + 0.6 * e
+      if (!isDissolving) {
+        ctx.fillStyle = ink(baseAlpha)
         ctx.fillRect(x, y, p.size, p.size)
+        continue
       }
-      if (!isDissolving || !p.dust) continue
-      const out = burst(p, x, y)
-      if (out.alpha <= 0.01) continue
-      // 柔邊的小橢圓墨粉比放大的方格更像紙面上被風帶走的淡墨。
-      const particleSize = p.size * (0.85 + out.eased * 0.75)
-      ctx.fillStyle = ink((0.36 + 0.18 * e) * out.alpha)
-      ctx.beginPath()
-      ctx.ellipse(out.x, out.y, particleSize, particleSize * 0.66, Math.atan2(p.flowY, p.flowX), 0, Math.PI * 2)
-      ctx.fill()
-      if (p.fiber && out.eased > 0.12) {
-        const fiberLength = (4 + p.phase * 9) * (0.6 + out.eased) * s
-        ctx.save()
-        ctx.translate(out.x, out.y)
-        ctx.rotate(Math.atan2(p.flowY, p.flowX) + p.fiberAngle)
-        ctx.strokeStyle = ink((0.3 + 0.38 * out.eased) * out.alpha)
-        ctx.lineWidth = 0.65
-        ctx.beginPath()
-        ctx.moveTo(-fiberLength / 2, 0)
-        ctx.lineTo(fiberLength / 2, 0)
-        ctx.stroke()
-        ctx.restore()
-      }
+      // 離場：每顆墨點由中心往外飛散，邊飛邊變大變淡
+      const out = scatter(p, x, y)
+      if (out.local >= 1) continue
+      const alpha = baseAlpha * (1 - smoothstep(0.15, 1, out.local))
+      if (alpha <= 0.01) continue
+      const size = p.size * (1 + out.local * p.grow)
+      ctx.fillStyle = ink(alpha)
+      ctx.fillRect(out.x - size / 2, out.y - size / 2, size, size)
     }
 
     drawRing(true)

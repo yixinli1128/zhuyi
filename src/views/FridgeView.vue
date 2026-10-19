@@ -7,7 +7,7 @@ import DatePickerDialog from '@/components/base/DatePickerDialog.vue'
 import AppIcon from '@/components/base/AppIcon.vue'
 import { useFridgeStore } from '@/stores/fridge'
 import { useRecipeStore } from '@/stores/recipes'
-import { toDateKey } from '@/utils/date'
+import { addDays, toDateKey } from '@/utils/date'
 import { englishUnits } from '@/utils/amount'
 import addIconUrl from '@/assets/figma/fridge-add.svg'
 import gridIconUrl from '@/assets/figma/fridge-grid.svg'
@@ -110,7 +110,8 @@ function missingIngredientLabel(ingredient) {
 }
 function resetForm(item) { Object.assign(form, item ? { name: item.name, amount: item.amount, unit: item.unit, zone: item.zone, expiry: item.expiry } : { name: '', amount: 1, unit: '', zone: '', expiry: '' }); submitted.value = false; unitMenuOpen.value = false }
 function showToast(message) { toast.value = message; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toast.value = '' }, 3600) }
-function setZone(zone) { form.zone = zone.name; const date = new Date(); date.setDate(date.getDate() + zone.days); form.expiry = date.toISOString().slice(0, 10) }
+// 預設到期日用本地日期計算（toISOString 是 UTC，台灣凌晨 0–8 點會少一天）
+function setZone(zone) { form.zone = zone.name; form.expiry = addDays(toDateKey(), zone.days) }
 function changeAmount(by) { form.amount = Math.max(.5, Math.min(500, Number(form.amount || 0) + by)) }
 function chooseUnit(unit) { form.unit = unit; unitMenuOpen.value = false }
 function openAdd() { editingId.value = null; resetForm(); dialog.value = 'form' }

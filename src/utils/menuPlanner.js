@@ -196,7 +196,7 @@ export function planMenu({ recipes, members, guest, needs, dishCount, soupCount,
   const scored = recipes
     .filter((recipe) => isAllowed(recipe, rules))
     .map((recipe) => {
-      const matches = useFridge ? findFridgeMatches(recipe.ingredients.map((i) => i.name)) : []
+      const matches = useFridge ? findFridgeMatches(recipe) : []
       // 使用者指定的菜不受 7 天不重複限制
       const preferred = preferredRecipeIds.includes(recipe.id)
       const penalty = preferred ? 0 : recentPenalty(recipe.id, recentDays)
@@ -225,7 +225,7 @@ export function swapCandidates({ recipes, current, menuIds, members, guest, need
   return recipes
     .filter((r) => sameGroup(r, current) && !menuIds.includes(r.id) && isAllowed(r, rules))
     .map((recipe) => {
-      const matches = useFridge ? findFridgeMatches(recipe.ingredients.map((i) => i.name)) : []
+      const matches = useFridge ? findFridgeMatches(recipe) : []
       return { recipe, score: scoreRecipe(recipe, needs, matches, 0) }
     })
     .sort((a, b) => b.score - a.score)

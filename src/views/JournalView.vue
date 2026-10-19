@@ -93,8 +93,8 @@ const planIngredientGroups = computed(() => {
   return [...grouped.values()]
 })
 const ingredientCoverage = computed(() => {
-  // 不論餐單是否勾選使用冰箱庫存，都比對冰箱並列出已有的食材。
-  return fridge.matchRecipeRequirements(planIngredientGroups.value).requirementMatches
+  // 不論餐單是否勾選使用冰箱庫存，都比對冰箱並列出已有的食材；水、鹽、糖、油等基本品不列入採買。
+  return fridge.matchRecipeRequirements(planIngredientGroups.value, { skipStaples: true }).requirementMatches
 })
 // 部分有庫存時，採買清單只列仍需補足的數量；庫存區則顯示這餐實際會使用的數量。
 const groceryItems = computed(() => ingredientCoverage.value
@@ -106,10 +106,8 @@ const fridgeItems = computed(() => ingredientCoverage.value
 const groceryChecked = computed(() => new Set(selectedPlan.value?.groceryChecked ?? []))
 const groceryCheckedCount = computed(() => groceryItems.value.filter((item) => groceryChecked.value.has(item.key) || groceryChecked.value.has(item.name)).length)
 const groceryProgress = computed(() => groceryItems.value.length ? Math.round((groceryCheckedCount.value / groceryItems.value.length) * 100) : 0)
-const planIngredients = computed(() => selectedPlan.value
-  ? selectedRecipes.value.flatMap((recipe) => recipes.scaleIngredients(recipe.id, selectedPlan.value.servings))
-  : [])
-const fridgeDeductions = computed(() => selectedPlan.value?.useFridge ? fridge.previewConsumption(planIngredients.value) : [])
+// 煮好晚餐時扣除的量，和採買清單「冰箱已有庫存」用同一份配置計算，兩邊一定一致
+const fridgeDeductions = computed(() => selectedPlan.value ? fridge.previewConsumption(planIngredientGroups.value, { skipStaples: true }) : [])
 const completionDateLabel = computed(() => {
   const date = fromDateKey(selectedDate.value)
   return `${date.getMonth() + 1}月${date.getDate()}日 晚餐`
@@ -365,9 +363,9 @@ watch(selectedDate, async () => {
       <div class="completion-dialog">
         <h3>將從冰箱庫存扣除</h3>
         <ul v-if="fridgeDeductions.length" class="deduction-list">
-          <li v-for="item in fridgeDeductions" :key="`${item.id}-${item.recipeName}`"><span>{{ item.name }}</span><strong>− {{ englishUnits(`${item.amount} ${item.unit}`) }}</strong></li>
+          <li v-for="(item, index) in fridgeDeductions" :key="`${item.id}-${index}`"><span>{{ item.name }}</span><strong>− {{ englishUnits(`${item.amount} ${item.unit}`) }}</strong></li>
         </ul>
-        <p v-else class="no-deduction">此餐未使用冰箱庫存，確認後會直接存入歷史紀錄。</p>
+        <p v-else class="no-deduction">這餐沒有用到冰箱庫存，確認後會直接存入歷史紀錄。</p>
       </div>
       <template #footer>
         <BaseButton variant="secondary" @click="finishDialogOpen = false">取消</BaseButton>

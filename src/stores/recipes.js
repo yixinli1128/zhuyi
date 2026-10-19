@@ -13,9 +13,10 @@ const imageByName = Object.fromEntries(
 )
 
 // 新增的食譜若沒填 group，依湯品／肉類／蛋類／蔬菜類推斷，更換菜色才能只列同類型。
+// 湯一律歸「湯品類」：試算表裡有幾道寫成「湯品」，不統一的話換湯時會被分成兩組。
 function inferGroup(recipe) {
-  if (recipe.group) return recipe.group
   if (recipe.type === 'soup') return '湯品類'
+  if (recipe.group) return recipe.group
   if ((recipe.categories ?? []).some((category) => ['雞肉', '豬肉', '牛肉', '海鮮'].includes(category))) return '肉類'
   if (recipe.name.includes('蛋')) return '蛋類'
   return '蔬菜類'
