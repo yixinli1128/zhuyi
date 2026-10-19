@@ -8,6 +8,7 @@ import { addDays, toDateKey } from '@/utils/date'
 const STORAGE_KEY = 'fridge-ingredients'
 const OLIVER_EMAIL = 'oliver@example.com'
 const OLIVER_DEMO_SEED_KEY = 'oliver-demo-fridge-seeded'
+const OLIVER_DEMO_EXPANSION_KEY = 'oliver-demo-fridge-expansion-v1'
 const ZONES = ['冷藏', '冷凍', '蔬果室', '常溫/調味']
 const UNITS = ['份', '顆', '個', '根', '把', '束', '片', '塊', '條', '包', '袋', '盒', '罐', '瓶', 'g（公克）', 'kg（公斤）', 'ml（毫升）', 'L（公升）', '大匙', '茶匙', '杯']
 // iPhone 透過區網 HTTP 測試時不一定提供 crypto.randomUUID；缺少時仍可安全建立示範食材。
@@ -44,6 +45,27 @@ const OLIVER_DEMO_INGREDIENTS = [
   ['白糖', 200, 'g（公克）', '常溫/調味', 87],
   ['高麗菜', 2, '顆', '蔬果室', 2],
   ['米酒', 1, '瓶', '常溫/調味', 87],
+]
+
+// 額外示範食材會以版本化方式補入既有的 Oliver 資料：只加入尚未存在的名稱，
+// 不覆寫使用者修改的數量、也不復活已刪除的食材。
+const OLIVER_DEMO_EXPANSION_INGREDIENTS = [
+  ['去骨雞腿排', 4, '片', '冷凍', 27],
+  ['鮭魚', 2, '片', '冷凍', 27],
+  ['蛤蜊', 1, '盒', '冷藏', 2],
+  ['豬五花肉', 500, 'g（公克）', '冷凍', 27],
+  ['青蔥', 1, '把', '蔬果室', 4],
+  ['老薑', 150, 'g（公克）', '常溫/調味', 21],
+  ['九層塔', 1, '把', '冷藏', 2],
+  ['辣椒', 3, '根', '蔬果室', 4],
+  ['小黃瓜', 2, '根', '蔬果室', 4],
+  ['洋蔥', 2, '顆', '常溫/調味', 21],
+  ['紅蘿蔔', 2, '根', '蔬果室', 7],
+  ['菠菜', 1, '把', '冷藏', 2],
+  ['金針菇', 2, '包', '冷藏', 2],
+  ['鮮香菇', 1, '包', '冷藏', 3],
+  ['白味噌', 1, '盒', '冷藏', 27],
+  ['芝麻油', 1, '瓶', '常溫/調味', 87],
 ]
 
 function normaliseIngredient(input, existing = {}) {
@@ -88,6 +110,26 @@ export const useFridgeStore = defineStore('fridge', () => {
       expiry: addDays(today, offset),
     }))
     save(OLIVER_DEMO_SEED_KEY, { ...seeded, [email]: true })
+  }
+
+  function ensureOliverDemoExpansion(email) {
+    if (email !== OLIVER_EMAIL || householdStore.current?.ownerEmail !== OLIVER_EMAIL) return
+    if (load(OLIVER_DEMO_EXPANSION_KEY, false)) return
+
+    const today = toDateKey()
+    const knownNames = new Set(ingredients.value.map((item) => item.name))
+    const additions = OLIVER_DEMO_EXPANSION_INGREDIENTS
+      .filter(([name]) => !knownNames.has(name))
+      .map(([name, amount, unit, zone, offset]) => normaliseIngredient({
+        name,
+        amount,
+        unit,
+        zone,
+        expiry: addDays(today, offset),
+      }))
+
+    if (additions.length) ingredients.value.push(...additions)
+    save(OLIVER_DEMO_EXPANSION_KEY, true)
   }
 
   function validate(input) {
@@ -252,10 +294,12 @@ export const useFridgeStore = defineStore('fridge', () => {
   watch(householdId, (id) => {
     ingredients.value = loadForHousehold(STORAGE_KEY, id, [])
     ensureOliverDemoInventory(accountEmail.value)
+    ensureOliverDemoExpansion(accountEmail.value)
   }, { flush: 'sync' })
   // 同步寫入，避免換家庭的同一輪把舊家庭的庫存寫進新家庭
   watch(ingredients, (value) => saveForHousehold(STORAGE_KEY, householdId.value, value), { deep: true, flush: 'sync' })
   ensureOliverDemoInventory(accountEmail.value)
+  ensureOliverDemoExpansion(accountEmail.value)
 
   return {
     ingredients,
