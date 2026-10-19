@@ -137,8 +137,8 @@ export const useFamilyStore = defineStore('family', () => {
     const email = profile.email.toLowerCase()
     const existing = members.value.find((member) => member.ownerEmail === email)
     if (!existing) {
-      // ownerSetupPending：剛建立、還沒設定飲食偏好，App 會跳提示請使用者補上（儲存或按稍後就清掉）
-      const member = { ...normaliseMember({ name: ownerName(profile.name), portionFactor: 1, spiceLevel: 'none', avatar: profile.avatar || '' }), ownerEmail: email, ownerSetupPending: true }
+      // 示範帳號已有完整範例資料，不需要再引導；一般新帳號仍提示補上偏好。
+      const member = { ...normaliseMember({ name: ownerName(profile.name), portionFactor: 1, spiceLevel: 'none', avatar: profile.avatar || '' }), ownerEmail: email, ownerSetupPending: email !== OLIVER_EMAIL }
       // 帳號卡片排在名冊最前面，後加入家庭的帳號接在前一位帳號之後
       const lastAccountIndex = members.value.findLastIndex((item) => item.ownerEmail)
       members.value.splice(lastAccountIndex + 1, 0, member)
@@ -148,6 +148,8 @@ export const useFamilyStore = defineStore('family', () => {
     const name = ownerName(profile.name, existing.id)
     // 帳號沒設頭像時，保留在家庭管理上傳的頭像
     const avatar = profile.avatar || existing.avatar
+    // 升級前建立的 Oliver 卡片可能仍保留舊的待引導旗標，登入時一併清除。
+    if (email === OLIVER_EMAIL && existing.ownerSetupPending) existing.ownerSetupPending = false
     if (existing.deletedAt || existing.name !== name || existing.avatar !== avatar) {
       Object.assign(existing, { name, avatar, deletedAt: null, updatedAt: now() })
     }
