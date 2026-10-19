@@ -9,7 +9,8 @@ import logoUrl from '@/assets/zhuyi-img/logo/logo_1.svg'
 import IntroOpening from './IntroOpening.vue'
 
 const STORAGE_KEY = 'zhuyi:intro-seen'
-const HOLD = { opening: 5000, refresh: 3700 }
+// 開場約 6 秒：停留 3 秒，再以 3 秒粒子消散；離場開始即可操作頁面。
+const HOLD = { opening: 3000, refresh: 2200 }
 
 const mode = ref(null)
 const leaving = ref(false)
@@ -46,6 +47,8 @@ function pickMode() {
 function leave() {
   if (leaving.value) return
   leaving.value = true
+  // 消散期間背景頁面已可捲動／點擊，避免手機誤以為尚未載入完成。
+  document.documentElement.style.overflow = ''
   clearTimeout(timer)
   window.removeEventListener('keydown', leave)
 }
@@ -153,6 +156,7 @@ onBeforeUnmount(() => {
   animation: none;
   background: transparent;
   cursor: default;
+  pointer-events: none;
 }
 
 .intro--opening.is-leaving .intro__skip {

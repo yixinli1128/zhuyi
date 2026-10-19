@@ -90,8 +90,16 @@ onBeforeUnmount(stop)
             <p class="season-carousel__label">推薦菜色 :</p>
             <p class="season-carousel__list">
               <template v-for="(item, index) in veg.dishPhotos" :key="item.name">
-                <span v-if="index">、</span>
-                <span :class="{ 'is-active': index === current }">{{ item.name }}</span>
+                <span v-if="index" class="season-carousel__separator" aria-hidden="true">、</span>
+                <button
+                  type="button"
+                  class="season-carousel__dish-button"
+                  :class="{ 'is-active': index === current }"
+                  :aria-pressed="index === current"
+                  @click="select(index)"
+                >
+                  {{ item.name }}
+                </button>
               </template>
             </p>
           </div>
@@ -191,16 +199,31 @@ onBeforeUnmount(stop)
 }
 
 /* 菜名底線：用背景畫 1px 細線，寬度從 0 長到 100% */
-.season-carousel__list span {
+.season-carousel__dish-button {
+  padding: 0 0 4px;
+  border: 0;
+  background-color: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
   padding-bottom: 4px;
   background: linear-gradient(var(--brand-special), var(--brand-special)) no-repeat right bottom / 0 1px;
   transition: background-size 0.4s ease;
 }
 
 /* 目前照片上的那道菜：線從左滑到右；換下一道時往右收掉 */
-.season-carousel__list .is-active {
+.season-carousel__dish-button.is-active {
   background-position: left bottom;
   background-size: 100% 1px;
+}
+
+.season-carousel__dish-button:hover {
+  color: var(--text-title);
+}
+
+.season-carousel__dish-button:focus-visible {
+  outline: 2px solid var(--brand-special);
+  outline-offset: 4px;
 }
 
 /* 圓點放在切換動畫外面，換頁時按鈕不會重建、鍵盤焦點不會跑掉 */
@@ -274,7 +297,7 @@ onBeforeUnmount(stop)
   .season-fade-enter-active,
   .season-fade-leave-active,
   .season-carousel__dot,
-  .season-carousel__list span {
+  .season-carousel__dish-button {
     transition: none;
   }
 }

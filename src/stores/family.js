@@ -7,6 +7,7 @@ import { NICKNAME_LIMIT_MESSAGE, NICKNAME_MAX_UNITS, isNicknameWithinLimit, nick
 const STORAGE_KEY = 'family-members'
 const OLIVER_EMAIL = 'oliver@example.com'
 const OLIVER_DEMO_SEED_KEY = 'oliver-demo-family-seeded'
+const OLIVER_DEMO_PREFERENCES_KEY = 'oliver-demo-member-preferences-v2'
 
 // iPhone 透過區網 HTTP 測試時不一定提供 crypto.randomUUID；保留 UUID 優先，
 // 缺少時用帶時間戳的隨機 ID，避免首次建立本人卡片失敗。
@@ -17,10 +18,17 @@ const uniqueNames = (items) => [...new Set(items.map((item) => item.trim()).filt
 // Oliver 是手機版面測試用帳號。只在新裝置首次建立家庭資料時帶入，
 // 讓成員卡與列車都有可檢視內容；既有成員或曾刪除的成員都不會被覆寫。
 const OLIVER_DEMO_MEMBERS = [
-  { name: '媽媽', portionFactor: 0.8, spiceLevel: 'none', allergies: ['芝麻'], avoids: [] },
-  { name: '爸爸', portionFactor: 1.2, spiceLevel: 'mild', allergies: [], avoids: ['茄子'] },
-  { name: '妹妹', portionFactor: 0.5, spiceLevel: 'light', allergies: ['甲殼類'], avoids: [] },
+  { name: '媽媽', portionFactor: 0.8, spiceLevel: 'none', allergies: ['芝麻'], avoids: ['花生'] },
+  { name: '爸爸', portionFactor: 1.2, spiceLevel: 'mild', allergies: [], avoids: ['茄子', '苦瓜'] },
+  { name: '妹妹', portionFactor: 0.5, spiceLevel: 'light', allergies: ['甲殼類', '堅果類'], avoids: ['牛奶製品'] },
 ]
+
+const OLIVER_DEMO_MEMBER_PREFERENCES = {
+  Oliver: { allergies: [], avoids: ['香菜'] },
+  媽媽: { allergies: ['芝麻'], avoids: ['花生'] },
+  爸爸: { allergies: [], avoids: ['茄子', '苦瓜'] },
+  妹妹: { allergies: ['甲殼類', '堅果類'], avoids: ['牛奶製品'] },
+}
 
 function normaliseMember(input, existing = {}) {
   const allergies = uniqueNames(input.allergies ?? [])
@@ -132,26 +140,46 @@ export const useFamilyStore = defineStore('family', () => {
     save(OLIVER_DEMO_SEED_KEY, { ...seeded, [email]: true })
   }
 
+  function ensureOliverDemoPreferences(email) {
+    if (email !== OLIVER_EMAIL || householdStore.current?.ownerEmail !== OLIVER_EMAIL) return
+    if (load(OLIVER_DEMO_PREFERENCES_KEY, false)) return
+
+    members.value.forEach((member) => {
+      const preference = OLIVER_DEMO_MEMBER_PREFERENCES[member.name]
+      if (!preference || member.deletedAt) return
+      Object.assign(member, {
+        allergies: preference.allergies,
+        avoids: preference.avoids,
+        updatedAt: now(),
+      })
+    })
+    save(OLIVER_DEMO_PREFERENCES_KEY, true)
+  }
+
   function ensureOwner(profile) {
     if (!profile?.email) return null
     const email = profile.email.toLowerCase()
     const existing = members.value.find((member) => member.ownerEmail === email)
     if (!existing) {
-      // ownerSetupPending：剛建立、還沒設定飲食偏好，App 會跳提示請使用者補上（儲存或按稍後就清掉）
-      const member = { ...normaliseMember({ name: ownerName(profile.name), portionFactor: 1, spiceLevel: 'none', avatar: profile.avatar || '' }), ownerEmail: email, ownerSetupPending: true }
+      // 示範帳號已有完整範例資料，不需要再引導；一般新帳號仍提示補上偏好。
+      const member = { ...normaliseMember({ name: ownerName(profile.name), portionFactor: 1, spiceLevel: 'none', avatar: profile.avatar || '' }), ownerEmail: email, ownerSetupPending: email !== OLIVER_EMAIL }
       // 帳號卡片排在名冊最前面，後加入家庭的帳號接在前一位帳號之後
       const lastAccountIndex = members.value.findLastIndex((item) => item.ownerEmail)
       members.value.splice(lastAccountIndex + 1, 0, member)
       ensureOliverDemoMembers(email)
+      ensureOliverDemoPreferences(email)
       return member
     }
     const name = ownerName(profile.name, existing.id)
     // 帳號沒設頭像時，保留在家庭管理上傳的頭像
     const avatar = profile.avatar || existing.avatar
+    // 升級前建立的 Oliver 卡片可能仍保留舊的待引導旗標，登入時一併清除。
+    if (email === OLIVER_EMAIL && existing.ownerSetupPending) existing.ownerSetupPending = false
     if (existing.deletedAt || existing.name !== name || existing.avatar !== avatar) {
       Object.assign(existing, { name, avatar, deletedAt: null, updatedAt: now() })
     }
     ensureOliverDemoMembers(email)
+    ensureOliverDemoPreferences(email)
     return existing
   }
 

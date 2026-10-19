@@ -14,6 +14,7 @@ import trainLocomotiveUrl from '@/assets/family-train-locomotive-ink-v3.png'
 import trainCarriageUrl from '@/assets/family-train-carriage-ink-v3.png'
 import trainCarriageLongUrl from '@/assets/family-train-carriage-long-ink-v1.png'
 import { NICKNAME_MAX_INPUT_LENGTH, nicknameUnits, trimNicknameToUnits } from '@/utils/nickname'
+import allergenOptions from '@/data/allergens.json'
 
 const familyStore = useFamilyStore()
 const userStore = useUserStore()
@@ -28,7 +29,8 @@ const customAvoid = ref('')
 const photoInput = ref(null)
 let toastTimer
 
-const commonIngredients = ['花生', '芒果', '大豆', '魚類', '芝麻', '蛋類', '堅果類', '甲殼類', '牛奶製品']
+// 與訪客設定共用同一份過敏／忌口選項，避免兩個入口出現不同數量。
+const commonIngredients = allergenOptions.map((item) => item.name)
 const spiceLevels = [
   { value: 'none', label: '不辣' },
   { value: 'light', label: '微辣' },

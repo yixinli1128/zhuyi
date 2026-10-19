@@ -27,6 +27,10 @@ import unitChevronUrl from '@/assets/figma/fridge-unit-chevron.svg'
 
 const foodImageAssets = import.meta.glob('../../img/reffood/*.png', { eager: true, import: 'default', query: '?url' })
 const foodImageNames = {
+  // 兩者名稱相近，不能交給模糊比對；蔬果室的「辣椒」必須使用新鮮辣椒圖。
+  辣椒: '辣椒',
+  剝皮辣椒: '剝皮辣椒',
+  米酒: '米酒',
   牛番茄: '牛蕃茄',
   豬梅花肉片: '豬肉片',
   梅花豬肉片: '豬肉片',
@@ -73,14 +77,16 @@ const expiringHint = computed(() => expiredCount.value
   : expiringCount.value ? '請優先安排這些食材入菜' : '目前所有庫存均在安全賞味期限內')
 const pantryCount = computed(() => count('常溫/調味'))
 function foodImage(name) {
-  const alias = Object.keys(foodImageNames).find((key) => name.includes(key))
+  // 先比對較長的名稱，避免「剝皮辣椒」被較短的「辣椒」誤判。
+  const alias = Object.keys(foodImageNames).sort((a, b) => b.length - a.length).find((key) => name.includes(key))
   const imageName = alias ? foodImageNames[alias] : Object.keys(foodImageAssets)
     .map((path) => path.split('/').pop().replace('.png', ''))
     .find((candidate) => name.includes(candidate) || candidate.includes(name))
   return imageName ? foodImageAssets[`../../img/reffood/${imageName}.png`] : null
 }
 const inZone = (zone) => ingredients.value.filter((item) => item.zone === zone)
-const seasoning = (item) => /油|醬|鹽|醋|粉|香料|辣|胡椒/.test(item.name)
+// 常溫食材在畫面上分成乾貨櫃與調味架；糖、酒與味醂／味精也屬調味品。
+const seasoning = (item) => /油|醬|鹽|醋|粉|香料|辣|胡椒|糖|酒|味醂|味精/.test(item.name)
 const boards = computed(() => [
   { id: 'frozen', title: '冷凍庫', hint: '-18°C・可保存約 1–3 個月', items: inZone('冷凍'), capacity: 5, rows: 1 },
   { id: 'chilled', title: '冷藏室', hint: '0–4°C・可保存約 3–7 天', items: inZone('冷藏'), capacity: 10, rows: 2 },

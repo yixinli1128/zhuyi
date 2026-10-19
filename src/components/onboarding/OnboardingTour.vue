@@ -32,6 +32,8 @@ let dialogObserver = null
 let resumeTimer = null
 
 const userEmail = computed(() => userStore.user?.email?.toLowerCase() ?? '')
+// Oliver 是已備妥範例資料的示範帳號，不需要顯示任何新手導覽步驟。
+const isOliverDemo = computed(() => userEmail.value === 'oliver@example.com')
 const hasAddedFamily = computed(() => familyStore.activeMembers.some((member) => !member.ownerEmail))
 const hasIngredients = computed(() => fridgeStore.activeIngredients.length > 0)
 const hasFirstMenu = computed(() => mealPlanStore.plans.some((plan) => !plan.demo))
@@ -88,7 +90,7 @@ const menuStep = computed(() => {
   return 'menu-build'
 })
 const activeConfig = computed(() => steps[activeStep.value === 'menu' ? menuStep.value : activeStep.value] ?? null)
-const isVisible = computed(() => Boolean(userEmail.value && activeConfig.value) && !props.blocked && !pageDialogOpen.value && !pausedForAction.value && !onboardingStore.menuCreating)
+const isVisible = computed(() => Boolean(userEmail.value && activeConfig.value) && !isOliverDemo.value && !props.blocked && !pageDialogOpen.value && !pausedForAction.value && !onboardingStore.menuCreating)
 
 function updateTour(update) {
   if (!userEmail.value) return
