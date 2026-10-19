@@ -11,6 +11,7 @@ const OLIVER_DEMO_SEED_KEY = 'oliver-demo-fridge-seeded'
 const OLIVER_DEMO_EXPANSION_KEY = 'oliver-demo-fridge-expansion-v1'
 const OLIVER_DEMO_IMAGE_UPGRADE_KEY = 'oliver-demo-fridge-image-upgrade-v2'
 const OLIVER_DEMO_SEASONING_EXPANSION_KEY = 'oliver-demo-fridge-seasoning-v3'
+const OLIVER_DEMO_CHILI_UPGRADE_KEY = 'oliver-demo-fridge-chili-v4'
 const ZONES = ['冷藏', '冷凍', '蔬果室', '常溫/調味']
 const UNITS = ['份', '顆', '個', '根', '把', '束', '片', '塊', '條', '包', '袋', '盒', '罐', '瓶', 'g（公克）', 'kg（公斤）', 'ml（毫升）', 'L（公升）', '大匙', '茶匙', '杯']
 // iPhone 透過區網 HTTP 測試時不一定提供 crypto.randomUUID；缺少時仍可安全建立示範食材。
@@ -77,7 +78,7 @@ const OLIVER_DEMO_SEASONING_INGREDIENTS = [
   ['味精', 1, '罐', '常溫/調味', 87],
   ['味醂', 1, '瓶', '常溫/調味', 87],
   ['沙茶醬', 1, '罐', '常溫/調味', 87],
-  ['剝皮辣椒', 1, '罐', '常溫/調味', 87],
+  ['辣椒', 3, '根', '常溫/調味', 7],
 ]
 
 function normaliseIngredient(input, existing = {}) {
@@ -181,6 +182,24 @@ export const useFridgeStore = defineStore('fridge', () => {
         expiry: addDays(today, offset),
       })))
     save(OLIVER_DEMO_SEASONING_EXPANSION_KEY, true)
+  }
+
+  function upgradeOliverDemoChili(email) {
+    if (email !== OLIVER_EMAIL || householdStore.current?.ownerEmail !== OLIVER_EMAIL) return
+    if (load(OLIVER_DEMO_CHILI_UPGRADE_KEY, false)) return
+
+    const pickledChili = ingredients.value.find((item) => item.name === '剝皮辣椒' && !item.deletedAt)
+    const freshChili = ingredients.value.find((item) => item.name === '辣椒' && !item.deletedAt)
+    if (pickledChili && freshChili) pickledChili.deletedAt = now()
+    else if (pickledChili) Object.assign(pickledChili, {
+      name: '辣椒',
+      amount: 3,
+      unit: '根',
+      zone: '常溫/調味',
+      expiry: addDays(toDateKey(), 7),
+      updatedAt: now(),
+    })
+    save(OLIVER_DEMO_CHILI_UPGRADE_KEY, true)
   }
 
   function validate(input) {
@@ -348,6 +367,7 @@ export const useFridgeStore = defineStore('fridge', () => {
     ensureOliverDemoExpansion(accountEmail.value)
     upgradeOliverDemoImages(accountEmail.value)
     ensureOliverDemoSeasonings(accountEmail.value)
+    upgradeOliverDemoChili(accountEmail.value)
   }, { flush: 'sync' })
   // 同步寫入，避免換家庭的同一輪把舊家庭的庫存寫進新家庭
   watch(ingredients, (value) => saveForHousehold(STORAGE_KEY, householdId.value, value), { deep: true, flush: 'sync' })
@@ -355,6 +375,7 @@ export const useFridgeStore = defineStore('fridge', () => {
   ensureOliverDemoExpansion(accountEmail.value)
   upgradeOliverDemoImages(accountEmail.value)
   ensureOliverDemoSeasonings(accountEmail.value)
+  upgradeOliverDemoChili(accountEmail.value)
 
   return {
     ingredients,
