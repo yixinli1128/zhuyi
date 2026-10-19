@@ -42,6 +42,10 @@ const timerEditing = ref(false)
 const timerMinutesInput = ref('05:00')
 const timerMinutesField = ref(null)
 let timerInterval
+let timerEndsAt = 0
+// 時間到的提示音用 Web Audio 合成，不用另外放音檔；瀏覽器規定要在使用者按下開始時先解鎖。
+let alarmContext
+let alarmInterval
 
 const timerLabel = computed(() => {
   const minutes = Math.floor(timerSeconds.value / 60)
@@ -54,7 +58,50 @@ const timerProgress = computed(() => {
   return Math.max(0, Math.min(100, (timerSeconds.value / timerTotalSeconds.value) * 100))
 })
 
+function unlockAlarm() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext
+  if (!AudioContextClass) return
+  alarmContext ??= new AudioContextClass()
+  if (alarmContext.state === 'suspended') alarmContext.resume()
+}
+
+function beep() {
+  if (!alarmContext) return
+  const now = alarmContext.currentTime
+  ;[0, 0.25, 0.5].forEach((offset) => {
+    const oscillator = alarmContext.createOscillator()
+    const gain = alarmContext.createGain()
+    oscillator.type = 'sine'
+    oscillator.frequency.value = 880
+    gain.gain.setValueAtTime(0.0001, now + offset)
+    gain.gain.exponentialRampToValueAtTime(0.4, now + offset + 0.02)
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.18)
+    oscillator.connect(gain).connect(alarmContext.destination)
+    oscillator.start(now + offset)
+    oscillator.stop(now + offset + 0.2)
+  })
+}
+
+// 響約 10 秒，或使用者按任何計時器按鈕就停
+function ringAlarm() {
+  stopAlarm()
+  let rounds = 0
+  beep()
+  navigator.vibrate?.([300, 150, 300, 150, 300])
+  alarmInterval = setInterval(() => {
+    rounds += 1
+    if (rounds >= 7) return stopAlarm()
+    beep()
+  }, 1400)
+}
+
+function stopAlarm() {
+  clearInterval(alarmInterval)
+  alarmInterval = undefined
+}
+
 function stopTimer() {
+  stopAlarm()
   timerRunning.value = false
   clearInterval(timerInterval)
   timerInterval = undefined
@@ -73,6 +120,7 @@ function startTimer(step) {
     timerPresetSeconds.value = timerSeconds.value
     timerStep.value = ''
   }
+  stopAlarm()
   timerFinished.value = false
   timerOpen.value = true
 }
@@ -116,19 +164,27 @@ function commitTimeEdit() {
 function toggleTimer() {
   if (!timerSeconds.value) return
   if (timerRunning.value) return stopTimer()
+  unlockAlarm()
   timerRunning.value = true
+  // 用結束時間回推剩餘秒數：分頁切到背景時瀏覽器會放慢 setInterval，單純每次減 1 會越跑越慢
+  timerEndsAt = Date.now() + timerSeconds.value * 1000
   timerInterval = setInterval(() => {
-    if (timerSeconds.value <= 1) {
+    const remaining = Math.ceil((timerEndsAt - Date.now()) / 1000)
+    if (remaining <= 0) {
       timerSeconds.value = 0
       stopTimer()
       timerFinished.value = true
+      ringAlarm()
       return
     }
-    timerSeconds.value -= 1
-  }, 1000)
+    timerSeconds.value = remaining
+  }, 250)
 }
 
-onBeforeUnmount(stopTimer)
+onBeforeUnmount(() => {
+  stopTimer()
+  alarmContext?.close()
+})
 
 function handleTimerShortcut(event) {
   if (event.metaKey || event.ctrlKey || event.altKey || event.target?.matches('input, textarea, select')) return
