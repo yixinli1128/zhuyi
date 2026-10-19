@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
+import { useUserStore } from '@/stores/user'
 
 // 頁面對應 Figma 的五大區塊；除首頁外都用懶載入
 const routes = [
@@ -17,6 +18,12 @@ const routes = [
     meta: { title: '餐食日誌' },
   },
   {
+    path: '/journal/recipe/:recipeId',
+    name: 'journal-recipe',
+    component: () => import('@/views/JournalRecipeView.vue'),
+    meta: { title: '食譜步驟' },
+  },
+  {
     path: '/fridge',
     name: 'fridge',
     component: () => import('@/views/FridgeView.vue'),
@@ -32,7 +39,33 @@ const routes = [
     path: '/login',
     name: 'login',
     component: () => import('@/views/LoginView.vue'),
-    meta: { title: '會員登入' },
+    // layout: 'auth' → 桌機不顯示左側 navbar（Figma 登入頁是滿版）
+    meta: { title: '會員登入', layout: 'auth', guestOnly: true },
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: () => import('@/views/RegisterView.vue'),
+    meta: { title: '會員註冊', layout: 'auth', guestOnly: true },
+  },
+  {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: () => import('@/views/ForgotPasswordView.vue'),
+    meta: { title: '忘記密碼', layout: 'auth' },
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: () => import('@/views/ResetPasswordView.vue'),
+    meta: { title: '重設密碼', layout: 'auth' },
+  },
+  {
+    path: '/account',
+    name: 'account',
+    component: () => import('@/views/AccountView.vue'),
+    // requiresAuth：沒登入時先導到登入頁，登入後再回來
+    meta: { title: '帳號設定', requiresAuth: true },
   },
   {
     path: '/:pathMatch(.*)*',
@@ -45,8 +78,22 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-  // 換頁時回到頁面頂端
-  scrollBehavior: () => ({ top: 0 }),
+  // 換頁時回到頁面頂端；網址有 #錨點 時捲到該區塊（例：/account#notifications）
+  scrollBehavior(to) {
+    if (to.hash) return { el: to.hash, behavior: 'smooth' }
+    return { top: 0 }
+  },
+})
+
+// 訪客可自由瀏覽與配餐，只有帳號設定需要登入；已登入時不再進入登入／註冊頁
+router.beforeEach((to) => {
+  const isLoggedIn = useUserStore().isLoggedIn
+  if (to.meta.requiresAuth && !isLoggedIn) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
+  if (to.meta.guestOnly && isLoggedIn) {
+    return typeof to.query.redirect === 'string' && to.query.redirect.startsWith('/') ? to.query.redirect : '/'
+  }
 })
 
 router.afterEach((to) => {

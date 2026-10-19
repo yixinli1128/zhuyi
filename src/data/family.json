@@ -1,0 +1,42 @@
+[
+  {
+    "id": "m1",
+    "name": "媽媽",
+    "avatar": "",
+    "portion": 1,
+    "allergens": [],
+    "avoidIngredients": ["苦瓜"],
+    "dietType": null,
+    "spicy": 2
+  },
+  {
+    "id": "m2",
+    "name": "爸爸",
+    "avatar": "",
+    "portion": 1.2,
+    "allergens": [],
+    "avoidIngredients": [],
+    "dietType": null,
+    "spicy": 3
+  },
+  {
+    "id": "m3",
+    "name": "姊姊",
+    "avatar": "",
+    "portion": 1,
+    "allergens": ["甲殼類"],
+    "avoidIngredients": ["香菜"],
+    "dietType": null,
+    "spicy": 1
+  },
+  {
+    "id": "m4",
+    "name": "妹妹",
+    "avatar": "",
+    "portion": 0.5,
+    "allergens": ["花生"],
+    "avoidIngredients": ["青椒"],
+    "dietType": null,
+    "spicy": 0
+  }
+]

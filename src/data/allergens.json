@@ -1,0 +1,13 @@
+[
+  { "id": "peanut", "name": "花生" },
+  { "id": "mango", "name": "芒果" },
+  { "id": "soy", "name": "大豆" },
+  { "id": "fish", "name": "魚類" },
+  { "id": "sesame", "name": "芝麻" },
+  { "id": "egg", "name": "蛋類" },
+  { "id": "nut", "name": "堅果類" },
+  { "id": "shellfish", "name": "甲殼類" },
+  { "id": "dairy", "name": "牛奶製品" },
+  { "id": "sulfite", "name": "亞硫酸鹽類" },
+  { "id": "gluten", "name": "含麩質之穀物" }
+]

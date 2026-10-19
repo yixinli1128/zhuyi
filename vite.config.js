@@ -6,6 +6,13 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // 本機資料存於瀏覽器的 origin；固定連接埠可避免不同 Vite 埠號被視為不同網站、
+  // 造成同一帳號看起來像遺失資料。host 開放同一 Wi-Fi 的手機測試。
+  server: {
+    host: '0.0.0.0',
+    port: 5183,
+    strictPort: true,
+  },
   plugins: [
     vue(),
     vueDevTools(),
