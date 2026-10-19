@@ -11,7 +11,7 @@ const OLIVER_DEMO_SEED_KEY = 'oliver-demo-fridge-seeded'
 const OLIVER_DEMO_EXPANSION_KEY = 'oliver-demo-fridge-expansion-v1'
 const OLIVER_DEMO_IMAGE_UPGRADE_KEY = 'oliver-demo-fridge-image-upgrade-v2'
 const OLIVER_DEMO_SEASONING_EXPANSION_KEY = 'oliver-demo-fridge-seasoning-v3'
-const OLIVER_DEMO_CHILI_UPGRADE_KEY = 'oliver-demo-fridge-chili-v4'
+const OLIVER_DEMO_CHILI_UPGRADE_KEY = 'oliver-demo-fridge-chili-v5'
 const ZONES = ['冷藏', '冷凍', '蔬果室', '常溫/調味']
 const UNITS = ['份', '顆', '個', '根', '把', '束', '片', '塊', '條', '包', '袋', '盒', '罐', '瓶', 'g（公克）', 'kg（公斤）', 'ml（毫升）', 'L（公升）', '大匙', '茶匙', '杯']
 // iPhone 透過區網 HTTP 測試時不一定提供 crypto.randomUUID；缺少時仍可安全建立示範食材。
@@ -188,15 +188,16 @@ export const useFridgeStore = defineStore('fridge', () => {
     if (email !== OLIVER_EMAIL || householdStore.current?.ownerEmail !== OLIVER_EMAIL) return
     if (load(OLIVER_DEMO_CHILI_UPGRADE_KEY, false)) return
 
-    const pickledChili = ingredients.value.find((item) => item.name === '剝皮辣椒' && !item.deletedAt)
-    const freshChili = ingredients.value.find((item) => item.name === '辣椒' && !item.deletedAt)
+    // 蔬果室存放的是新鮮辣椒；剝皮辣椒不應出現在此分區。
+    const pickledChili = ingredients.value.find((item) => item.name === '剝皮辣椒' && item.zone === '蔬果室' && !item.deletedAt)
+    const freshChili = ingredients.value.find((item) => item.name === '辣椒' && item.zone === '蔬果室' && !item.deletedAt)
     if (pickledChili && freshChili) pickledChili.deletedAt = now()
     else if (pickledChili) Object.assign(pickledChili, {
       name: '辣椒',
       amount: 3,
       unit: '根',
-      zone: '常溫/調味',
-      expiry: addDays(toDateKey(), 7),
+      zone: '蔬果室',
+      expiry: addDays(toDateKey(), 4),
       updatedAt: now(),
     })
     save(OLIVER_DEMO_CHILI_UPGRADE_KEY, true)
