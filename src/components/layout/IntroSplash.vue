@@ -9,8 +9,9 @@ import logoUrl from '@/assets/zhuyi-img/logo/logo_1.svg'
 import IntroOpening from './IntroOpening.vue'
 
 const STORAGE_KEY = 'zhuyi:intro-seen'
-// 開場約 6 秒：停留 3 秒，再以 3 秒粒子消散；離場開始即可操作頁面。
-const HOLD = { opening: 3000, refresh: 2200 }
+// 開場約 8 秒：停留 5 秒（湯鍋聚好、熱氣飄完一輪），再以 3 秒粒子消散；離場開始即可操作頁面。
+// 重新整理：筆刷約 3.45 秒刷完（最後一筆 2.85s＋0.25s、補滿 3.05s＋0.4s），刷完再停 0.55 秒才淡出，動畫不會被切掉。
+const HOLD = { opening: 5000, refresh: 4000 }
 
 const mode = ref(null)
 const leaving = ref(false)
