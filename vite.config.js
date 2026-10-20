@@ -5,10 +5,10 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, isPreview }) => ({
   // GitHub Pages 是專案子路徑（/zhuyi/），建置後的資源必須帶上此前綴；
-  // 本機開發（npm run dev）維持 /，網址才是 localhost:5183/
-  base: command === 'build' ? '/zhuyi/' : '/',
+  // npm run preview 看的是建置結果，也要用 /zhuyi/；本機開發（npm run dev）維持 /，網址才是 localhost:5183/
+  base: command === 'build' || isPreview ? '/zhuyi/' : '/',
   // 本機資料存於瀏覽器的 origin；固定連接埠可避免不同 Vite 埠號被視為不同網站、
   // 造成同一帳號看起來像遺失資料。host 開放同一 Wi-Fi 的手機測試。
   server: {

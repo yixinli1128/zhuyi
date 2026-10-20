@@ -12,6 +12,7 @@ const emit = defineEmits(['dissolved'])
 const canvas = ref(null)
 
 const INK = [90, 70, 54]
+const INK_SOLID = `rgb(${INK.join(',')})`
 // 開場停留後以三秒完成粒子散開，維持可讀的層次。
 const DISSOLVE_DURATION = 3000
 
@@ -118,7 +119,9 @@ onMounted(() => {
 
   // 漩渦：分成幾圈，內圈轉得快、外圈慢
   const bands = [150, 185, 225, 270, 320, 380, 450, 530]
-  const rings = Array.from({ length: 2600 }, () => {
+  // 手機（窄螢幕）的 CPU 比較弱，漩渦點數減半；畫面小，看起來密度差不多
+  const ringCount = W < 768 ? 1300 : 2600
+  const rings = Array.from({ length: ringCount }, () => {
     const band = bands[Math.floor(rand() ** 1.3 * bands.length)]
     const rx = band + (rand() + rand() + rand() - 1.5) * 18
     return {
@@ -223,6 +226,7 @@ onMounted(() => {
     }
 
     // 平常留下極淡的筆觸；離場時每格重畫，避免粒子拖成不自然的殘影。
+    ctx.globalAlpha = 1
     if (isDissolving) {
       ctx.clearRect(0, 0, W, H)
     } else {
@@ -233,6 +237,9 @@ onMounted(() => {
     }
 
     const ink = (a) => `rgba(${INK[0]},${INK[1]},${INK[2]},${a})`
+    // 幾千個點每格都要畫：顏色只設一次，透明度用 globalAlpha 調，
+    // 比每個點都組一個 rgba 字串讓瀏覽器重新解析快很多（畫出來一樣）
+    ctx.fillStyle = INK_SOLID
 
     // 外圍虛線弧
     const arcIn = easeOut(clamp((sceneT - 0.3) / 1.4))
@@ -265,7 +272,7 @@ onMounted(() => {
         let y = cy + (78 + sin * p.rx * 0.27 * spread) * s
         // 鍋子成形後，被鍋身擋住的後排點就不畫
         if (!front && potIn > 0.5 && Math.abs(x - cx) < R * s && y < cy + BOT_Y * s) continue
-        ctx.fillStyle = ink(p.alpha * fadeIn * ringFade)
+        ctx.globalAlpha = p.alpha * fadeIn * ringFade
         ctx.fillRect(x, y, p.size, p.size)
       }
     }
@@ -282,7 +289,7 @@ onMounted(() => {
       let y = cy + (p.sy + (p.y - p.sy) * e - bend * 0.3) * s
       const baseAlpha = 0.35 + 0.6 * e
       if (!isDissolving) {
-        ctx.fillStyle = ink(baseAlpha)
+        ctx.globalAlpha = baseAlpha
         ctx.fillRect(x, y, p.size, p.size)
         continue
       }
@@ -292,7 +299,7 @@ onMounted(() => {
       const alpha = baseAlpha * (1 - smoothstep(0.15, 1, out.local))
       if (alpha <= 0.01) continue
       const size = p.size * (1 + out.local * p.grow)
-      ctx.fillStyle = ink(alpha)
+      ctx.globalAlpha = alpha
       ctx.fillRect(out.x - size / 2, out.y - size / 2, size, size)
     }
 
@@ -306,7 +313,7 @@ onMounted(() => {
       // 每一縷沿著同一條 S 形往上，點排起來就像一縷縷煙
       let x = cx + (p.lane * 18 + Math.sin(rise * 0.075 + p.lane * 2 + sceneT * 1.2) * (4 + rise * 0.1) + p.jitter) * s
       let y = cy + (RIM_Y - RY - 92 - rise) * s
-      ctx.fillStyle = ink(0.75 * Math.sin(Math.PI * k) * decorationFade)
+      ctx.globalAlpha = 0.75 * Math.sin(Math.PI * k) * decorationFade
       ctx.fillRect(x, y, 1.6, 1.6)
     }
 

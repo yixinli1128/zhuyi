@@ -1,9 +1,9 @@
 <script setup>
 // 首頁（Figma Desktop - 首頁1 1238:30932）：主視覺、公告、品牌理念、當季時蔬
-import heroImg from '@/assets/zhuyi-img/home-hero.png'
-import heroImg2 from '@/assets/zhuyi-img/home-hero2.png'
-import heroImg3 from '@/assets/zhuyi-img/home-hero3.png'
-import heroImg4 from '@/assets/zhuyi-img/home-hero4.png'
+import heroImg from '@/assets/zhuyi-img/home-hero.webp'
+import heroImg2 from '@/assets/zhuyi-img/home-hero2.webp'
+import heroImg3 from '@/assets/zhuyi-img/home-hero3.webp'
+import heroImg4 from '@/assets/zhuyi-img/home-hero4.webp'
 import conceptImg from '@/assets/zhuyi-img/home-Concept.png'
 import { onBeforeUnmount, ref } from 'vue'
 import seasonalData from '@/data/seasonal.json'

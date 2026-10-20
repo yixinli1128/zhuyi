@@ -15,7 +15,16 @@ const HOLD = { opening: 5000, refresh: 4000 }
 
 const mode = ref(null)
 const leaving = ref(false)
+// 開場要等中文字型下載完才開始：字型第一次載入約 1～1.5 秒，載完時整頁會重新排版，
+// 跟開場動畫撞在一起就會卡一下。等待期間先蓋著紙色底，最多等 FONT_WAIT 就照播。
+const FONT_WAIT = 1500
+const started = ref(false)
 let timer = null
+
+function waitForFonts() {
+  const ready = document.fonts?.ready ?? Promise.resolve()
+  return Promise.race([ready, new Promise((resolve) => setTimeout(resolve, FONT_WAIT))])
+}
 
 function readSeen() {
   try {
@@ -47,6 +56,12 @@ function pickMode() {
 
 function leave() {
   if (leaving.value) return
+  // 還在等字型、動畫根本還沒開始就被略過：直接收掉，不用等粒子消散
+  if (!started.value) {
+    done()
+    window.removeEventListener('keydown', leave)
+    return
+  }
   leaving.value = true
   // 消散期間背景頁面已可捲動／點擊，避免手機誤以為尚未載入完成。
   document.documentElement.style.overflow = ''
@@ -66,8 +81,15 @@ onMounted(() => {
   markSeen()
   mode.value = picked
   document.documentElement.style.overflow = 'hidden'
-  timer = setTimeout(leave, HOLD[picked])
   window.addEventListener('keydown', leave)
+  const begin = () => {
+    if (!mode.value) return
+    started.value = true
+    timer = setTimeout(leave, HOLD[picked])
+  }
+  // 重新整理時字型多半已在快取裡，而且 logo 動畫是圖片、不受字型影響，直接開始
+  if (picked === 'opening') waitForFonts().then(begin)
+  else begin()
 })
 
 onBeforeUnmount(() => {
@@ -87,10 +109,10 @@ onBeforeUnmount(() => {
     @animationend.self="mode === 'refresh' && leaving && done()"
   >
     <!-- ---------- 開場：點描版畫風的湯鍋 ---------- -->
-    <IntroOpening v-if="mode === 'opening'" :dissolving="leaving" @dissolved="done" />
+    <IntroOpening v-if="mode === 'opening' && started" :dissolving="leaving" @dissolved="done" />
 
     <!-- ---------- 重新整理：墨點筆刷 ---------- -->
-    <svg v-else class="intro__logo" viewBox="0 0 202 404" role="img" aria-label="煮意 ZHUYI">
+    <svg v-else-if="mode === 'refresh'" class="intro__logo" viewBox="0 0 202 404" role="img" aria-label="煮意 ZHUYI">
       <defs>
         <!-- 筆刷邊緣：用雜訊把遮罩的邊推得毛毛的，像墨水在紙上暈開、乾筆拖出的鋸齒 -->
         <filter id="intro-brush" x="-20%" y="-20%" width="140%" height="140%">
