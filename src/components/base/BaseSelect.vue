@@ -136,8 +136,8 @@ button.select-field__control {
 
 .select-field__control:focus-visible {
   border-color: var(--brand-primary);
-  outline: 2px solid var(--brand-special);
-  outline-offset: 1px;
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(133 111 91 / 16%);
 }
 
 .select-field__icon {
