@@ -37,11 +37,14 @@ button {
   outline-offset: 3px;
 }
 
-/* 所有可輸入欄位採單一焦點語言：棕色 2px 邊框＋淡色焦點環，避免出現厚重雙框。 */
-:where(input:not([type='checkbox']):not([type='radio']):not([type='file']), select, textarea):focus {
-  outline: none;
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px rgb(133 111 91 / 16%);
+/* 所有可輸入欄位採單一焦點語言：棕色 2px 邊框＋淡色焦點環。
+   !important 用於覆蓋各頁舊有的個別欄位規則，避免出現灰圈／棕框／雙框混用。 */
+input:not([type='checkbox']):not([type='radio']):not([type='file']):focus,
+select:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 2px rgb(133 111 91 / 16%) !important;
 }
 
 @media (prefers-reduced-motion: no-preference) {
