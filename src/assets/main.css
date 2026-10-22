@@ -31,9 +31,20 @@ button {
 }
 
 /* 共同互動回饋：滑鼠裝置才顯示浮起效果，手機維持穩定的點擊版面。 */
-:where(button, a, input, select, textarea):focus-visible {
+/* 按鈕與連結維持清楚的鍵盤焦點；輸入欄位則使用下方較柔和的共用焦點環。 */
+:where(button, a):focus-visible {
   outline: 2px solid var(--brand-primary);
   outline-offset: 3px;
+}
+
+/* 所有可輸入欄位採單一焦點語言：棕色 2px 邊框＋淡色焦點環。
+   !important 用於覆蓋各頁舊有的個別欄位規則，避免出現灰圈／棕框／雙框混用。 */
+input:not([type='checkbox']):not([type='radio']):not([type='file']):focus,
+select:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 2px rgb(133 111 91 / 16%) !important;
 }
 
 @media (prefers-reduced-motion: no-preference) {
