@@ -4,12 +4,16 @@ import { load, save, saveForAccount, releaseAccountHousehold, deleteAccountData 
 import { useHouseholdStore } from './household'
 
 // 會員（假登入）：帳號和登入狀態都只存在瀏覽器裡，沒有後端
+// 頭像放在 public，網址不會因每次建置的檔名雜湊而改變（存進 localStorage 後仍然有效）
+const OLIVER_AVATAR = `${import.meta.env.BASE_URL}avatars/oliver.webp`
+
 // 示範帳號：oliver@example.com ／ zhuyi1234
 const DEMO_ACCOUNTS = [
   {
     email: 'oliver@example.com',
     password: 'zhuyi1234',
     name: 'Oliver',
+    avatar: OLIVER_AVATAR,
     linked: { google: true, line: false },
   },
   {
@@ -174,7 +178,12 @@ function toProfile(account) {
 function withDemoAccounts(savedAccounts) {
   const saved = Array.isArray(savedAccounts) ? savedAccounts : []
   const savedEmails = new Set(saved.map((account) => account.email?.toLowerCase()).filter(Boolean))
-  return [...DEMO_ACCOUNTS.filter((account) => !savedEmails.has(account.email.toLowerCase())), ...saved]
+  // 已存過的示範帳號若還沒有頭像，補上預設頭像；使用者自己換過的不動
+  const withAvatars = saved.map((account) => {
+    const demo = DEMO_ACCOUNTS.find((item) => item.email === account.email?.toLowerCase())
+    return demo?.avatar && !account.avatar ? { ...account, avatar: demo.avatar } : account
+  })
+  return [...DEMO_ACCOUNTS.filter((account) => !savedEmails.has(account.email.toLowerCase())), ...withAvatars]
 }
 
 // 沒勾「記住我」時，登入狀態只存在這個分頁（關掉就登出）
@@ -204,6 +213,11 @@ export const useUserStore = defineStore('user', () => {
   const remember = ref(load('remember', true))
   const user = ref(load('user', null) ?? loadSession()) // { email, name, avatar }
   const accounts = ref(withDemoAccounts(load('accounts', [])).map(normalizeAccount))
+  // 已經登入中的示範帳號也同步補上頭像，不用重新登入
+  const loggedInAvatar = user.value && !user.value.avatar
+    ? accounts.value.find((a) => a.email.toLowerCase() === user.value.email?.toLowerCase())?.avatar
+    : ''
+  if (loggedInAvatar) user.value = { ...user.value, avatar: loggedInAvatar }
   // 每個信箱的失敗次數與鎖定時間：{ [email]: { failed, lockedUntil } }
   const guard = ref(load('loginGuard', {}))
   // 重設密碼連結：{ [token]: { email, expiresAt } }

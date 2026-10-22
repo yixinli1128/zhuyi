@@ -3,8 +3,8 @@
 //   桌機：左邊稻田插畫＋右邊卡片，跟著視窗等比縮放
 //   平板：插畫鋪滿當背景，卡片疊在插畫右側；手機：插畫在上、卡片疊在插畫下緣
 //   <AuthLayout><AuthCard>...</AuthCard></AuthLayout>
-import heroImg from '@/assets/zhuyi-img/晨曦稻田耕作者.png'
-import heroTitleImg from '@/assets/zhuyi-img/A Brighter Day 土地溫度字樣.png'
+import heroImg from '@/assets/web/zhuyi-img/晨曦稻田耕作者.webp'
+import heroTitleImg from '@/assets/web/zhuyi-img/A Brighter Day 土地溫度字樣.webp'
 </script>
 
 <template>

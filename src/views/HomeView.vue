@@ -4,7 +4,7 @@ import heroImg from '@/assets/zhuyi-img/home-hero.webp'
 import heroImg2 from '@/assets/zhuyi-img/home-hero2.webp'
 import heroImg3 from '@/assets/zhuyi-img/home-hero3.webp'
 import heroImg4 from '@/assets/zhuyi-img/home-hero4.webp'
-import conceptImg from '@/assets/zhuyi-img/home-Concept.png'
+import conceptImg from '@/assets/web/zhuyi-img/home-Concept.webp'
 import { onBeforeUnmount, ref } from 'vue'
 import seasonalData from '@/data/seasonal.json'
 import SeasonCarousel from '@/components/home/SeasonCarousel.vue'
@@ -27,11 +27,16 @@ function byFileName(files) {
 }
 
 const vegByName = byFileName(vegFiles)
+// 縮小過的 WebP（scripts/optimize-images.py 產生），同名的話優先用
+const webVegByStem = Object.fromEntries(
+  Object.entries(import.meta.glob('../assets/web/zhuyi-img/**/食材/*.webp', { eager: true, import: 'default' }))
+    .map(([path, url]) => [path.split('/').pop().replace('.webp', ''), url]),
+)
 const dishByName = byFileName(dishFiles)
 
 const seasonal = seasonalData.map((veg) => ({
   ...veg,
-  imageUrl: vegByName[veg.image] ?? '',
+  imageUrl: webVegByStem[String(veg.image).replace(/\.[^.]+$/, '')] ?? vegByName[veg.image] ?? '',
   dishPhotos: veg.dishes.map((name) => ({ name, imageUrl: dishByName[`${name}.webp`] ?? '' })),
 }))
 

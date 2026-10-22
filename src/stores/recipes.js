@@ -11,6 +11,15 @@ const imageFiles = import.meta.glob('../assets/zhuyi-img/**/菜色/*.{png,jpg,jp
 const imageByName = Object.fromEntries(
   Object.entries(imageFiles).map(([path, url]) => [path.split('/').pop(), url]),
 )
+// 原圖每張約 1 MB；scripts/optimize-images.py 會在 assets/web 產生縮小的 WebP，有的話優先用
+const webImageFiles = import.meta.glob('../assets/web/zhuyi-img/**/菜色/*.webp', {
+  eager: true,
+  import: 'default',
+})
+const stem = (fileName = '') => fileName.split('/').pop().replace(/\.[^.]+$/, '')
+const webImageByStem = Object.fromEntries(
+  Object.entries(webImageFiles).map(([path, url]) => [stem(path), url]),
+)
 
 // 新增的食譜若沒填 group，依湯品／肉類／蛋類／蔬菜類推斷，更換菜色才能只列同類型。
 // 湯一律歸「湯品類」：試算表裡有幾道寫成「湯品」，不統一的話換湯時會被分成兩組。
@@ -28,7 +37,9 @@ export const useRecipeStore = defineStore('recipes', () => {
     ...recipe,
     group: inferGroup(recipe),
     // image 欄位空白時（例如後來新增的食譜），改用「菜名.副檔名」找同名照片。
-    imageUrl: imageByName[recipe.image]
+    imageUrl: webImageByStem[stem(recipe.image)]
+      ?? webImageByStem[recipe.name]
+      ?? imageByName[recipe.image]
       ?? ['png', 'jpg', 'jpeg', 'webp'].map((ext) => imageByName[`${recipe.name}.${ext}`]).find(Boolean)
       ?? '',
   }))

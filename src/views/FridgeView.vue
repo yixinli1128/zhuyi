@@ -25,7 +25,11 @@ import pantryZoneIconUrl from '@/assets/figma/fridge-zone-pantry.svg'
 import calendarIconUrl from '@/assets/figma/fridge-modal-calendar.svg'
 import unitChevronUrl from '@/assets/figma/fridge-unit-chevron.svg'
 
-const foodImageAssets = import.meta.glob('../../img/reffood/*.png', { eager: true, import: 'default', query: '?url' })
+// 食材圖用縮小過的 WebP（scripts/optimize-images.py 產生，原圖每張約 650 KB）；還沒轉檔的新圖退回用原本的 PNG
+const foodImageAssets = Object.fromEntries([
+  ...Object.entries(import.meta.glob('../../img/reffood/*.png', { eager: true, import: 'default', query: '?url' })),
+  ...Object.entries(import.meta.glob('../assets/web/reffood/*.webp', { eager: true, import: 'default', query: '?url' })),
+].map(([path, url]) => [path.split('/').pop().replace(/\.(png|webp)$/, ''), url]))
 const foodImageNames = {
   // 兩者名稱相近，不能交給模糊比對；蔬果室的「辣椒」必須使用新鮮辣椒圖。
   辣椒: '辣椒',
@@ -41,7 +45,9 @@ const foodImageNames = {
 const store = useFridgeStore()
 const recipeStore = useRecipeStore()
 const router = useRouter()
-const ingredients = computed(() => store.activeIngredients)
+// 快到期的排前面；沒填到期日的放最後，同一天再依名稱排
+const byExpiry = (a, b) => (a.expiry || '9999-12-31').localeCompare(b.expiry || '9999-12-31') || a.name.localeCompare(b.name, 'zh-Hant')
+const ingredients = computed(() => [...store.activeIngredients].sort(byExpiry))
 const activeZone = ref('全部'), query = ref(''), view = ref('list'), dialog = ref(null), unitMenuOpen = ref(false)
 const editingId = ref(null), deletingId = ref(null), submitted = ref(false), toast = ref('')
 let toastTimer
@@ -80,9 +86,8 @@ function foodImage(name) {
   // 先比對較長的名稱，避免「剝皮辣椒」被較短的「辣椒」誤判。
   const alias = Object.keys(foodImageNames).sort((a, b) => b.length - a.length).find((key) => name.includes(key))
   const imageName = alias ? foodImageNames[alias] : Object.keys(foodImageAssets)
-    .map((path) => path.split('/').pop().replace('.png', ''))
     .find((candidate) => name.includes(candidate) || candidate.includes(name))
-  return imageName ? foodImageAssets[`../../img/reffood/${imageName}.png`] : null
+  return imageName ? foodImageAssets[imageName] ?? null : null
 }
 const inZone = (zone) => ingredients.value.filter((item) => item.zone === zone)
 // 常溫食材在畫面上分成乾貨櫃與調味架；糖、酒與味醂／味精也屬調味品。
