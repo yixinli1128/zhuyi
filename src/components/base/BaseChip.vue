@@ -50,6 +50,6 @@ defineEmits(['click'])
 }
 
 .chip__remove {
-  font-size: 10px;
+  font-size: 14px;
 }
 </style>

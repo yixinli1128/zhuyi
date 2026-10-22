@@ -44,7 +44,7 @@ defineProps({
 }
 
 .option-group__hint {
-  font-size: 10px;
+  font-size: 14px;
   color: var(--text-secondary);
 }
 

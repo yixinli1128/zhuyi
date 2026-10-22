@@ -106,7 +106,7 @@ defineProps({
   }
 
   .page-title__desc {
-    font-size: 12px;
+    font-size: 14px;
     line-height: 1.45;
   }
 }
@@ -156,7 +156,7 @@ defineProps({
   }
 
   .page-title__desc {
-    font-size: 11px;
+    font-size: 14px;
     line-height: 1.55;
   }
 
@@ -181,7 +181,7 @@ defineProps({
   }
 
   .page-title__desc {
-    font-size: 13px;
+    font-size: 14px;
   }
 }
 </style>

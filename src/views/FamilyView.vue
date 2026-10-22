@@ -174,15 +174,15 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
 .summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .summary article, .member-card { border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; background: #fff; }
 .summary article { box-sizing: border-box; min-height: 0; height: 112px; padding: 14px 16px; }
-.summary span, .members > header > span, .member-card small, .member-card dt, .member-card footer { color: var(--text-secondary); font-size: 13px; }
-.summary span { font-size: 12px; }
+.summary span, .members > header > span, .member-card small, .member-card dt, .member-card footer { color: var(--text-secondary); font-size: 14px; }
+.summary span { font-size: 14px; }
 .summary strong { display: block; color: var(--text-title); font-size: 24px; font-weight: 600; line-height: 1.25; }
 .summary strong small { font-size: 14px; font-weight: 400; }
-.summary p { margin: 4px 0 0; color: var(--text-secondary); font-size: 12px; line-height: 1.35; }
+.summary p { margin: 4px 0 0; color: var(--text-secondary); font-size: 14px; line-height: 1.35; }
 .members { margin-top: 32px; }
 .family-train { margin-bottom: 16px; padding: 0 0 10px; border-bottom: 1px solid var(--brand-secondary); }
 .train-caption { display: flex; align-items: baseline; gap: 8px; color: var(--text-body); white-space: nowrap; }
-.train-caption small { color: #4a3930; font-size: 11px; font-weight: 500; letter-spacing: .16em; }
+.train-caption small { color: #4a3930; font-size: 14px; font-weight: 500; letter-spacing: .16em; }
 .train-caption strong { font-size: 18px; font-weight: 400; }
 .train-route { --train-loop-entry: calc(100vw - var(--navbar-width) - var(--navbar-width) - 16px); position: relative; display: flex; min-width: 0; height: 122px; align-items: flex-start; gap: 0; overflow: hidden; margin-top: 8px; padding: 0 5px; }
 .train-route::-webkit-scrollbar { display: none; }
@@ -192,7 +192,7 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
   .train-convoy { animation: train-convoy-loop 13s linear infinite; }
 }
 @keyframes train-convoy-loop { 0% { opacity: 0; transform: translateX(var(--train-loop-entry)); } 4% { opacity: 1; transform: translateX(calc(var(--train-loop-entry) - 22px)); } 86% { opacity: 1; transform: translateX(calc(-100% - 20px)); } 89%, 100% { opacity: 0; transform: translateX(calc(-100% - 20px)); } }
-.train-engine, .train-car { position: relative; z-index: 1; display: flex; flex: 0 0 auto; flex-direction: column; align-items: center; color: var(--text-secondary); font-size: 10px; line-height: 1.2; text-align: center; }
+.train-engine, .train-car { position: relative; z-index: 1; display: flex; flex: 0 0 auto; flex-direction: column; align-items: center; color: var(--text-secondary); font-size: 14px; line-height: 1.2; text-align: center; }
 .train-engine { width: 130px; margin-top: 24px; }
 .train-engine > img { display: block; width: 124px; height: 85px; object-fit: contain; object-position: center bottom; transform: scaleX(-1); mix-blend-mode: multiply; opacity: .78; filter: saturate(.55) brightness(1.16) contrast(.8); }
 .train-engine > small { position: absolute; z-index: 3; top: -13px; left: 50%; font-size: inherit; white-space: nowrap; transform: translateX(-50%); }
@@ -205,15 +205,15 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
 .train-car__body { position: relative; z-index: 1; display: block; width: 137px; height: 91px; margin-left: -46px; }
 .train-car__body > img { display: block; width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; opacity: .84; filter: saturate(.55) brightness(1.18) contrast(.82); }
 .train-car__window { position: absolute; top: 32%; left: 65%; display: grid; width: 48px; height: 22px; place-items: center; transform: translateX(-50%); }
-.train-car__window > b { color: #4a3930; font-size: 10px; font-weight: 400; line-height: 1; white-space: nowrap; }
+.train-car__window > b { color: #4a3930; font-size: 14px; font-weight: 400; line-height: 1; white-space: nowrap; }
 .train-car--long { width: 141px; margin-top: 31px; }
 .train-car--long .train-car__body { width: 177px; height: 75px; }
 .train-car--long .train-car__window { top: 30%; left: 60%; width: 88px; height: 18px; }
 .train-car--long .train-car__window > b { font-size: clamp(6px, calc(16px - var(--train-name-length) * .75px), 10px); }
 .members > header { display: flex; align-items: baseline; justify-content: space-between; }
 .members h2 { color: var(--text-title); font-size: 24px; font-weight: 400; }
-.member-grid { display: grid; grid-auto-rows: 312px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
-.member-card { box-sizing: border-box; height: 100%; padding: 18px; }
+.member-grid { display: grid; grid-auto-rows: minmax(312px, auto); grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+.member-card { box-sizing: border-box; height: auto; min-height: 312px; padding: 18px; }
 .member-card > header { display: flex; align-items: center; gap: 12px; padding-bottom: 9px; border-bottom: 1px solid var(--brand-secondary); }
 .avatar { display: grid; width: 46px; height: 46px; place-items: center; overflow: hidden; border: 1px solid var(--brand-primary-border); border-radius: 50%; background: var(--brand-secondary-light); color: var(--text-body); font-size: 19px; }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -221,19 +221,19 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
 .card-actions { display: flex; gap: 10px; margin-left: auto; }
 .card-actions button { display: grid; width: 24px; height: 24px; place-items: center; color: var(--brand-primary); font-size: 16px; }
 .member-card dl { display: grid; gap: 9px; padding: 12px 0; }
-.member-card dd { margin-top: 3px; color: var(--text-body); font-size: 13px; }
-.tag { display: inline-block; margin: 0 4px 3px 0; padding: 3px 7px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 11px; }
+.member-card dd { margin-top: 3px; color: var(--text-body); font-size: 14px; }
+.tag { display: inline-block; margin: 0 4px 3px 0; padding: 3px 7px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 14px; }
 .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .member-card footer { padding-top: 9px; border-top: 1px solid var(--brand-secondary); }
 .add-card { display: flex; box-sizing: border-box; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: 12px; border: 1px dashed var(--brand-primary-border); border-radius: 12px 0 12px; color: var(--text-body); }
 .add-card img { width: 24px; height: 24px; }
-.add-card small { color: var(--text-placeholder); font-size: 12px; }
+.add-card small { color: var(--text-placeholder); font-size: 14px; }
 .overlay { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; overflow: auto; padding: 16px; background: rgba(52, 38, 28, .35); }
 /* Figma 的卡片以內容寬度為基準（440px），窄螢幕才隨視窗縮小。 */
 .dialog { position: relative; display: flex; inline-size: fit-content; min-inline-size: min(27.5rem, calc(100vw - 32px)); max-inline-size: calc(100vw - 32px); max-height: calc(100dvh - 32px); flex-direction: column; padding: 0; border-radius: 12px 0 12px; background: #fff; box-shadow: 0 18px 44px rgba(52, 38, 28, .24); }
 .modal-heading { position: relative; display: flex; justify-content: space-between; gap: 18px; padding: 16px 58px 16px 18px; border-bottom: 1px solid var(--brand-secondary); }
 .modal-heading h2 { color: var(--text-title); font-size: 20px; font-weight: 400; line-height: 1.25; }
-.modal-heading p { margin-top: 2px; color: var(--text-secondary); font-size: 11px; line-height: 1.35; }
+.modal-heading p { margin-top: 2px; color: var(--text-secondary); font-size: 14px; line-height: 1.35; }
 .close { align-self: flex-start; color: var(--text-secondary); font-size: 22px; line-height: 1; }
 .modal-heading > .close { position: absolute; top: 20px; right: 20px; display: grid; width: 24px; height: 24px; place-items: center; padding: 0; }
 .modal-heading > .close img { display: block; width: 24px; height: 24px; }
@@ -243,32 +243,32 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
 @media (min-width: 641px) {
   form.dialog { inline-size: min(510px, calc(100vw - 32px)); }
 }
-.avatar-picker { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 0 auto 7px; color: var(--text-body); font-size: 13px; }
+.avatar-picker { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 0 auto 7px; color: var(--text-body); font-size: 14px; }
 .avatar-picker span { display: block; width: 60px; height: 60px; overflow: hidden; border-radius: 50%; }
 .avatar-picker img { display: block; width: 60px; height: 60px; object-fit: cover; }
 .photo-input { display: none; }
-.dialog label, .dialog fieldset { display: block; min-inline-size: 0; margin: 8px 0; border: 0; padding: 0; color: var(--text-body); font-size: 13px; line-height: 1.3; }
+.dialog label, .dialog fieldset { display: block; min-inline-size: 0; margin: 8px 0; border: 0; padding: 0; color: var(--text-body); font-size: 14px; line-height: 1.3; }
 .dialog input { box-sizing: border-box; width: 100%; height: 36px; margin-top: 3px; padding: 6px 10px; border: 1px solid var(--brand-secondary); border-radius: 10px; background: #fff; font: inherit; }
 .dialog legend { display: flex; justify-content: space-between; width: 100%; }
-.dialog legend small { color: var(--text-placeholder); font-size: 10px; }
+.dialog legend small { color: var(--text-placeholder); font-size: 14px; }
 .portions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 4px; }
-.portions button { display: flex; min-height: 46px; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--brand-secondary); border-radius: 10px; color: var(--text-body); font-size: 12px; }
+.portions button { display: flex; min-height: 46px; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--brand-secondary); border-radius: 10px; color: var(--text-body); font-size: 14px; }
 .portions button.selected { border-color: var(--brand-secondary-active); background: var(--brand-secondary-active); color: var(--text-on-primary); }
 .portions b { font-weight: 400; }
-.portions span { color: var(--text-placeholder); font-size: 10px; }
+.portions span { color: var(--text-placeholder); font-size: 14px; }
 .portions button.selected span { color: var(--text-on-primary); }
 .chips, .custom, .chosen { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
-.chips button, .chosen button { padding: 5px 8px; border: 1px solid var(--brand-primary-border); border-radius: 999px; color: var(--text-body); font-size: 12px; line-height: 1.2; }
+.chips button, .chosen button { padding: 5px 8px; border: 1px solid var(--brand-primary-border); border-radius: 999px; color: var(--text-body); font-size: 14px; line-height: 1.2; }
 .chips .selected { border-color: var(--brand-primary); background: var(--brand-secondary); color: var(--text-body); }
 .chosen button { display: inline-flex; align-items: center; gap: 8px; background: var(--brand-secondary); }
 .chosen img { display: block; width: 14px; height: 14px; }
 .custom { flex-wrap: nowrap; }
 .custom input { height: 36px; margin: 0; }
-.custom button { flex: 0 0 auto; padding: 8px 10px; border: 1px solid var(--brand-secondary); border-radius: 10px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 12px; }
-.spice { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); height: 29px; margin-top: 3px; border-radius: 10px; background: var(--brand-secondary-light); padding: 3px; }
-.spice button { padding: 3px 2px; border-radius: 7px; color: var(--text-body); font-size: 12px; }
+.custom button { flex: 0 0 auto; padding: 8px 10px; border: 1px solid var(--brand-secondary); border-radius: 10px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 14px; }
+.spice { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); height: 32px; align-items: stretch; margin-top: 3px; border-radius: 10px; background: var(--brand-secondary-light); padding: 3px; }
+.spice button { display: grid; min-height: 0; height: 100%; place-items: center; padding: 0 4px; border-radius: 7px; color: var(--text-body); font-size: 14px; line-height: 1.2; }
 .spice .selected { background: #fff; box-shadow: 0 1px 2px rgba(52, 38, 28, .08); }
-.error { margin: 8px 0; color: #b9534e; font-size: 12px; }
+.error { margin: 8px 0; color: #b9534e; font-size: 14px; }
 .modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 8px 18px; }
 .confirm { position: relative; min-height: 0; height: auto; padding: 24px; }
 .confirm > .close { position: absolute; top: 20px; right: 20px; }
@@ -288,7 +288,7 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
   .members h2 { font-size: 22px; }
   /* 忌口標籤可能換行；列高以 320px 為下限並可隨內容增高，避免頁尾溢出卡片。 */
   .member-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(320px, auto); gap: 14px; margin-top: 16px; }
-  .member-card { padding: 16px; }
+  .member-card { height: auto; min-height: 320px; padding: 16px; }
   .member-card h3 { font-size: 18px; }
   .member-card dl { gap: 8px; padding: 10px 0; }
   .add-card { gap: 10px; }
@@ -297,29 +297,29 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
   /* 頁首唯一操作改放在標題右側，與冰箱／日誌的行動版操作位置一致。 */
   .page :deep(.page-title__text) { flex: 1 1 0; min-width: 0; }
   .page :deep(.page-title__actions) { width: auto; justify-content: flex-end; }
-  .page :deep(.page-title__actions .btn) { min-height: 36px; padding: 6px 10px; font-size: 12px; }
+  .page :deep(.page-title__actions .btn) { min-height: 36px; padding: 6px 10px; font-size: 14px; }
   .content { padding: 20px var(--page-padding-x) 48px; }
   .page :deep(.page-title__desc) { font-size: 12px; line-height: 1.45; }
   .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .summary article { height: 100px; padding: 12px; }
-  .summary span { font-size: 11px; }
+  .summary span { font-size: 12px; }
   .summary strong { font-size: 21px; }
   .summary strong small { font-size: 12px; }
-  .summary p { font-size: 11px; }
+  .summary p { font-size: 12px; }
   .members { margin-top: 20px; }
   .family-train { margin-bottom: 12px; padding-bottom: 8px; }
   .train-caption { gap: 6px; }
-  .train-caption small { font-size: 9px; }
+  .train-caption small { font-size: 12px; }
   .train-caption strong { font-size: 15px; }
   .train-route { --train-loop-entry: calc(100vw - 16px); height: 102px; margin-top: 7px; }
   .train-route::before { top: 84px; width: max(100%, calc(114px + var(--train-count) * 87px + var(--train-long-count) * 30px)); }
-  .train-engine { width: 104px; margin-top: 20px; font-size: 9px; }
+  .train-engine { width: 104px; margin-top: 20px; font-size: 14px; }
   .train-engine > img { width: 100px; height: 69px; }
   .train-smoke { top: -39px; left: 2px; transform: scale(.8); transform-origin: bottom left; }
-  .train-car { width: 80px; margin-top: 20px; margin-left: 7px; font-size: 9px; }
+  .train-car { width: 80px; margin-top: 20px; margin-left: 7px; font-size: 14px; }
   .train-car__body { width: 104px; height: 69px; margin-left: -35px; }
   .train-car__window { width: 34px; height: 15px; }
-  .train-car__window > b { font-size: 8px; }
+  .train-car__window > b { font-size: 14px; }
   .train-car--long { width: 110px; margin-top: 26px; }
   .train-car--long .train-car__body { width: 134px; height: 57px; }
   .train-car--long .train-car__window { top: 30%; left: 60%; width: 68px; height: 14px; }
@@ -339,10 +339,10 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
   .card-actions button { width: 18px; height: 18px; font-size: 14px; }
   .member-card small, .member-card dt, .member-card footer, .member-card dd { font-size: 12px; }
   .member-card dl { gap: 7px; padding: 10px 0; }
-  .tag { padding: 2px 6px; font-size: 10px; }
+  .tag { padding: 2px 6px; font-size: 12px; }
   .add-card { gap: 8px; font-size: 14px; }
   .add-card img { width: 20px; height: 20px; }
-  .add-card small { font-size: 11px; }
+  .add-card small { font-size: 12px; }
   .dialog { inline-size: min(100%, 34rem); min-inline-size: 0; max-inline-size: 100%; }
   .modal-body { inline-size: 100%; }
   .portions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -352,7 +352,7 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
 /* 全站頁首比例由 PageTitle 統一處理；此頁只保留家庭管理按鈕尺寸。 */
 @media (min-width: 1025px) {
   .page { padding-top: 0; }
-  .page :deep(.page-title__actions .btn) { padding: 8px 10px; font-size: 13px; }
+  .page :deep(.page-title__actions .btn) { padding: 8px 10px; font-size: 14px; }
 }
 
 @media (min-width: 1025px) and (max-width: 1279px) {
@@ -363,20 +363,20 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
   .family-train { margin-bottom: 14px; }
   /* 窄桌機仍維持三欄，因此卡片內容同步縮小，且列高不可裁切頁尾。 */
   .member-grid { grid-auto-rows: minmax(310px, auto); gap: 14px; margin-top: 16px; }
-  .member-card { padding: 14px; }
+  .member-card { height: auto; min-height: 310px; padding: 14px; }
   .member-card > header { gap: 8px; padding-bottom: 8px; }
   .avatar { width: 40px; height: 40px; font-size: 17px; }
   .member-card h3 { font-size: 17px; }
-  .member-card small, .member-card dt, .member-card footer, .member-card dd { font-size: 12px; }
+  .member-card small, .member-card dt, .member-card footer, .member-card dd { font-size: 14px; }
   .member-card dl { gap: 7px; padding: 10px 0; }
-  .tag { padding: 2px 6px; font-size: 10px; }
+  .tag { padding: 2px 6px; font-size: 14px; }
   .card-actions { gap: 6px; }
   .card-actions button { width: 20px; height: 20px; font-size: 15px; }
 }
 
 /* 手機：提示條縮小並維持單行。 */
 @media (max-width: 640px) {
-  .toast { max-width: calc(100vw - 24px); padding: 8px 14px; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+  .toast { max-width: calc(100vw - 24px); padding: 8px 14px; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
   .toast button { margin-left: 8px; }
 }
 
@@ -389,7 +389,7 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
   .chips button { padding: 5px 7px; }
 }
 .owner-tag.owner-tag--shared { background: var(--brand-secondary); color: var(--text-body); }
-.owner-tag { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 11px; line-height: 16px; vertical-align: middle; }
+.owner-tag { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 14px; line-height: 16px; vertical-align: middle; }
 
 @media (prefers-reduced-motion: reduce) {
   .train-smoke i { animation: none; opacity: .18; transform: translate(-8px, -17px) scale(.8); }
@@ -401,14 +401,14 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
   .content { padding: 16px 16px 36px; }
   .summary { gap: 8px; }
   .summary article { height: 88px; padding: 10px; }
-  .summary span, .summary p { font-size: 10px; }
+  .summary span, .summary p { font-size: 12px; }
   .summary strong { font-size: 19px; }
-  .summary strong small { font-size: 11px; }
+  .summary strong small { font-size: 12px; }
 
   .members { margin-top: 16px; }
   .family-train { margin-bottom: 10px; }
   .members h2 { font-size: 18px; }
-  .members > header > span { font-size: 11px; }
+  .members > header > span { font-size: 12px; }
 
   /* 忌口標籤增加時，由該列內容撐高；同列卡片隨之對齊，不裁切頁尾。 */
   .member-grid { grid-auto-rows: minmax(188px, auto); gap: 10px; margin-top: 12px; }
@@ -419,20 +419,20 @@ function usesLongTrainCar(name) { return nicknameUnits(name) > 6 }
   }
   .member-card { overflow: visible; padding: 10px; }
   .member-card > header { gap: 4px; padding-bottom: 5px; }
-  .avatar { width: 28px; height: 28px; font-size: 12px; }
+  .avatar { width: 28px; height: 28px; font-size: 14px; }
   .member-card h3 { font-size: 14px; line-height: 1.15; white-space: nowrap; }
-  .owner-tag { margin-left: 4px; padding: 1px 5px; font-size: 8px; line-height: 12px; }
+  .owner-tag { margin-left: 4px; padding: 1px 5px; font-size: 14px; line-height: 12px; }
   .card-actions { gap: 2px; }
-  .card-actions button { width: 16px; height: 16px; font-size: 12px; }
-  .member-card small, .member-card dt, .member-card footer, .member-card dd { font-size: 10px; line-height: 1.25; }
+  .card-actions button { width: 16px; height: 16px; font-size: 14px; }
+  .member-card small, .member-card dt, .member-card footer, .member-card dd { font-size: 12px; line-height: 1.25; }
   .member-card dl { gap: 4px; padding: 6px 0; }
   .member-card dd { margin-top: 2px; }
   .two-column { gap: 5px; }
-  .tag { margin: 0 2px 1px 0; padding: 1px 4px; font-size: 9px; }
-  .member-card footer { padding-top: 5px; overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+  .tag { margin: 0 2px 1px 0; padding: 1px 4px; font-size: 12px; }
+  .member-card footer { padding-top: 5px; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 
-  .add-card { gap: 6px; padding: 10px; font-size: 13px; }
+  .add-card { gap: 6px; padding: 10px; font-size: 14px; }
   .add-card img { width: 18px; height: 18px; }
-  .add-card small { font-size: 10px; text-align: center; }
+  .add-card small { font-size: 12px; text-align: center; }
 }
 </style>

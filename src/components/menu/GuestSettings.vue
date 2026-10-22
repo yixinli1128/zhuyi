@@ -119,7 +119,7 @@ function setSpicy(level) {
 }
 
 .guest :deep(.option-group__hint) {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-placeholder);
 }
 
@@ -131,7 +131,7 @@ function setSpicy(level) {
   padding: 5px 8px;
   border-color: var(--brand-primary-border);
   background: transparent;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.2;
 }
 
@@ -150,7 +150,7 @@ function setSpicy(level) {
 .guest__input {
   flex: 1;
   min-width: 0;
-  height: 36px;
+  height: 32px;
   padding: 0 var(--space-12);
   border: 1px solid var(--brand-secondary);
   border-radius: 10px;
@@ -198,7 +198,8 @@ function setSpicy(level) {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   width: 100%;
-  height: 29px;
+  height: 36px;
+  align-items: stretch;
   padding: 3px;
   margin-top: 3px;
   border-radius: 10px;
@@ -206,10 +207,15 @@ function setSpicy(level) {
 }
 
 .spice button {
-  padding: 3px 2px;
+  display: grid;
+  min-height: 0;
+  height: 100%;
+  place-items: center;
+  padding: 0 4px;
   border-radius: 7px;
   color: var(--text-body);
-  font-size: 12px;
+  font-size: 14px;
+  line-height: 1.2;
 }
 
 .spice .selected {

@@ -235,7 +235,7 @@ watch(
     flex: 0 0 auto;
     padding: 6px 0;
     color: var(--text-body);
-    font-size: clamp(13px, 1.7vw, 16px);
+    font-size: clamp(14px, 1.7vw, 16px);
     line-height: 1.25;
     white-space: nowrap;
   }
@@ -305,7 +305,7 @@ watch(
     justify-items: center;
     gap: 4px;
     color: var(--text-secondary);
-    font-size: 10px;
+    font-size: 14px;
     line-height: 1.2;
   }
 

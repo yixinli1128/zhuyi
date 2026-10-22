@@ -66,7 +66,7 @@ defineProps({
   border: 1px solid var(--brand-primary-border);
   border-radius: 2px;
   background: var(--bg-surface);
-  font-size: 12px;
+  font-size: 14px;
   color: transparent;
 }
 
@@ -132,7 +132,7 @@ defineProps({
   .member-card__box {
     width: 20px;
     height: 20px;
-    font-size: 10px;
+    font-size: 14px;
   }
 
   .member-card__avatar {

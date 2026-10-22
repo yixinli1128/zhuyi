@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import PageTitle from '@/components/layout/PageTitle.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
@@ -58,6 +58,22 @@ const zones = [
   { name: '常溫/調味', label: '常溫／乾貨', hint: '18°C', days: 90, icon: pantryZoneIconUrl },
 ]
 const commonFoods = ['雞蛋', '牛番茄', '嫩豆腐']
+// 常見食材以家庭採買時最常用的單位預填；使用者仍可在下方自行更改。
+const suggestedUnits = {
+  雞蛋: '顆', 溫泉蛋: '顆', 熟鹹鴨蛋: '顆',
+  高麗菜: '顆', 當季高麗菜: '顆', 大白菜: '顆', 綠花椰菜: '顆', 花椰菜: '顆',
+  牛番茄: '顆', 番茄: '顆', 洋蔥: '顆', 馬鈴薯: '顆', 南瓜: '顆', 冬瓜: '顆', 苦瓜: '條', 絲瓜: '條', 茄子: '條', 小黃瓜: '條',
+  紅蘿蔔: '根', 白蘿蔔: '根', 辣椒: '根', 蒜苗: '根', 玉米: '根', 蘆筍: '把',
+  青蔥: '把', 菠菜: '把', 空心菜: '把', 青江菜: '把', 芹菜: '把', 九層塔: '把', 綜合生菜: '把',
+  蒜頭: '顆', 薑: '塊', 老薑: '塊', 紅蔥頭: '顆',
+  豆腐: '盒', 嫩豆腐: '盒', 板豆腐: '盒', 五香豆干: '盒', 豆皮: '包', 毛豆仁: '包',
+  金針菇: '包', 鮮香菇: '包', 乾香菇: '包', 鮮菇: '包', 綜合菇: '包', 杏鮑菇: '包',
+  雞腿排: '片', 鮭魚: '片', 鯖魚: '片',
+  豬梅花肉片: 'g（公克）', 豬肉片: 'g（公克）', 豬五花肉: 'g（公克）', 豬里肌肉: 'g（公克）', 豬絞肉: 'g（公克）', 牛肉片: 'g（公克）', 雞胸肉: 'g（公克）', 雞腿肉: 'g（公克）',
+  鮮蝦: '盒', 鮮蝦仁: '盒', 蝦米: '包', 蛤蜊: '包',
+  醬油: '瓶', 醬油膏: '瓶', 植物油: '瓶', 食用油: '瓶', 麻油: '瓶', 香油: '瓶', 米酒: '瓶', 醋: '瓶', 烏醋: '瓶', 白醋: '瓶', 番茄醬: '瓶', 蠔油: '瓶', 沙茶醬: '罐', 白味噌: '盒', 剝皮辣椒: '罐',
+  鹽: '包', 白糖: '包', 砂糖: '包', 冰糖: '包', 白胡椒: '罐', 黑胡椒: '罐', 五香粉: '罐', 太白粉: '包', 白米: 'kg（公斤）', 水餃: '包', 海帶芽: '包', 乾紫菜: '包', 菜脯: '包',
+}
 const unitGroups = [
   { label: '常用單位（家庭備餐優先）', units: ['顆', '個', '根', '把', '束', '片', '塊', '條', '份'] },
   { label: '包裝單位', units: ['包', '袋', '盒', '罐', '瓶'] },
@@ -93,16 +109,17 @@ const inZone = (zone) => ingredients.value.filter((item) => item.zone === zone)
 // 常溫食材在畫面上分成乾貨櫃與調味架；糖、酒與味醂／味精也屬調味品。
 const seasoning = (item) => /油|醬|鹽|醋|粉|香料|辣|胡椒|糖|酒|味醂|味精/.test(item.name)
 const boards = computed(() => [
-  { id: 'frozen', title: '冷凍庫', hint: '-18°C・可保存約 1–3 個月', items: inZone('冷凍'), capacity: 5, rows: 1 },
-  { id: 'chilled', title: '冷藏室', hint: '0–4°C・可保存約 3–7 天', items: inZone('冷藏'), capacity: 10, rows: 2 },
-  { id: 'produce', title: '蔬果抽屜', hint: '6–8°C', items: inZone('蔬果室'), capacity: 5, rows: 1 },
+  { id: 'frozen', zone: '冷凍', title: '冷凍庫', hint: '-18°C・可保存約 1–3 個月', items: inZone('冷凍'), capacity: 5, rows: 1 },
+  { id: 'chilled', zone: '冷藏', title: '冷藏室', hint: '0–4°C・可保存約 3–7 天', items: inZone('冷藏'), capacity: 10, rows: 2 },
+  { id: 'produce', zone: '蔬果室', title: '蔬果抽屜', hint: '6–8°C', items: inZone('蔬果室'), capacity: 5, rows: 1 },
 ])
 const racks = computed(() => {
   const pantry = inZone('常溫/調味')
-  return [{ id: 'pantry', title: '常溫櫃', hint: '陰涼乾燥處', items: pantry.filter((item) => !seasoning(item)), capacity: 10, rows: 2 }, { id: 'seasoning', title: '調味架', hint: '開封後請留意保存方式', items: pantry.filter(seasoning), capacity: 10, rows: 2 }]
+  return [{ id: 'pantry', zone: '常溫/調味', title: '常溫櫃', hint: '陰涼乾燥處', items: pantry.filter((item) => !seasoning(item)), capacity: 10, rows: 2 }, { id: 'seasoning', zone: '常溫/調味', title: '調味架', hint: '開封後請留意保存方式', items: pantry.filter(seasoning), capacity: 10, rows: 2 }]
 })
 function sectionRows(section) {
-  const columns = Math.max(5, Math.ceil(section.items.length / section.rows))
+  // 各分區永遠保留一格可新增食材；食材數量排滿一列時自動延展，不會失去新增入口。
+  const columns = Math.max(5, Math.ceil((section.items.length + 1) / section.rows))
   return Array.from({ length: section.rows }, (_, row) => Array.from({ length: columns }, (_, column) => section.items[row * columns + column] ?? null))
 }
 const errors = computed(() => ({ name: submitted.value && !form.name.trim(), zone: submitted.value && !form.zone, expiry: submitted.value && !form.expiry, amount: submitted.value && (!Number.isFinite(Number(form.amount)) || Number(form.amount) < .5 || Number(form.amount) > 500) }))
@@ -125,7 +142,22 @@ function showToast(message) { toast.value = message; clearTimeout(toastTimer); t
 function setZone(zone) { form.zone = zone.name; form.expiry = addDays(toDateKey(), zone.days) }
 function changeAmount(by) { form.amount = Math.max(.5, Math.min(500, Number(form.amount || 0) + by)) }
 function chooseUnit(unit) { form.unit = unit; unitMenuOpen.value = false }
-function openAdd() { editingId.value = null; resetForm(); dialog.value = 'form' }
+function applySuggestedUnit(name) {
+  const unit = suggestedUnits[String(name).trim()]
+  if (unit && !editingId.value) form.unit = unit
+}
+function chooseQuickFood(food) {
+  form.name = food
+  applySuggestedUnit(food)
+}
+watch(() => form.name, applySuggestedUnit)
+function openAdd(zoneName = '') {
+  editingId.value = null
+  resetForm()
+  const zone = zones.find((item) => item.name === zoneName)
+  if (zone) setZone(zone)
+  dialog.value = 'form'
+}
 function openEdit(item) { editingId.value = item.id; resetForm(item); dialog.value = 'form' }
 function save() { submitted.value = true; if (Object.values(errors.value).some(Boolean)) return; const editing = Boolean(editingId.value); const result = editing ? store.updateIngredient(editingId.value, form) : store.addIngredient(form); if (result.error) return showToast(result.error); dialog.value = null; const item = result.ingredient; showToast(editing ? `已更新「${item.name}」的庫存資料` : `已將「${item.name} ${item.amount} ${unitText(item.unit)}」加入${item.zone}，預估 ${Math.max(0, daysLeft(item.expiry))} 天內食用完畢`) }
 function remove() { const item = store.removeIngredient(deletingId.value); dialog.value = null; showToast(`已刪除「${item?.name ?? '食材'}」`) }
@@ -148,7 +180,7 @@ function addRecipeToToday(recipe) {
             <section v-for="section in boards" :key="section.id" :class="['storage-zone', `storage-zone--${section.id}`]">
               <header><b>{{ section.title }}</b><small>{{ section.hint }}</small><em>{{ section.items.length }} 項</em></header>
               <div v-for="(row, rowIndex) in sectionRows(section)" :key="`${section.id}-${rowIndex}`" class="food-layer">
-                <div class="slot-row"><template v-for="(item, slotIndex) in row" :key="`${section.id}-${rowIndex}-${slotIndex}`"><button v-if="item" class="food-slot" :class="expiryClass(item)" @click="openEdit(item)"><strong>x{{ item.amount }}{{ unitText(item.unit) }}</strong><img v-if="foodImage(item.name)" class="food-slot__image" :src="foodImage(item.name)" :alt="item.name" /><span v-else>{{ item.name.slice(0,1) }}</span><b>{{ item.name }}</b><i :style="{ width: `${Math.max(12, Math.min(100, daysLeft(item.expiry) / 30 * 100))}%` }"></i></button><button v-else class="empty-slot" @click="openAdd"><img :src="emptySlotAddIconUrl" alt="" /><small>空格</small></button></template></div>
+                <div class="slot-row"><template v-for="(item, slotIndex) in row" :key="`${section.id}-${rowIndex}-${slotIndex}`"><button v-if="item" class="food-slot" :class="expiryClass(item)" @click="openEdit(item)"><strong>x{{ item.amount }}{{ unitText(item.unit) }}</strong><img v-if="foodImage(item.name)" class="food-slot__image" :src="foodImage(item.name)" :alt="item.name" /><span v-else>{{ item.name.slice(0,1) }}</span><b>{{ item.name }}</b><i :style="{ width: `${Math.max(12, Math.min(100, daysLeft(item.expiry) / 30 * 100))}%` }"></i></button><button v-else class="empty-slot" @click="openAdd(section.zone)"><img :src="emptySlotAddIconUrl" alt="" /><small>空格</small></button></template></div>
                 <span class="shelf-line"></span>
               </div>
             </section>
@@ -157,7 +189,7 @@ function addRecipeToToday(recipe) {
             <section v-for="section in racks" :key="section.id" :class="['storage-zone', 'rack', `storage-zone--${section.id}`]">
               <header><b>{{ section.title }}</b><small>{{ section.hint }}</small><em>{{ section.items.length }} 項</em></header>
               <div v-for="(row, rowIndex) in sectionRows(section)" :key="`${section.id}-${rowIndex}`" class="food-layer">
-                <div class="slot-row"><template v-for="(item, slotIndex) in row" :key="`${section.id}-${rowIndex}-${slotIndex}`"><button v-if="item" class="food-slot" :class="expiryClass(item)" @click="openEdit(item)"><strong>x{{ item.amount }}{{ unitText(item.unit) }}</strong><img v-if="foodImage(item.name)" class="food-slot__image" :src="foodImage(item.name)" :alt="item.name" /><span v-else>{{ item.name.slice(0,1) }}</span><b>{{ item.name }}</b><i :style="{ width: `${Math.max(12, Math.min(100, daysLeft(item.expiry) / 30 * 100))}%` }"></i></button><button v-else class="empty-slot" @click="openAdd"><img :src="emptySlotAddIconUrl" alt="" /><small>空格</small></button></template></div>
+                <div class="slot-row"><template v-for="(item, slotIndex) in row" :key="`${section.id}-${rowIndex}-${slotIndex}`"><button v-if="item" class="food-slot" :class="expiryClass(item)" @click="openEdit(item)"><strong>x{{ item.amount }}{{ unitText(item.unit) }}</strong><img v-if="foodImage(item.name)" class="food-slot__image" :src="foodImage(item.name)" :alt="item.name" /><span v-else>{{ item.name.slice(0,1) }}</span><b>{{ item.name }}</b><i :style="{ width: `${Math.max(12, Math.min(100, daysLeft(item.expiry) / 30 * 100))}%` }"></i></button><button v-else class="empty-slot" @click="openAdd(section.zone)"><img :src="emptySlotAddIconUrl" alt="" /><small>空格</small></button></template></div>
                 <span class="shelf-line"></span>
               </div>
             </section>
@@ -185,7 +217,7 @@ function addRecipeToToday(recipe) {
             </label>
             <div class="quick-foods">
               <span>常用快捷：</span>
-              <button v-for="food in commonFoods" :key="food" type="button" @click="form.name = food"><img :src="shortcutAddIconUrl" alt="" />{{ food }}</button>
+              <button v-for="food in commonFoods" :key="food" type="button" @click="chooseQuickFood(food)"><img :src="shortcutAddIconUrl" alt="" />{{ food }}</button>
             </div>
           </section>
 
@@ -254,10 +286,10 @@ function addRecipeToToday(recipe) {
 .view-switch img{width:24px;height:24px}
 .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px}
 .metrics article{display:grid;gap:8px;min-height:126px;padding:21px;border:1px solid var(--brand-secondary);border-radius:12px 0 12px;background:#fff}
-.metrics span,.metrics small{color:var(--text-secondary);font-size:14px}
+.metrics span,.metrics small{color:var(--text-secondary);font-size:10px}
 .metrics div{display:flex;align-items:baseline;gap:8px}
 .metrics strong{color:var(--text-title);font-size:32px;font-weight:400;line-height:1}
-.metrics b{color:var(--text-body);font-size:16px;font-weight:400}
+.metrics b{color:var(--text-body);font-size:10px;font-weight:400}
 .inventory{margin-top:40px}
 .inventory__tools{display:flex;align-items:center;justify-content:space-between;gap:24px}
 .tabs{display:flex;flex-wrap:wrap;gap:4px;padding:4px;border-radius:12px;background:var(--brand-secondary-light)}
@@ -296,20 +328,20 @@ function addRecipeToToday(recipe) {
 .rack{border:2px solid var(--brand-primary)}
 .storage-zone header{display:flex;align-items:baseline;gap:8px;padding-bottom:12px;border-bottom:3px solid var(--brand-secondary)}
 .storage-zone header b{color:var(--text-title);font-size:20px;font-weight:400}
-.storage-zone header small{color:var(--text-secondary);font-size:13px}
+.storage-zone header small{color:var(--text-secondary);font-size:14px}
 .storage-zone header em{margin-left:auto;padding:4px 8px;border-radius:999px;background:#eef2f7;color:#5e758e;font-size:14px;font-style:normal}
 .slot-strip{display:flex;gap:12px;overflow-x:auto;overscroll-behavior-inline:contain;padding:12px 1px 10px;scroll-snap-type:x mandatory}
 .food-slot,.empty-slot{position:relative;display:flex;flex:0 0 98px;min-height:127px;flex-direction:column;align-items:center;justify-content:center;gap:5px;overflow:hidden;border:1px solid #d9d9d9;border-radius:10px;background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.08);color:var(--text-body);scroll-snap-align:start}
-.food-slot>strong{position:absolute;top:4px;right:4px;padding:2px 5px;border-radius:999px;background:var(--brand-primary);color:#fff;font-size:9px;font-weight:400}
+.food-slot>strong{position:absolute;top:4px;right:4px;padding:2px 5px;border-radius:999px;background:var(--brand-primary);color:#fff;font-size:14px;font-weight:400}
 .food-slot>span{display:grid;width:56px;height:56px;place-items:center;border-radius:50%;background:#efe8df;color:var(--brand-primary);font-size:24px}
-.food-slot>b{max-width:82px;overflow:hidden;font-size:12px;font-weight:400;text-overflow:ellipsis;white-space:nowrap}
+.food-slot>b{max-width:82px;overflow:hidden;font-size:14px;font-weight:400;text-overflow:ellipsis;white-space:nowrap}
 .food-slot>i{position:absolute;bottom:5px;left:9px;height:4px;border-radius:999px;background:var(--brand-primary)}
 .food-slot.urgent{border-color:#e38480}
 .food-slot.soon{border-color:#e4d384}
 .empty-slot{border-style:dashed;box-shadow:none}
 .empty-slot img{width:24px;height:24px}
-.empty-slot small{font-size:12px}
-.fridge-racks footer{display:flex;flex-wrap:wrap;gap:12px;color:var(--text-secondary);font-size:10px}
+.empty-slot small{font-size:14px}
+.fridge-racks footer{display:flex;flex-wrap:wrap;gap:12px;color:var(--text-secondary);font-size:14px}
 .legend-urgent{color:#bc5550}
 .recipes{margin-top:40px}
 .recipes header{display:flex;align-items:baseline;justify-content:space-between}
@@ -317,32 +349,32 @@ function addRecipeToToday(recipe) {
 .recipes header span{color:var(--text-secondary);font-size:14px}
 .empty-recipes{min-height:305px;gap:8px;margin-top:16px}
 .empty-recipes>span{color:var(--brand-primary);font-size:24px}
-.empty-recipes small{max-width:520px;color:var(--text-secondary);font-size:12px}
+.empty-recipes small{max-width:520px;color:var(--text-secondary);font-size:14px}
 .recipe-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:16px}
 .recipe{display:flex;flex-direction:column;gap:8px;padding:17px;border:1px solid var(--brand-secondary);border-radius:12px 0 12px;background:#fff}
 .recipe>div:first-child{display:flex;justify-content:space-between}
-.recipe em{padding:4px 8px;border-radius:12px;background:#eef2f7;color:#5e758e;font-size:12px;font-style:normal}
-.recipe>div:first-child small{color:var(--text-placeholder);font-size:11px}
+.recipe em{padding:4px 8px;border-radius:12px;background:#eef2f7;color:#5e758e;font-size:14px;font-style:normal}
+.recipe>div:first-child small{color:var(--text-placeholder);font-size:14px}
 .recipe h3{color:var(--text-body);font-size:16px;font-weight:400}
-.recipe p{min-height:32px;color:var(--text-secondary);font-size:12px}
+.recipe p{min-height:32px;color:var(--text-secondary);font-size:14px}
 .recipe__tags{display:flex;flex-wrap:wrap;gap:6px}
-.recipe__tags span{padding:4px 8px;border-radius:999px;background:var(--brand-secondary-light);color:var(--text-body);font-size:12px}
+.recipe__tags span{padding:4px 8px;border-radius:999px;background:var(--brand-secondary-light);color:var(--text-body);font-size:14px}
 .recipe :deep(.btn){margin-top:auto;padding:8px;font-size:14px}
 .toast{position:fixed;z-index:40;top:36px;left:50%;max-width:calc(100vw - 32px);padding:14px 24px;border-radius:999px;background:var(--brand-primary);box-shadow:0 4px 10px rgba(52,38,28,.2);color:#fff;font-size:14px;transform:translateX(-50%)}
 .overlay{position:fixed;z-index:30;inset:0;display:grid;place-items:center;padding:24px;overflow-y:auto;background:rgba(46,35,28,.42)}
 .dialog{width:min(100%,620px);border-radius:12px 0 12px;background:#fff;box-shadow:0 18px 40px rgba(25,18,12,.22)}
 .ingredient-dialog>header{display:flex;justify-content:space-between;padding:22px 20px 16px;border-bottom:1px solid var(--brand-secondary)}
 .dialog h2{color:var(--text-title);font-size:24px;font-weight:400}
-.dialog p{margin-top:4px;color:var(--text-secondary);font-size:12px}
+.dialog p{margin-top:4px;color:var(--text-secondary);font-size:14px}
 .close{color:var(--text-title);font-size:30px;line-height:.8}
 .dialog__body{display:grid;gap:14px;padding:18px 20px}
 .dialog label,.dialog fieldset{display:grid;gap:7px;color:var(--text-body);font-size:14px}
 .dialog input,.dialog select{width:100%;min-height:42px;padding:10px 12px;border:1px solid var(--brand-primary-border);border-radius:10px;background:#fff;color:var(--text-body);font:inherit}
 .dialog input.invalid{border-color:#c84a45}
-.quick-foods{display:flex;flex-wrap:wrap;align-items:center;gap:7px;color:var(--text-secondary);font-size:12px}
-.quick-foods button{padding:5px 9px;border-radius:999px;background:var(--brand-secondary-light);color:var(--text-body);font-size:12px}
+.quick-foods{display:flex;flex-wrap:wrap;align-items:center;gap:7px;color:var(--text-secondary);font-size:14px}
+.quick-foods button{padding:5px 9px;border-radius:999px;background:var(--brand-secondary-light);color:var(--text-body);font-size:14px}
 .dialog legend{display:flex;width:100%;justify-content:space-between}
-.dialog legend small{color:var(--text-placeholder);font-size:10px}
+.dialog legend small{color:var(--text-placeholder);font-size:14px}
 .amount{display:grid;grid-template-columns:42px minmax(0,1fr) 42px minmax(120px,.9fr)}
 .amount button,.amount input,.amount select{border-radius:0}
 .amount button{border:1px solid var(--brand-primary-border);background:var(--brand-secondary-light);color:var(--text-body);font-size:24px}
@@ -351,13 +383,13 @@ function addRecipeToToday(recipe) {
 .zones{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .zones button{display:grid;gap:7px;min-height:80px;padding:10px;border:1px solid var(--brand-secondary);border-radius:10px;text-align:left}
 .zones button.selected{border-color:var(--brand-primary);background:var(--brand-secondary-light)}
-.zones b{font-size:13px;font-weight:400}
-.zones small{color:var(--text-secondary);font-size:11px}
-.error{color:#c84a45!important;font-size:11px!important}
+.zones b{font-size:14px;font-weight:400}
+.zones small{color:var(--text-secondary);font-size:14px}
+.error{color:#c84a45!important;font-size:14px!important}
 .dialog__actions{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--brand-secondary)}
 .confirm{position:relative;padding:32px}
 .confirm .close{position:absolute;top:18px;right:18px}
-.delete-info{margin:16px 0;padding:10px;border-radius:8px;background:var(--brand-secondary-light);color:var(--text-body);font-size:12px}
+.delete-info{margin:16px 0;padding:10px;border-radius:8px;background:var(--brand-secondary-light);color:var(--text-body);font-size:14px}
 @media (max-width:900px) {
 .content{padding:28px 20px}
 .metrics{gap:16px}
@@ -433,22 +465,22 @@ function addRecipeToToday(recipe) {
 
 .search-actions{height:45px;align-items:center}
 .search{box-sizing:border-box;min-height:45px;height:45px;padding:0 12px}
-.search-actions :deep(.inventory-add){display:inline-flex;flex:0 0 auto;min-height:39px;height:39px;padding:8px 10px;gap:4px;font-size:13px;line-height:19px}
+.search-actions :deep(.inventory-add){display:inline-flex;flex:0 0 auto;min-height:39px;height:39px;padding:8px 10px;gap:4px;font-size:14px;line-height:19px}
 .search-actions :deep(.inventory-add .btn__label){display:inline-flex;align-items:center;gap:4px}
 .search-actions :deep(.inventory-add .button-icon){width:16px;height:16px}
 .view-switch button.active img{filter:brightness(0) invert(1)}
 
 .metrics article{box-sizing:border-box;min-height:0;height:112px;padding:14px 16px;gap:4px}
 .metrics strong{font-size:24px}
-.metrics b{font-size:14px}
-.metrics span,.metrics small{font-size:12px}
+.metrics b{font-size:10px}
+.metrics span,.metrics small{font-size:10px}
 .metrics small{line-height:1.35}
 
 /* 冰箱頁首完全沿用家庭管理頁的 PageTitle 尺寸，避免頁面各自偏移。 */
 @media (min-width:1025px) {
 .page :deep(.page-title){padding:48px 32px 33px}
 .page :deep(.page-title__text){gap:10px}
-.page :deep(.page-title__desc){font-size:13px}
+.page :deep(.page-title__desc){font-size:14px}
 }
 
 @media (min-width:641px) and (max-width:1024px) {
@@ -468,7 +500,7 @@ function addRecipeToToday(recipe) {
 .recipe{padding:14px}
 .recipes{margin-top:28px}
 .recipes h2{font-size:21px}
-.recipes header span{font-size:13px}
+.recipes header span{font-size:14px}
 }
 
 
@@ -488,7 +520,7 @@ function addRecipeToToday(recipe) {
 @media (max-width:640px) {
 .page :deep(.page-title){padding:var(--space-28) var(--space-20) 24px}
 .page :deep(.page-title__text){gap:var(--space-8)}
-.page :deep(.page-title__desc){font-size:12px;line-height:1.45}
+.page :deep(.page-title__desc){font-size:14px;line-height:1.45}
 }
 
 
@@ -501,7 +533,7 @@ function addRecipeToToday(recipe) {
 
 .ingredient-dialog__header{box-sizing:border-box;display:flex;align-items:flex-start;justify-content:space-between;padding:16px 20px 17px;border-bottom:1px solid #e9e1d9}
 .ingredient-dialog__header h2{font-size:24px;line-height:29px}
-.ingredient-dialog__header p{margin-top:0;font-size:12px;line-height:14px}
+.ingredient-dialog__header p{margin-top:0;font-size:14px;line-height:14px}
 .ingredient-dialog .close{display:grid;flex:0 0 24px;width:24px;height:24px;place-items:center}
 .ingredient-dialog .close img{width:24px;height:24px}
 
@@ -521,10 +553,10 @@ function addRecipeToToday(recipe) {
 
 .ingredient-dialog__name{display:grid;gap:8px}
 .quick-foods{gap:8px;font-size:14px;line-height:20px}
-.quick-foods button{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;font-size:12px;line-height:16px}
+.quick-foods button{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;font-size:14px;line-height:16px}
 .quick-foods button img{width:12px;height:12px}
 .ingredient-dialog legend{align-items:baseline;font-size:16px;line-height:24px}
-.ingredient-dialog legend small{font-size:12px;line-height:18px}
+.ingredient-dialog legend small{font-size:14px;line-height:18px}
 
 .ingredient-dialog .amount{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
 .quantity-stepper{display:grid;grid-template-columns:36px minmax(0,1fr) 36px}
@@ -542,7 +574,7 @@ function addRecipeToToday(recipe) {
 .unit-picker__menu{position:absolute;z-index:50;top:52px;right:0;left:0;min-width:141px;max-height:min(340px,calc(100dvh - 180px));overflow-y:auto;padding:12px 0;border:1px solid #cbc4be;border-radius:20px;background:#fff;box-shadow:0 20px 30px rgba(52,38,28,.2)}
 .unit-picker__group{display:grid;gap:0;padding:0 0 8px}
 .unit-picker__group+ .unit-picker__group{padding-top:8px}
-.unit-picker__group p{display:flex;align-items:center;gap:10px;margin:0 12px 4px;color:#a39d9a;font-size:11px;white-space:nowrap}
+.unit-picker__group p{display:flex;align-items:center;gap:10px;margin:0 12px 4px;color:#a39d9a;font-size:14px;white-space:nowrap}
 .unit-picker__group p span{display:block;flex:1;height:1px;background:#e9e1d9}
 .unit-picker__group button{width:100%;height:28px;padding:0;border:0;border-radius:0;background:transparent;color:#5a4a3b;font-size:14px;line-height:28px;text-align:center}
 .unit-picker__group button:hover,.unit-picker__group button.selected{background:#e9e1d9}
@@ -556,10 +588,10 @@ function addRecipeToToday(recipe) {
 .ingredient-dialog .zones button.selected{padding:12px;border:2px solid #856f5b;background:#fff}
 .zone-card__head{display:flex;align-items:center;gap:6px;min-width:0}
 .zone-card__head i{width:8px;height:8px;border-radius:50%;background:#e9e1d9}
-.zone-card__head b{color:#716c6c;font-size:12px;line-height:16px;white-space:nowrap}
+.zone-card__head b{color:#716c6c;font-size:14px;line-height:16px;white-space:nowrap}
 .zone-card__head img{width:20px;height:20px;margin-left:auto;filter:brightness(0) saturate(100%) invert(78%) sepia(17%) saturate(672%) hue-rotate(175deg) brightness(86%) contrast(84%)}
-.zone-card__temperature{color:#716c6c;font-size:12px;line-height:16px}
-.zone-card__days{width:100%;margin-top:4px;padding-top:7px;border-top:1px solid #f2efec;color:#716c6c;font-size:10px;line-height:14px;text-align:left}
+.zone-card__temperature{color:#716c6c;font-size:14px;line-height:16px}
+.zone-card__days{width:100%;margin-top:4px;padding-top:7px;border-top:1px solid #f2efec;color:#716c6c;font-size:14px;line-height:14px;text-align:left}
 .ingredient-dialog .zones button.selected .zone-card__head i{background:#856f5b}
 .ingredient-dialog .zones button.selected .zone-card__head img{filter:brightness(0) saturate(100%) invert(42%) sepia(31%) saturate(728%) hue-rotate(175deg) brightness(94%) contrast(85%)}
 .ingredient-dialog .zones button.selected .zone-card__head b,.ingredient-dialog .zones button.selected .zone-card__temperature,.ingredient-dialog .zones button.selected .zone-card__days{color:#5a4a3b}
@@ -587,7 +619,7 @@ function addRecipeToToday(recipe) {
 
   .ingredient-dialog__header h2{font-size:22px;line-height:27px}
 
-  .ingredient-dialog__header p{font-size:11px;line-height:14px}
+  .ingredient-dialog__header p{font-size:14px;line-height:14px}
 
   .ingredient-dialog .dialog__body{gap:10px;overflow-y:auto;padding:14px 16px}
 
@@ -601,7 +633,7 @@ function addRecipeToToday(recipe) {
 
   .ingredient-dialog fieldset>legend{display:grid;height:auto;gap:1px;margin-bottom:3px}
 
-  .ingredient-dialog legend small{display:block;font-size:10px;line-height:14px}
+  .ingredient-dialog legend small{display:block;font-size:14px;line-height:14px}
 
   .ingredient-dialog .form-field>input,.ingredient-dialog .date-field>span:not(.form-field__label),.quantity-stepper>button,.quantity-stepper input,.unit-picker__trigger{height:40px;min-height:40px}
 
@@ -616,7 +648,7 @@ function addRecipeToToday(recipe) {
 
   .unit-picker__group+ .unit-picker__group{padding-top:4px}
 
-  .unit-picker__group p{margin:0 10px 2px;font-size:10px}
+  .unit-picker__group p{margin:0 10px 2px;font-size:14px}
 
   .unit-picker__group button{height:30px;font-size:14px;line-height:30px}
 
@@ -626,13 +658,13 @@ function addRecipeToToday(recipe) {
 
   .ingredient-dialog .zones button.selected{padding:9px}
 
-  .zone-card__head b,.zone-card__temperature{font-size:11px;line-height:15px}
+  .zone-card__head b,.zone-card__temperature{font-size:14px;line-height:15px}
 
-  .zone-card__days{margin-top:2px;padding-top:5px;font-size:9px;line-height:12px}
+  .zone-card__days{margin-top:2px;padding-top:5px;font-size:14px;line-height:12px}
 
-  .quick-foods{gap:6px;font-size:12px}
+  .quick-foods{gap:6px;font-size:14px}
 
-  .quick-foods button{padding:4px 7px;font-size:11px}
+  .quick-foods button{padding:4px 7px;font-size:14px}
 
   .ingredient-dialog .dialog__actions{min-height:62px;padding-top:10px;padding-bottom:10px}
 
@@ -664,21 +696,21 @@ function addRecipeToToday(recipe) {
 .metrics{grid-template-columns:repeat(3,minmax(146px,1fr));gap:10px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x mandatory}
 .metrics article{height:104px;padding:12px;scroll-snap-align:start}
 .metrics strong{font-size:22px}
-.metrics b{font-size:13px}
-.metrics span,.metrics small{font-size:11px}
+.metrics b{font-size:14px}
+.metrics span,.metrics small{font-size:14px}
 .inventory{margin-top:20px}
 .tabs{flex-wrap:nowrap;overflow-x:auto}
-.tabs button{flex:0 0 auto;font-size:12px}
+.tabs button{flex:0 0 auto;font-size:14px}
 .recipe-list{display:flex;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x mandatory}
 .recipe{flex:0 0 min(78vw,290px);gap:6px;padding:14px;scroll-snap-align:start}
 .recipe h3{font-size:15px}
-.recipe p{min-height:0;font-size:11px;line-height:1.45}
-.recipe__tags span{font-size:11px}
-.recipe :deep(.recipe-add-button){min-height:36px;height:36px;padding:6px 10px;font-size:13px;line-height:18px}
+.recipe p{min-height:0;font-size:14px;line-height:1.45}
+.recipe__tags span{font-size:14px}
+.recipe :deep(.recipe-add-button){min-height:36px;height:36px;padding:6px 10px;font-size:14px;line-height:18px}
 .recipes{margin-top:28px}
 .recipes header{align-items:flex-start;flex-direction:column;gap:4px}
 .recipes h2{font-size:18px}
-.recipes header span{font-size:11px;line-height:1.45}
+.recipes header span{font-size:14px;line-height:1.45}
 .empty-recipes{min-height:170px}
 .empty-recipes--compact{min-height:140px}
 }
@@ -698,15 +730,15 @@ function addRecipeToToday(recipe) {
 
   .tabs{gap:3px;padding:3px;border-radius:10px}
 
-  .tabs button{padding:6px 7px;border-radius:7px;font-size:11px}
+  .tabs button{padding:6px 7px;border-radius:7px;font-size:14px}
 
   .search-actions{gap:6px;height:38px}
 
   .search{min-height:38px;height:38px;padding:0 10px}
 
-  .search input,.search input:focus{font-size:13px}
+  .search input,.search input:focus{font-size:14px}
 
-  .search-actions :deep(.inventory-add){min-height:36px;height:36px;padding:6px 8px;font-size:12px}
+  .search-actions :deep(.inventory-add){min-height:36px;height:36px;padding:6px 8px;font-size:14px}
 
 
   /* 摘要三卡在手機內完整呈現，不以橫向捲動保留桌機尺寸。 */
@@ -714,7 +746,7 @@ function addRecipeToToday(recipe) {
 
   .metrics article{height:92px;padding:9px;gap:3px;scroll-snap-align:none}
 
-  .metrics span,.metrics small{font-size:9px;line-height:1.25}
+  .metrics span,.metrics small{font-size:10px;line-height:1.25}
 
   .metrics div{gap:3px;min-width:0;white-space:nowrap}
 
@@ -728,9 +760,9 @@ function addRecipeToToday(recipe) {
 
   .table-head,.ingredient{grid-template-columns:28px minmax(0,1fr) 48px 58px 34px;min-height:48px}
 
-  .table-head{font-size:10px}
+  .table-head{font-size:14px}
 
-  .ingredient{font-size:12px}
+  .ingredient{font-size:14px}
 
   .table-head>:first-child,.table-head>:nth-child(2),.ingredient>:first-child,.ingredient>:nth-child(2){padding-left:6px}
 
@@ -750,13 +782,13 @@ function addRecipeToToday(recipe) {
 
   .recipe h3{font-size:14px}
 
-  .recipe p{font-size:10px;line-height:1.4}
+  .recipe p{font-size:14px;line-height:1.4}
 
-  .recipe em,.recipe>div:first-child small,.recipe__tags span{font-size:10px}
+  .recipe em,.recipe>div:first-child small,.recipe__tags span{font-size:14px}
 
   .recipe em,.recipe__tags span{padding:3px 6px}
 
-  .recipe :deep(.recipe-add-button){min-height:36px;height:36px;padding:6px 8px;font-size:12px;line-height:18px}
+  .recipe :deep(.recipe-add-button){min-height:36px;height:36px;padding:6px 8px;font-size:14px;line-height:18px}
 
 
   /* 格狀冰箱的所有分區套用一致的行動版縮放比例。 */
@@ -770,13 +802,13 @@ function addRecipeToToday(recipe) {
 
   .storage-zone .food-slot__image{flex-basis:58px;width:58px;height:58px;border-radius:8px}
 
-  .storage-zone .food-slot>b{max-width:62px;font-size:10px}
+  .storage-zone .food-slot>b{max-width:62px;font-size:14px}
 
-  .storage-zone .food-slot>strong{font-size:8px}
+  .storage-zone .food-slot>strong{font-size:14px}
 
   .storage-zone .food-slot>i{bottom:4px;left:6px;height:3px}
 
-  .storage-zone .empty-slot small{font-size:10px}
+  .storage-zone .empty-slot small{font-size:14px}
 
 }
 
@@ -879,13 +911,13 @@ function addRecipeToToday(recipe) {
 
   .search input, .search input:focus { font-size: 14px; }
 
-  .search-actions :deep(.inventory-add) { min-height: 40px; height: 40px; padding: 6px 14px; font-size: 13px; }
+  .search-actions :deep(.inventory-add) { min-height: 40px; height: 40px; padding: 6px 14px; font-size: 14px; }
 
   .tabs { display: flex; width: 100%; box-sizing: border-box; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
 
   .tabs::-webkit-scrollbar { display: none; }
 
-  .tabs button { flex: 1 1 auto; padding: 7px 3px; font-size: 12px; white-space: nowrap; }
+  .tabs button { flex: 1 1 auto; padding: 7px 3px; font-size: 14px; white-space: nowrap; }
 
 }
 
@@ -896,7 +928,7 @@ function addRecipeToToday(recipe) {
 
   .tabs { flex: 0 0 auto; flex-wrap: nowrap; }
 
-  .tabs button { flex: 0 0 auto; padding: 8px 7px; font-size: 13px; white-space: nowrap; }
+  .tabs button { flex: 0 0 auto; padding: 8px 7px; font-size: 14px; white-space: nowrap; }
 
   .search-actions { flex: 0 1 330px; width: auto; min-width: 200px; align-self: center; margin-left: auto; }
 
@@ -918,7 +950,7 @@ function addRecipeToToday(recipe) {
 
 @media (min-width:641px) and (max-width:819px) {
 
-  .tabs button { padding: 7px 5px; font-size: 12px; }
+  .tabs button { padding: 7px 5px; font-size: 14px; }
 
 }
 
@@ -932,7 +964,7 @@ function addRecipeToToday(recipe) {
 /* 手機：提示條縮小並維持單行。 */
 @media (max-width:640px) {
 
-  .toast { max-width: calc(100vw - 24px); padding: 8px 14px; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+  .toast { max-width: calc(100vw - 24px); padding: 8px 14px; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
 
 }
 
@@ -946,7 +978,7 @@ function addRecipeToToday(recipe) {
 
 .search input, .search input:focus { height: 18px; font-size: 14px; }
 
-.search-actions :deep(.inventory-add) { min-height: 36px; height: 36px; gap: 4px; padding: 6px 10px; font-size: 12px; line-height: 18px; }
+.search-actions :deep(.inventory-add) { min-height: 36px; height: 36px; gap: 4px; padding: 6px 10px; font-size: 14px; line-height: 18px; }
 
 .search-actions :deep(.inventory-add .button-icon) { width: 15px; height: 15px; }
 
@@ -957,9 +989,9 @@ function addRecipeToToday(recipe) {
 
   .search { min-height: 36px; height: 36px; padding: 0 10px; }
 
-  .search input, .search input:focus { font-size: 13px; }
+  .search input, .search input:focus { font-size: 14px; }
 
-  .search-actions :deep(.inventory-add) { min-height: 36px; height: 36px; padding: 6px 9px; font-size: 12px; }
+  .search-actions :deep(.inventory-add) { min-height: 36px; height: 36px; padding: 6px 9px; font-size: 14px; }
 
 }
 
@@ -1001,7 +1033,7 @@ function addRecipeToToday(recipe) {
 
   .page :deep(.page-title__heading) { font-size: 22px; line-height: 1.25; letter-spacing: .06em; }
 
-  .page :deep(.page-title__desc) { font-size: 11px; line-height: 1.55; }
+  .page :deep(.page-title__desc) { font-size: 14px; line-height: 1.55; }
 
   .content { padding: 16px 12px 36px; }
 
@@ -1010,11 +1042,11 @@ function addRecipeToToday(recipe) {
 
   .metrics article { height: 88px; padding: 8px; }
 
-  .metrics span, .metrics small { font-size: 8px; }
+  .metrics span, .metrics small { font-size: 10px; }
 
   .metrics strong { font-size: 18px; }
 
-  .metrics b { font-size: 9px; }
+  .metrics b { font-size: 10px; }
 
 
   .inventory { margin-top: 16px; }
@@ -1023,7 +1055,7 @@ function addRecipeToToday(recipe) {
 
   .recipes h2 { font-size: 16px; }
 
-  .recipes header span { font-size: 10px; }
+  .recipes header span { font-size: 12px; }
 
   .recipe-list { gap: 8px; }
 
@@ -1036,9 +1068,9 @@ function addRecipeToToday(recipe) {
 
   .storage-zone header b { font-size: 14px; }
 
-  .storage-zone header small { font-size: 9px; }
+  .storage-zone header small { font-size: 14px; }
 
-  .storage-zone header em { padding: 3px 6px; font-size: 10px; }
+  .storage-zone header em { padding: 3px 6px; font-size: 14px; }
 
   .storage-zone .slot-row { gap: 7px; }
 
@@ -1046,16 +1078,16 @@ function addRecipeToToday(recipe) {
 
   .storage-zone .food-slot__image { flex-basis: 54px; width: 54px; height: 54px; }
 
-  .storage-zone .food-slot > b { max-width:58px; font-size: 9px; }
+  .storage-zone .food-slot > b { max-width:58px; font-size: 14px; }
 
-  .storage-zone .food-slot > strong { font-size: 7px; }
+  .storage-zone .food-slot > strong { font-size: 14px; }
 
-  .storage-zone .empty-slot small { font-size: 9px; }
+  .storage-zone .empty-slot small { font-size: 14px; }
 
 
   .empty-recipes { min-height: 156px; padding: 0 20px; }
 
-  .empty-recipes small { max-width: 278px; font-size: 11px; line-height: 1.55; }
+  .empty-recipes small { max-width: 278px; font-size: 14px; line-height: 1.55; }
 
 }
 

@@ -311,7 +311,7 @@ const pillars = [
 }
 
 .home-hero__desc {
-  font-size: clamp(13px, 3.6vw, 15px);
+  font-size: clamp(14px, 3.6vw, 16px);
   line-height: 1.6;
   color: #453326;
 }
@@ -391,7 +391,7 @@ const pillars = [
   border-radius: 12px;
   background: var(--brand-primary);
   /* 手機公告只是輔助資訊，避免和首頁主內容搶視覺焦點 */
-  font-size: 10px;
+  font-size: 14px;
   color: var(--text-on-primary);
 }
 
@@ -418,7 +418,7 @@ const pillars = [
   overflow: hidden;
   white-space: nowrap;
   /* 公告內文比標籤再小一級，避免在窄手機上顯得像正文。 */
-  font-size: 9px;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--text-secondary);
   mask-image: linear-gradient(to right, transparent, #000 12px, #000 calc(100% - 24px), transparent);
@@ -563,7 +563,7 @@ const pillars = [
   align-self: flex-start;
   padding-bottom: 4px;
   background: linear-gradient(var(--brand-special), var(--brand-special)) no-repeat right bottom / 0 1px;
-  font-size: clamp(13px, 3.7vw, 17px);
+  font-size: clamp(14px, 3.7vw, 17px);
   color: var(--text-title);
   transition: background-size 0.4s ease;
 }
@@ -726,7 +726,7 @@ const pillars = [
   }
 
   .home-hero__desc {
-    font-size: clamp(13px, 1.6vw, 16px);
+    font-size: clamp(14px, 1.6vw, 16px);
   }
 
   .home-notice {
@@ -786,11 +786,11 @@ const pillars = [
   }
 
   .home-essay__pillar-title {
-    font-size: clamp(13px, 1.9vw, 18px);
+    font-size: clamp(14px, 1.9vw, 18px);
   }
 
   .home-essay__pillar-desc {
-    font-size: clamp(12px, 1.5vw, 14px);
+    font-size: clamp(14px, 1.5vw, 16px);
   }
 
   .home-essay__image {
@@ -850,7 +850,7 @@ const pillars = [
   }
 
   .home-hero__desc {
-    font-size: clamp(13px, 1.04vw, 20px);
+    font-size: clamp(14px, 1.04vw, 20px);
   }
 
   .home-heading {
@@ -888,7 +888,7 @@ const pillars = [
   }
 
   .home-essay__pillar-desc {
-    font-size: clamp(13px, 0.83vw, 16px);
+    font-size: clamp(14px, 0.83vw, 16px);
   }
 
   .home-essay__image {

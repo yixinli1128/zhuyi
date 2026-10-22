@@ -108,7 +108,7 @@ const classes = computed(() => [
 }
 
 .btn--sm .btn__icon {
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .btn--block {
@@ -218,7 +218,7 @@ const classes = computed(() => [
   .btn--md {
     gap: 6px;
     padding: 7px 9px;
-    font-size: 13px;
+    font-size: 14px;
     line-height: 20px;
   }
 

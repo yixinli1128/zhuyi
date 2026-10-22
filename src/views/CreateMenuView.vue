@@ -1022,7 +1022,7 @@ function chooseOtherDate() {
   border: 1px solid var(--brand-primary-border);
   background: var(--brand-secondary-light);
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .custom-dish-field button:disabled {
@@ -1309,12 +1309,12 @@ function chooseOtherDate() {
 
   :deep(.select-field__label),
   .field-label {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   :deep(.select-field__control),
   :deep(.select-field__date-placeholder) {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   :deep(.panel__title) {
@@ -1322,7 +1322,7 @@ function chooseOtherDate() {
   }
 
   :deep(.panel__subtitle) {
-    font-size: 11px;
+    font-size: 14px;
   }
 
   :deep(.panel__toggle) {

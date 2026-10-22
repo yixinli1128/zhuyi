@@ -334,7 +334,7 @@ function confirmDelete() {
 }
 
 .card__desc {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
 }
 
@@ -344,7 +344,7 @@ function confirmDelete() {
 }
 
 .card__link {
-  font-size: 13px;
+  font-size: 14px;
   line-height: normal;
   color: var(--text-body);
   text-decoration: underline;
@@ -423,7 +423,7 @@ function confirmDelete() {
   padding: 3px 10px;
   border-radius: 999px;
   background: var(--status-success-subtle);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-success);
 }
@@ -471,7 +471,7 @@ function confirmDelete() {
 }
 
 .notify__desc {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
 }
 
@@ -483,7 +483,7 @@ function confirmDelete() {
   padding: 14px var(--space-16);
   border-radius: 10px;
   background: var(--status-error-subtle);
-  font-size: 13px;
+  font-size: 14px;
   line-height: normal;
   color: var(--text-body);
 }

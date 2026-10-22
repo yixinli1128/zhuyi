@@ -80,7 +80,7 @@ function toggle(list, value) {
 }
 
 .needs__note {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--text-body);
 }
@@ -95,7 +95,7 @@ function toggle(list, value) {
 }
 
 .needs :deep(.option-group__hint) {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-placeholder);
 }
 
@@ -107,7 +107,7 @@ function toggle(list, value) {
   padding: 5px 8px;
   border-color: var(--brand-primary-border);
   background: transparent;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.2;
 }
 
@@ -126,7 +126,7 @@ function toggle(list, value) {
 }
 
 .needs__more i {
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .needs__other {

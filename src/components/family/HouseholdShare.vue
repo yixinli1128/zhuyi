@@ -239,12 +239,12 @@ function acceptInvite(invite) {
 .share-bar__avatars .mini-avatar + .mini-avatar { margin-left: -8px; }
 .share-bar__text { display: grid; flex: 1; min-width: 0; gap: 2px; }
 .share-bar__text strong { color: var(--text-title); font-size: 16px; font-weight: 400; }
-.share-bar__text span { color: var(--text-secondary); font-size: 12px; }
-.invite-banner { border-color: var(--brand-special); background: #f4f7fb; color: var(--text-body); font-size: 13px; }
+.share-bar__text span { color: var(--text-secondary); font-size: 14px; }
+.invite-banner { border-color: var(--brand-special); background: #f4f7fb; color: var(--text-body); font-size: 14px; }
 .invite-banner > i { color: var(--text-special); font-size: 18px; }
 .invite-banner p { flex: 1; min-width: 0; }
 .invite-banner__actions { display: flex; flex: 0 0 auto; gap: 6px; }
-.mini-avatar { display: grid; flex: 0 0 auto; width: 32px; height: 32px; place-items: center; overflow: hidden; border: 2px solid #fff; border-radius: 50%; background: var(--brand-secondary); color: var(--text-body); font-size: 13px; }
+.mini-avatar { display: grid; flex: 0 0 auto; width: 32px; height: 32px; place-items: center; overflow: hidden; border: 2px solid #fff; border-radius: 50%; background: var(--brand-secondary); color: var(--text-body); font-size: 14px; }
 .mini-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 .panel { display: grid; gap: 18px; }
@@ -258,17 +258,17 @@ function acceptInvite(invite) {
 .accounts li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--brand-secondary-light); }
 .accounts__who { display: grid; flex: 1; min-width: 0; }
 .accounts__who b { color: var(--text-title); font-size: 14px; font-weight: 400; }
-.accounts__who small { color: var(--text-secondary); font-size: 12px; }
-.accounts__who span { overflow: hidden; color: var(--text-secondary); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-.role { padding: 2px 8px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 11px; }
+.accounts__who small { color: var(--text-secondary); font-size: 14px; }
+.accounts__who span { overflow: hidden; color: var(--text-secondary); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.role { padding: 2px 8px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 14px; }
 .pending { margin-top: 8px; }
-.pending li { display: flex; align-items: center; gap: 8px; color: var(--text-body); font-size: 13px; }
-.pending small { color: var(--text-placeholder); font-size: 11px; }
+.pending li { display: flex; align-items: center; gap: 8px; color: var(--text-body); font-size: 14px; }
+.pending small { color: var(--text-placeholder); font-size: 14px; }
 .pending .link { margin-left: auto; }
 .code { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
 .code strong { padding: 6px 14px; border: 1px dashed var(--brand-primary-border); border-radius: 10px; color: var(--text-title); font-size: 22px; font-weight: 400; letter-spacing: .18em; }
-.hint { margin-top: 6px; color: var(--text-secondary); font-size: 12px; }
-.link, .link-danger { color: var(--brand-primary); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+.hint { margin-top: 6px; color: var(--text-secondary); font-size: 14px; }
+.link, .link-danger { color: var(--brand-primary); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
 .link-danger { color: var(--text-danger); }
 .leave { justify-self: start; }
 .confirm h3 { color: var(--text-title); font-size: 18px; font-weight: 400; }
@@ -280,8 +280,8 @@ function acceptInvite(invite) {
   .share-bar, .invite-banner { padding: 10px 12px; }
   .share-bar__avatars { display: none; }
   .share-bar__text strong { font-size: 14px; }
-  .share-bar__text span { font-size: 11px; }
-  .invite-banner { flex-wrap: wrap; font-size: 12px; }
+  .share-bar__text span { font-size: 14px; }
+  .invite-banner { flex-wrap: wrap; font-size: 14px; }
   .invite-banner__actions { width: 100%; justify-content: flex-end; }
   .code strong { font-size: 18px; }
 }

@@ -390,8 +390,8 @@ watch(selectedDate, async () => {
 .meal-banner { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 64px; padding: 0 16px; }
 .meal-banner__copy { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--text-secondary); font-size: 16px; }
 .meal-banner__copy h2 { color: var(--text-title); font-size: 18px; font-weight: 500; }.meal-banner__copy i { color: var(--text-placeholder); }.meal-banner__dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-placeholder); }
-.edit-menu, .today-button { padding: 5px 10px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 10px; white-space: nowrap; }.edit-menu:hover, .today-button:hover { background: var(--brand-secondary-hover); }
-.meal-empty { display: flex; height: 201px; flex-direction: column; align-items: center; justify-content: center; margin-top: 16px; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; text-align: center; }.meal-empty>.app-icon { margin-bottom: 12px; color: var(--brand-primary); font-size: 22px; }.meal-empty h3, .grocery-empty h3 { color: var(--text-body); font-size: 14px; font-weight: 500; }.meal-empty p, .grocery-empty p { max-width: 360px; margin-top: 8px; color: var(--text-placeholder); font-size: 10px; line-height: 1.7; }
+.edit-menu, .today-button { padding: 5px 10px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 14px; white-space: nowrap; }.edit-menu:hover, .today-button:hover { background: var(--brand-secondary-hover); }
+.meal-empty { display: flex; height: 201px; flex-direction: column; align-items: center; justify-content: center; margin-top: 16px; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; text-align: center; }.meal-empty>.app-icon { margin-bottom: 12px; color: var(--brand-primary); font-size: 22px; }.meal-empty h3, .grocery-empty h3 { color: var(--text-body); font-size: 14px; font-weight: 500; }.meal-empty p, .grocery-empty p { max-width: 360px; margin-top: 8px; color: var(--text-placeholder); font-size: 14px; line-height: 1.7; }
 .planned-meal { display: grid; gap: 16px; margin-top: 16px; }
 .planned-dish { display: grid; gap: 12px; padding: 21px; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; background: var(--bg-surface); box-shadow: 0 1px 2px rgb(0 0 0 / .02); }
 .planned-dish__main { display: flex; min-width: 0; gap: 16px; }
@@ -399,7 +399,7 @@ watch(selectedDate, async () => {
 .dish-placeholder { display: grid; place-items: center; background: var(--brand-secondary-light); color: var(--brand-primary); font-size: 22px; }
 .planned-dish__copy { display: flex; min-width: 0; min-height: 112px; flex: 1; flex-direction: column; }
 .planned-dish__heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.planned-dish__heading p { color: var(--text-placeholder); font-size: 12px; line-height: 1.2; }
+.planned-dish__heading p { color: var(--text-placeholder); font-size: 14px; line-height: 1.2; }
 .planned-dish h3 { margin: 4px 0 0; color: var(--text-body); font-size: 20px; font-weight: 500; line-height: 1.25; }
 .dish-time { padding: 4px 8px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-placeholder); font-size: 14px; line-height: 1; white-space: nowrap; }
 .dish-intro { margin-top: 7px; overflow: hidden; color: var(--text-placeholder); font-size: 14px; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
@@ -407,21 +407,21 @@ watch(selectedDate, async () => {
 .dish-ingredients span { min-width: 140px; padding: 4px 8px; border-radius: 12px; background: var(--brand-secondary-light); color: var(--text-secondary); font-size: 14px; line-height: 1.2; }
 .dish-guide { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px 10px; border-radius: 12px; background: var(--brand-secondary-light); }
 .dish-guide p { min-width: 0; overflow: hidden; color: var(--text-secondary); font-size: 14px; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }.dish-guide b { color: var(--text-body); font-weight: 500; }
-.dish-guide button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 4px; padding: 4px; border-radius: 999px; background: var(--brand-special); color: #fff; font-size: 12px; line-height: 1; }.dish-guide button i { display: grid; width: 8px; height: 16px; place-items: center; font-size: 8px; }.dish-guide button:hover { filter: brightness(.97); }
-.meal-banner__actions { display: flex; align-items: center; gap: 8px; }.cooked-menu-state { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-secondary); font-size: 10px; white-space: nowrap; }.complete-menu { padding: 5px 10px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 10px; white-space: nowrap; }.complete-menu:hover { background: var(--brand-primary-hover); }.complete-menu--footer { display: inline-flex; align-items: center; gap: 6px; width: fit-content; min-height: 45px; align-self: flex-end; margin-top: 16px; border-radius: 999px; font-size: 12px; }
+.dish-guide button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 4px; padding: 4px; border-radius: 999px; background: var(--brand-special); color: #fff; font-size: 14px; line-height: 1; }.dish-guide button i { display: grid; width: 8px; height: 16px; place-items: center; font-size: 14px; }.dish-guide button:hover { filter: brightness(.97); }
+.meal-banner__actions { display: flex; align-items: center; gap: 8px; }.cooked-menu-state { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-secondary); font-size: 14px; white-space: nowrap; }.complete-menu { padding: 5px 10px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 14px; white-space: nowrap; }.complete-menu:hover { background: var(--brand-primary-hover); }.complete-menu--footer { display: inline-flex; align-items: center; gap: 6px; width: fit-content; min-height: 45px; align-self: flex-end; margin-top: 16px; border-radius: 999px; font-size: 14px; }
 .grocery-list, .stock-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
-.grocery-list li button { display: grid; width: 100%; grid-template-columns: 14px minmax(0, 1fr) minmax(84px, 38%); align-items: center; gap: 10px; padding: 9px 8px; border: 0; border-radius: 10px; background: transparent; color: var(--text-body); font-size: 11px; text-align: left; cursor: pointer; }
-.grocery-list li button>i { display: grid; width: 14px; height: 14px; place-items: center; border: 1px solid var(--brand-primary-border); border-radius: 2px; color: transparent; font-size: 8px; }.grocery-list li button.is-checked { color: var(--text-placeholder); text-decoration: line-through; }.grocery-list li button.is-checked>i { border-color: var(--brand-primary); background: var(--brand-primary); color: var(--text-on-primary); }
-.grocery-item__name { display: flex; min-width: 0; align-items: center; gap: 8px; overflow: hidden; }.grocery-list b, .stock-list b { overflow: hidden; color: var(--text-body); font-size: 11px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }.grocery-list em, .stock-list em { flex: 0 0 auto; color: var(--text-body); font-size: 11px; font-style: normal; white-space: nowrap; }.grocery-list small, .stock-list small { min-width: 0; overflow: hidden; color: var(--text-placeholder); font-size: 10px; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
-.side-card { overflow: hidden; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; background: var(--bg-surface); padding: 21px; }.month-card__header, .month-title, .grocery-header { display: flex; align-items: center; }.month-card__header { justify-content: space-between; }.month-title { gap: 8px; }.month-title h2 { color: var(--text-secondary); font-size: 14px; font-weight: 500; white-space: nowrap; }.month-title button { display: grid; width: 16px; height: 20px; place-items: center; color: var(--text-placeholder); font-size: 10px; }.today-button { padding: 0; background: transparent; color: var(--text-placeholder); font-size: 12px; }.today-button:hover { background: transparent; color: var(--brand-primary); }.weekday-row, .month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }.weekday-row { margin-top: 17px; padding: 6px 0; border-bottom: 1px solid var(--brand-secondary); color: var(--text-placeholder); font-size: 10px; text-align: center; }.month-grid { gap: 0; margin-top: 12px; }.month-day { display: grid; height: 32px; aspect-ratio: 1 / 1; justify-self: center; place-items: center; border-radius: 50%; color: var(--text-secondary); font-size: 12px; }.month-day:not(.is-selected):hover { background: var(--brand-secondary-light); }.month-day.is-muted { color: var(--brand-secondary); }.month-day.has-plan::after { content: ''; width: 3px; height: 3px; margin-top: -3px; border-radius: 50%; background: var(--brand-primary); }.month-day.is-selected { background: var(--brand-special); color: #fff; }.month-day.is-selected::after { background: #fff; }
+.grocery-list li button { display: grid; width: 100%; grid-template-columns: 14px minmax(0, 1fr) minmax(84px, 38%); align-items: center; gap: 10px; padding: 9px 8px; border: 0; border-radius: 10px; background: transparent; color: var(--text-body); font-size: 14px; text-align: left; cursor: pointer; }
+.grocery-list li button>i { display: grid; width: 14px; height: 14px; place-items: center; border: 1px solid var(--brand-primary-border); border-radius: 2px; color: transparent; font-size: 14px; }.grocery-list li button.is-checked { color: var(--text-placeholder); text-decoration: line-through; }.grocery-list li button.is-checked>i { border-color: var(--brand-primary); background: var(--brand-primary); color: var(--text-on-primary); }
+.grocery-item__name { display: flex; min-width: 0; align-items: center; gap: 8px; overflow: hidden; }.grocery-list b, .stock-list b { overflow: hidden; color: var(--text-body); font-size: 14px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }.grocery-list em, .stock-list em { flex: 0 0 auto; color: var(--text-body); font-size: 14px; font-style: normal; white-space: nowrap; }.grocery-list small, .stock-list small { min-width: 0; overflow: hidden; color: var(--text-placeholder); font-size: 14px; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+.side-card { overflow: hidden; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; background: var(--bg-surface); padding: 21px; }.month-card__header, .month-title, .grocery-header { display: flex; align-items: center; }.month-card__header { justify-content: space-between; }.month-title { gap: 8px; }.month-title h2 { color: var(--text-secondary); font-size: 14px; font-weight: 500; white-space: nowrap; }.month-title button { display: grid; width: 16px; height: 20px; place-items: center; color: var(--text-placeholder); font-size: 14px; }.today-button { padding: 0; background: transparent; color: var(--text-placeholder); font-size: 14px; }.today-button:hover { background: transparent; color: var(--brand-primary); }.weekday-row, .month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }.weekday-row { margin-top: 17px; padding: 6px 0; border-bottom: 1px solid var(--brand-secondary); color: var(--text-placeholder); font-size: 14px; text-align: center; }.month-grid { gap: 0; margin-top: 12px; }.month-day { display: grid; height: 32px; aspect-ratio: 1 / 1; justify-self: center; place-items: center; border-radius: 50%; color: var(--text-secondary); font-size: 14px; }.month-day:not(.is-selected):hover { background: var(--brand-secondary-light); }.month-day.is-muted { color: var(--brand-secondary); }.month-day.has-plan::after { content: ''; width: 3px; height: 3px; margin-top: -3px; border-radius: 50%; background: var(--brand-primary); }.month-day.is-selected { background: var(--brand-special); color: #fff; }.month-day.is-selected::after { background: #fff; }
 .month-card { box-sizing: border-box; min-height: 342px; opacity: .8; }.journal-layout.has-plan .month-card { opacity: 1; }
 .grocery-card { grid-column: 2; grid-row: 2; display: flex; min-height: 339px; flex-direction: column; gap: 8px; }.journal-layout.has-plan .grocery-card { display: grid; height: 581px; min-height: 0; max-height: 581px; grid-template-rows: auto auto minmax(0, 1fr) auto; }
-.grocery-header { gap: 10px; }.grocery-header>div:not(.grocery-icon) { min-width: 0; }.grocery-icon { display: grid; width: 42px; height: 42px; flex: 0 0 42px; place-items: center; border: 1px solid var(--brand-secondary); border-radius: 10px; background: var(--brand-secondary-light); color: var(--brand-primary); font-size: 16px; }.grocery-header h2 { overflow: hidden; color: var(--text-title); font-size: 16px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }.grocery-header p, .grocery-header>span { color: var(--text-placeholder); font-size: 10px; }.grocery-header p { margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.grocery-header>span { flex: 0 0 auto; margin-left: auto; padding: 4px 7px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 11px; white-space: nowrap; }
-.grocery-progress { padding-bottom: 1px; border-bottom: 1px solid var(--brand-secondary); }.grocery-progress>i { display: block; height: 5px; overflow: hidden; border-radius: 999px; background: var(--brand-secondary-light); }.grocery-progress>i>b { display: block; height: 100%; border-radius: inherit; background: var(--brand-primary); transition: width .2s ease; }.grocery-progress>div { display: flex; justify-content: space-between; margin-top: 5px; color: var(--text-placeholder); font-size: 10px; }.grocery-progress strong { font-weight: 400; }
-.grocery-content { display: flex; flex-direction: column; width: 100%; min-height: 0; gap: 8px; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }.grocery-group { flex: 0 0 auto; width: 100%; }.grocery-summary { display: flex; flex: 0 0 auto; width: 100%; align-items: center; justify-content: space-between; padding: 7px 8px; border-radius: 8px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 12px; text-align: left; }.grocery-summary:hover { background: var(--brand-secondary-hover); }.grocery-summary>span { display: inline-flex; align-items: center; gap: 7px; }.grocery-summary>span>i { color: var(--brand-primary); font-size: 13px; }.grocery-summary>i { display: grid; width: 20px; height: 12px; place-items: center; color: var(--text-placeholder); font-size: 8px; }.grocery-group__empty { padding: 10px; color: var(--text-placeholder); font-size: 10px; }.grocery-list { min-height: 0; }.grocery-group--stock { margin-top: 0; }
+.grocery-header { gap: 10px; }.grocery-header>div:not(.grocery-icon) { min-width: 0; }.grocery-icon { display: grid; width: 42px; height: 42px; flex: 0 0 42px; place-items: center; border: 1px solid var(--brand-secondary); border-radius: 10px; background: var(--brand-secondary-light); color: var(--brand-primary); font-size: 16px; }.grocery-header h2 { overflow: hidden; color: var(--text-title); font-size: 16px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }.grocery-header p, .grocery-header>span { color: var(--text-placeholder); font-size: 14px; }.grocery-header p { margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.grocery-header>span { flex: 0 0 auto; margin-left: auto; padding: 4px 7px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 14px; white-space: nowrap; }
+.grocery-progress { padding-bottom: 1px; border-bottom: 1px solid var(--brand-secondary); }.grocery-progress>i { display: block; height: 5px; overflow: hidden; border-radius: 999px; background: var(--brand-secondary-light); }.grocery-progress>i>b { display: block; height: 100%; border-radius: inherit; background: var(--brand-primary); transition: width .2s ease; }.grocery-progress>div { display: flex; justify-content: space-between; margin-top: 5px; color: var(--text-placeholder); font-size: 14px; }.grocery-progress strong { font-weight: 400; }
+.grocery-content { display: flex; flex-direction: column; width: 100%; min-height: 0; gap: 8px; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }.grocery-group { flex: 0 0 auto; width: 100%; }.grocery-summary { display: flex; flex: 0 0 auto; width: 100%; align-items: center; justify-content: space-between; padding: 7px 8px; border-radius: 8px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 14px; text-align: left; }.grocery-summary:hover { background: var(--brand-secondary-hover); }.grocery-summary>span { display: inline-flex; align-items: center; gap: 7px; }.grocery-summary>span>i { color: var(--brand-primary); font-size: 14px; }.grocery-summary>i { display: grid; width: 20px; height: 12px; place-items: center; color: var(--text-placeholder); font-size: 14px; }.grocery-group__empty { padding: 10px; color: var(--text-placeholder); font-size: 14px; }.grocery-list { min-height: 0; }.grocery-group--stock { margin-top: 0; }
 /* 冰箱已有庫存使用 Figma 冰箱圖示，以遮罩套用品牌色。 */
-.grocery-summary>span>.stock-fridge-icon { display: inline-block; width: 14px; height: 14px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }.stock-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 8px; border-radius: 10px; }.grocery-footer { display: flex; flex: 0 0 auto; justify-content: space-between; width: 100%; margin-top: 0; padding-top: 8px; border-top: 1px solid var(--brand-secondary); }.grocery-footer button { display: inline-flex; align-items: center; gap: 4px; padding: 4px 7px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 10px; }.grocery-footer button:last-child { background: var(--brand-secondary); color: var(--text-body); }.grocery-footer i { font-size: 9px; }.grocery-empty { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 20px 12px 0; text-align: center; }.grocery-empty>i { margin-bottom: 11px; color: var(--brand-primary); font-size: 24px; }.grocery-empty p { max-width: 240px; }
-.completion-dialog { padding: 4px 0 2px; }.completion-dialog h3 { margin-bottom: 12px; color: var(--text-body); font-size: 15px; font-weight: 500; }.deduction-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--brand-secondary); }.deduction-list li { display: flex; align-items: center; justify-content: space-between; min-height: 42px; border-bottom: 1px solid var(--brand-secondary); color: var(--text-body); font-size: 14px; }.deduction-list strong { color: var(--brand-primary); font-size: 13px; font-weight: 500; }.no-deduction { padding: 16px; border: 1px dashed var(--brand-secondary); border-radius: 8px; color: var(--text-placeholder); font-size: 13px; line-height: 1.6; }
+.grocery-summary>span>.stock-fridge-icon { display: inline-block; width: 14px; height: 14px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }.stock-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 8px; border-radius: 10px; }.grocery-footer { display: flex; flex: 0 0 auto; justify-content: space-between; width: 100%; margin-top: 0; padding-top: 8px; border-top: 1px solid var(--brand-secondary); }.grocery-footer button { display: inline-flex; align-items: center; gap: 4px; padding: 4px 7px; border-radius: 999px; background: var(--brand-secondary-light); color: var(--text-body); font-size: 14px; }.grocery-footer button:last-child { background: var(--brand-secondary); color: var(--text-body); }.grocery-footer i { font-size: 14px; }.grocery-empty { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; padding: 20px 12px 0; text-align: center; }.grocery-empty>i { margin-bottom: 11px; color: var(--brand-primary); font-size: 24px; }.grocery-empty p { max-width: 240px; }
+.completion-dialog { padding: 4px 0 2px; }.completion-dialog h3 { margin-bottom: 12px; color: var(--text-body); font-size: 15px; font-weight: 500; }.deduction-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--brand-secondary); }.deduction-list li { display: flex; align-items: center; justify-content: space-between; min-height: 42px; border-bottom: 1px solid var(--brand-secondary); color: var(--text-body); font-size: 14px; }.deduction-list strong { color: var(--brand-primary); font-size: 14px; font-weight: 500; }.no-deduction { padding: 16px; border: 1px dashed var(--brand-secondary); border-radius: 8px; color: var(--text-placeholder); font-size: 14px; line-height: 1.6; }
 
 .history-layout { display: grid; grid-template-columns: minmax(0, 893.333fr) minmax(0, 426.667fr); gap: 40px; padding: 20px 40px 88px; }
 .history-records { display: flex; min-width: 0; flex-direction: column; gap: 16px; }
@@ -431,21 +431,21 @@ watch(selectedDate, async () => {
 .history-filter button.is-current { padding-bottom: 10px; border-color: var(--brand-primary); color: var(--text-body); }
 .history-filter span { margin-top: 4px; padding: 4px 8px; border-radius: 12px; background: #edf2f7; color: var(--text-special); font-size: 14px; line-height: 18px; white-space: nowrap; }
 .records-empty { display: flex; height: 182px; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--brand-secondary); border-radius: 12px 0 12px; text-align: center; }
-.records-empty>.app-icon { margin-bottom: 12px; color: var(--brand-primary); font-size: 24px; }.records-empty h2 { color: var(--text-body); font-size: 16px; font-weight: 500; line-height: 24px; }.records-empty p { margin-top: 8px; color: var(--text-placeholder); font-size: 12px; line-height: 18px; }
+.records-empty>.app-icon { margin-bottom: 12px; color: var(--brand-primary); font-size: 24px; }.records-empty h2 { color: var(--text-body); font-size: 16px; font-weight: 500; line-height: 24px; }.records-empty p { margin-top: 8px; color: var(--text-placeholder); font-size: 14px; line-height: 18px; }
 .history-list { display: grid; gap: 0; list-style: none; }
-.history-list__header { display: flex; align-items: center; justify-content: space-between; padding: 0 0 9px; border-bottom: 1px solid var(--brand-secondary); }.history-list__header>span { display: flex; align-items: center; gap: 8px; color: var(--text-body); font-size: 11px; letter-spacing: .66px; }.history-list__header>span i { width: 6px; height: 6px; border-radius: 50%; background: #000; }.history-list__header em { color: var(--text-secondary); font-size: 12px; font-style: normal; }
-.history-ledger__meta { display: flex; flex: 0 0 auto; align-items: center; gap: 6px; }.history-servings { color: var(--text-placeholder); font-size: 12px; white-space: nowrap; }
-.history-ledger { margin: 0; padding: 0; list-style: none; }.history-ledger>li { display: grid; gap: 8px; padding: 16px 0; border-bottom: 1px dashed var(--brand-primary-border); }.history-ledger__top, .history-ledger__bottom { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 16px; }.history-ledger h2 { color: var(--text-body); font-size: 16px; font-weight: 400; white-space: nowrap; }.history-dishes { display: flex; min-width: 0; flex: 1; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--text-body); font-size: 14px; line-height: 22px; }.history-dishes b { font-weight: 400; white-space: nowrap; }.history-dishes span { color: var(--text-secondary); }.history-action { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 4px; padding: 4px 8px; border-radius: 999px; background: var(--brand-secondary); box-shadow: 0 1px 1px rgb(0 0 0 / .05); color: var(--text-body); font-size: 12px; line-height: 16px; white-space: nowrap; }.history-action--schedule { padding: 4px; }.history-action:hover { background: var(--brand-secondary-hover); }.history-action i { font-size: 11px; }.history-action i:last-child { display: grid; width: 16px; height: 8px; margin-left: 0; place-items: center; font-size: 9px; }
-.history-pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px 2px; border-top: 1px solid var(--brand-secondary); }.history-pagination>span { color: var(--text-secondary); font-size: 10px; }.history-pagination>div { display: flex; align-items: center; gap: 8px; }.history-pagination button { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid var(--brand-primary-border); border-radius: 50%; background: var(--bg-surface); color: var(--text-secondary); font-size: 14px; }.history-pagination button:first-child, .history-pagination button:last-child { border-color: transparent; background: transparent; font-size: 12px; }.history-pagination button.is-current { border-color: var(--brand-primary); background: var(--brand-primary); color: var(--text-on-primary); }.history-pagination button:disabled { cursor: default; opacity: .45; }
-.top-recipes { min-height: 296px; padding: 20px; border: 1px solid var(--brand-primary-border); border-radius: 12px 0 12px; }.top-recipes header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--brand-secondary); }.top-recipes h2 { color: var(--text-body); font-size: 16px; font-weight: 500; }.top-recipes h2 i { margin-right: 7px; font-size: 8px; color: #000; }.top-recipes header span { color: var(--text-placeholder); font-size: 10px; letter-spacing: .8px; }.top-recipes ol { margin: 0; padding: 10px 0; list-style: none; }.top-recipes li { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; min-height: 38px; border-bottom: 1px dashed var(--brand-secondary); color: var(--text-secondary); font-size: 14px; }.top-recipes li b { display: grid; width: 14px; height: 14px; place-items: center; border-radius: 50%; background: var(--brand-secondary-light); font-size: 9px; font-weight: 500; }.top-recipes li:first-child b { background: var(--brand-special); color: #fff; }.top-recipes li em { color: var(--text-placeholder); font-size: 12px; font-style: normal; }.top-recipes>p { padding: 8px; border-left: 2px solid var(--brand-primary); background: var(--brand-secondary); color: var(--text-secondary); font-size: 10px; line-height: 1.45; }
+.history-list__header { display: flex; align-items: center; justify-content: space-between; padding: 0 0 9px; border-bottom: 1px solid var(--brand-secondary); }.history-list__header>span { display: flex; align-items: center; gap: 8px; color: var(--text-body); font-size: 14px; letter-spacing: .66px; }.history-list__header>span i { width: 6px; height: 6px; border-radius: 50%; background: #000; }.history-list__header em { color: var(--text-secondary); font-size: 14px; font-style: normal; }
+.history-ledger__meta { display: flex; flex: 0 0 auto; align-items: center; gap: 6px; }.history-servings { color: var(--text-placeholder); font-size: 14px; white-space: nowrap; }
+.history-ledger { margin: 0; padding: 0; list-style: none; }.history-ledger>li { display: grid; gap: 8px; padding: 16px 0; border-bottom: 1px dashed var(--brand-primary-border); }.history-ledger__top, .history-ledger__bottom { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 16px; }.history-ledger h2 { color: var(--text-body); font-size: 16px; font-weight: 400; white-space: nowrap; }.history-dishes { display: flex; min-width: 0; flex: 1; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--text-body); font-size: 14px; line-height: 22px; }.history-dishes b { font-weight: 400; white-space: nowrap; }.history-dishes span { color: var(--text-secondary); }.history-action { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 4px; padding: 4px 8px; border-radius: 999px; background: var(--brand-secondary); box-shadow: 0 1px 1px rgb(0 0 0 / .05); color: var(--text-body); font-size: 14px; line-height: 16px; white-space: nowrap; }.history-action--schedule { padding: 4px; }.history-action:hover { background: var(--brand-secondary-hover); }.history-action i { font-size: 14px; }.history-action i:last-child { display: grid; width: 16px; height: 8px; margin-left: 0; place-items: center; font-size: 14px; }
+.history-pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px 2px; border-top: 1px solid var(--brand-secondary); }.history-pagination>span { color: var(--text-secondary); font-size: 14px; }.history-pagination>div { display: flex; align-items: center; gap: 8px; }.history-pagination button { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid var(--brand-primary-border); border-radius: 50%; background: var(--bg-surface); color: var(--text-secondary); font-size: 14px; }.history-pagination button:first-child, .history-pagination button:last-child { border-color: transparent; background: transparent; font-size: 14px; }.history-pagination button.is-current { border-color: var(--brand-primary); background: var(--brand-primary); color: var(--text-on-primary); }.history-pagination button:disabled { cursor: default; opacity: .45; }
+.top-recipes { min-height: 296px; padding: 20px; border: 1px solid var(--brand-primary-border); border-radius: 12px 0 12px; }.top-recipes header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--brand-secondary); }.top-recipes h2 { color: var(--text-body); font-size: 16px; font-weight: 500; }.top-recipes h2 i { margin-right: 7px; font-size: 14px; color: #000; }.top-recipes header span { color: var(--text-placeholder); font-size: 14px; letter-spacing: .8px; }.top-recipes ol { margin: 0; padding: 10px 0; list-style: none; }.top-recipes li { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; min-height: 38px; border-bottom: 1px dashed var(--brand-secondary); color: var(--text-secondary); font-size: 14px; }.top-recipes li b { display: grid; width: 14px; height: 14px; place-items: center; border-radius: 50%; background: var(--brand-secondary-light); font-size: 14px; font-weight: 500; }.top-recipes li:first-child b { background: var(--brand-special); color: #fff; }.top-recipes li em { color: var(--text-placeholder); font-size: 14px; font-style: normal; }.top-recipes>p { padding: 8px; border-left: 2px solid var(--brand-primary); background: var(--brand-secondary); color: var(--text-secondary); font-size: 14px; line-height: 1.45; }
 @media (max-width: 1439px) and (min-width: 1200px) {
   .journal-layout { grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; padding: 24px 28px 64px; }
   .history-layout { grid-template-columns: minmax(0, 1fr) 320px; padding: 24px 28px 64px; }
   .grocery-icon { width: 43px; height: 43px; flex-basis: 43px; font-size: 17px; }
   .grocery-header h2 { font-size: 15px; }
-  .grocery-header p, .grocery-header > span, .grocery-progress > div { font-size: 10px; }
+  .grocery-header p, .grocery-header > span, .grocery-progress > div { font-size: 14px; }
 }
-@media(max-width:1199px){.journal-page{width:100%}.journal-layout{grid-template-columns:minmax(0,1fr) minmax(280px,.8fr);gap:24px;padding:24px 28px 64px}.selected-meal{grid-row:span 2}.meal-empty{height:auto;min-height:181px}.history-layout{grid-template-columns:minmax(0,1fr) 340px;padding:24px 28px 64px}}@media(max-width:640px){.journal-layout,.history-layout{display:flex;flex-direction:column;gap:20px;padding:16px 16px 36px}.selected-meal{min-height:0;width:100%}.meal-banner{align-items:flex-start;flex-wrap:wrap;min-height:0;padding:0 4px}.meal-banner__copy{gap:6px;font-size:13px}.meal-banner__copy h2{width:100%;font-size:17px}.meal-banner__actions{margin-left:auto}.edit-menu{padding:5px 8px;font-size:10px}.meal-empty{height:164px;min-height:164px;margin-top:10px;padding:0 16px}.meal-empty p{max-width:290px;font-size:10px;line-height:1.6}.grocery-card{grid-column:auto;grid-row:auto}.side-card{min-height:0;padding:16px}.month-card{min-height:0!important}.month-card__header{min-height:28px}.weekday-row{margin-top:10px}.month-grid{margin-top:8px}.month-day{height:29px;font-size:11px}.journal-layout.has-plan .grocery-card{height:auto;min-height:0;max-height:none;grid-template-rows:auto auto minmax(0,300px) auto}.grocery-card{min-height:218px}.grocery-empty{padding:10px 0}.grocery-content{max-height:300px}.view-switch{width:100%}.view-switch button{flex:1}.history-layout{gap:20px}.top-recipes{min-height:0}}
+@media(max-width:1199px){.journal-page{width:100%}.journal-layout{grid-template-columns:minmax(0,1fr) minmax(280px,.8fr);gap:24px;padding:24px 28px 64px}.selected-meal{grid-row:span 2}.meal-empty{height:auto;min-height:181px}.history-layout{grid-template-columns:minmax(0,1fr) 340px;padding:24px 28px 64px}}@media(max-width:640px){.journal-layout,.history-layout{display:flex;flex-direction:column;gap:20px;padding:16px 16px 36px}.selected-meal{min-height:0;width:100%}.meal-banner{align-items:flex-start;flex-wrap:wrap;min-height:0;padding:0 4px}.meal-banner__copy{gap:6px;font-size:14px}.meal-banner__copy h2{width:100%;font-size:17px}.meal-banner__actions{margin-left:auto}.edit-menu{padding:5px 8px;font-size:14px}.meal-empty{height:164px;min-height:164px;margin-top:10px;padding:0 16px}.meal-empty p{max-width:290px;font-size:14px;line-height:1.6}.grocery-card{grid-column:auto;grid-row:auto}.side-card{min-height:0;padding:16px}.month-card{min-height:0!important}.month-card__header{min-height:28px}.weekday-row{margin-top:10px}.month-grid{margin-top:8px}.month-day{height:29px;font-size:14px}.journal-layout.has-plan .grocery-card{height:auto;min-height:0;max-height:none;grid-template-rows:auto auto minmax(0,300px) auto}.grocery-card{min-height:218px}.grocery-empty{padding:10px 0}.grocery-content{max-height:300px}.view-switch{width:100%}.view-switch button{flex:1}.history-layout{gap:20px}.top-recipes{min-height:0}}
 @media(max-width:640px){
   /* 日誌補上通用 .page 外層，頁首與家庭管理／冰箱使用相同的兩層留白。 */
   .journal-page{box-sizing:border-box;padding:var(--page-padding-y) var(--page-padding-x) 0}
@@ -460,34 +460,34 @@ watch(selectedDate, async () => {
   .side-card{padding:12px}
   .month-card__header{min-height:24px}
   .month-title{gap:6px}
-  .month-title h2{font-size:13px}
-  .today-button{font-size:11px}
-  .weekday-row{margin-top:7px;padding:4px 0;font-size:9px}
+  .month-title h2{font-size:14px}
+  .today-button{font-size:14px}
+  .weekday-row{margin-top:7px;padding:4px 0;font-size:14px}
   .month-grid{margin-top:5px}
-  .month-day{height:26px;font-size:10px}
+  .month-day{height:26px;font-size:14px}
   .journal-layout.has-plan .grocery-card{grid-template-rows:auto auto minmax(0,250px) auto}
   .grocery-card{min-height:190px;gap:6px}
   .grocery-icon{width:36px;height:36px;flex-basis:36px;font-size:14px}
   .grocery-header{gap:8px}
   .grocery-header h2{font-size:14px}
-  .grocery-header p,.grocery-header>span,.grocery-progress>div{font-size:9px}
-  .grocery-summary{padding:6px 7px;font-size:11px}
-  .grocery-list li button,.stock-list li{gap:7px;padding:7px 6px;font-size:10px}
-  .grocery-list b,.stock-list b,.grocery-list em,.stock-list em{font-size:10px}
-  .grocery-list small,.stock-list small{font-size:9px}
+  .grocery-header p,.grocery-header>span,.grocery-progress>div{font-size:14px}
+  .grocery-summary{padding:6px 7px;font-size:14px}
+  .grocery-list li button,.stock-list li{gap:7px;padding:7px 6px;font-size:14px}
+  .grocery-list b,.stock-list b,.grocery-list em,.stock-list em{font-size:14px}
+  .grocery-list small,.stock-list small{font-size:14px}
   .grocery-content{max-height:250px;gap:6px}
   .grocery-footer{padding-top:6px}
-  .grocery-footer button{padding:4px 6px;font-size:9px}
+  .grocery-footer button{padding:4px 6px;font-size:14px}
   .side-card{padding:12px}
   .history-ledger>li{gap:6px;padding:12px 0}
   .history-ledger h2{font-size:14px}
-  .history-dishes{gap:5px;font-size:12px;line-height:1.45}
-  .history-action{padding:3px 6px;font-size:10px}
+  .history-dishes{gap:5px;font-size:14px;line-height:1.45}
+  .history-action{padding:3px 6px;font-size:14px}
   .history-pagination{padding:12px 0}
-  .history-pagination button{width:30px;height:30px;font-size:12px}
+  .history-pagination button{width:30px;height:30px;font-size:14px}
   .top-recipes{padding:14px}
   .top-recipes h2{font-size:14px}
-  .top-recipes li{min-height:33px;font-size:12px}
+  .top-recipes li{min-height:33px;font-size:14px}
 
   /* 有排餐時，料理卡改為手機密度，避免沿用桌機 144px 圖框與 20px 標題。 */
   /* 檢視模式在手機改用 icon，與冰箱右側操作一致；文字仍保留供平板／桌機使用。 */
@@ -501,16 +501,16 @@ watch(selectedDate, async () => {
   .dish-placeholder{font-size:18px}
   .planned-dish__copy{min-height:82px}
   .planned-dish__heading{gap:8px}
-  .planned-dish__heading p{font-size:10px}
+  .planned-dish__heading p{font-size:14px}
   .planned-dish h3{margin-top:2px;font-size:17px}
-  .dish-time{padding:4px 6px;font-size:11px}
-  .dish-intro{margin-top:4px;font-size:11px}
+  .dish-time{padding:4px 6px;font-size:14px}
+  .dish-intro{margin-top:4px;font-size:14px}
   .dish-ingredients{gap:5px;margin-top:5px}
-  .dish-ingredients span{min-width:0;padding:4px 6px;font-size:10px}
+  .dish-ingredients span{min-width:0;padding:4px 6px;font-size:14px}
   .dish-guide{gap:8px;padding:7px 9px}
-  .dish-guide p{font-size:11px}
-  .dish-guide button{padding:5px 6px;font-size:10px}
-  .complete-menu--footer{width:fit-content;min-height:38px;margin-top:12px;font-size:10px}
+  .dish-guide p{font-size:14px}
+  .dish-guide button{padding:5px 6px;font-size:14px}
+  .complete-menu--footer{width:fit-content;min-height:38px;margin-top:12px;font-size:14px}
 }
 @media(min-width:641px) and (max-width:1024px){
   /* 日誌沒有通用 .page 包裝，補上與家庭管理／冰箱相同的外層頁面留白。 */
@@ -528,18 +528,18 @@ watch(selectedDate, async () => {
   .dish-placeholder{font-size:18px}
   .planned-dish__copy{min-height:88px}
   .planned-dish__heading{gap:10px}
-  .planned-dish__heading p{font-size:11px}
+  .planned-dish__heading p{font-size:14px}
   .planned-dish h3{margin-top:3px;font-size:17px}
-  .dish-time{padding:4px 6px;font-size:11px}
-  .dish-intro{margin-top:5px;font-size:12px}
+  .dish-time{padding:4px 6px;font-size:14px}
+  .dish-intro{margin-top:5px;font-size:14px}
   .dish-ingredients{gap:6px;margin-top:auto}
-  .dish-ingredients span{min-width:0;padding:4px 6px;font-size:11px}
+  .dish-ingredients span{min-width:0;padding:4px 6px;font-size:14px}
   .dish-guide{gap:8px;padding:7px 9px}
-  .dish-guide p{font-size:12px}
-  .dish-guide button{padding:5px 6px;font-size:11px}
+  .dish-guide p{font-size:14px}
+  .dish-guide button{padding:5px 6px;font-size:14px}
   .history-ledger>li{padding:13px 0}
   .history-ledger h2{font-size:15px}
-  .history-dishes{font-size:13px}
+  .history-dishes{font-size:14px}
   .top-recipes{min-height:0;padding:16px}
 }
 
@@ -572,12 +572,12 @@ watch(selectedDate, async () => {
   .planned-dish__copy{min-height:98px}
   .planned-dish__heading{gap:12px}
   .planned-dish h3{font-size:18px}
-  .dish-time{font-size:12px}
-  .dish-intro,.dish-ingredients span,.dish-guide p{font-size:12px}
+  .dish-time{font-size:14px}
+  .dish-intro,.dish-ingredients span,.dish-guide p{font-size:14px}
   .dish-ingredients{gap:8px}
   .dish-ingredients span{min-width:0}
   .dish-guide{padding:7px 10px}
-  .dish-guide button{font-size:11px}
+  .dish-guide button{font-size:14px}
 }
 
 /* 桌機／平板右欄自行依內容堆疊，不受左側餐點清單高度推開。 */
@@ -610,15 +610,15 @@ watch(selectedDate, async () => {
   .dish-placeholder { font-size: clamp(17px, 1.55vw, 20px); }
   .planned-dish__copy { min-height: clamp(78px, 8.2vw, 98px); }
   .planned-dish__heading { gap: clamp(8px, .9vw, 12px); }
-  .planned-dish__heading p { font-size: clamp(10px, .9vw, 12px); }
+  .planned-dish__heading p { font-size: clamp(14px, .9vw, 16px); }
   .planned-dish h3 { margin-top: 3px; font-size: clamp(16px, 1.7vw, 18px); }
-  .dish-time { padding: 4px 6px; font-size: clamp(10px, 1.05vw, 12px); }
-  .dish-intro { margin-top: 5px; font-size: clamp(11px, 1.05vw, 12px); }
+  .dish-time { padding: 4px 6px; font-size: clamp(14px, 1.05vw, 16px); }
+  .dish-intro { margin-top: 5px; font-size: clamp(14px, 1.05vw, 16px); }
   .dish-ingredients { gap: clamp(6px, .7vw, 8px); }
-  .dish-ingredients span { min-width: 0; padding: 4px 6px; font-size: clamp(10px, .95vw, 12px); }
+  .dish-ingredients span { min-width: 0; padding: 4px 6px; font-size: clamp(14px, .95vw, 16px); }
   .dish-guide { gap: 8px; padding: clamp(7px, .75vw, 8px) clamp(9px, .9vw, 10px); }
-  .dish-guide p { font-size: clamp(11px, 1.05vw, 12px); }
-  .dish-guide button { padding: 5px 6px; font-size: clamp(10px, .95vw, 11px); }
+  .dish-guide p { font-size: clamp(14px, 1.05vw, 16px); }
+  .dish-guide button { padding: 5px 6px; font-size: clamp(14px, .95vw, 15px); }
 }
 
 /* 歷史月份篩選改為可橫向滑動：放不下的月份藏在右側，滑動後出現。 */
@@ -633,14 +633,14 @@ watch(selectedDate, async () => {
   .history-layout { grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr); gap: clamp(16px, 2.6vw, 32px); }
   .top-recipes { min-width: 0; padding: clamp(12px, 1.6vw, 18px); }
   .top-recipes header { gap: 8px; flex-wrap: wrap; }
-  .top-recipes h2 { font-size: clamp(13px, 1.5vw, 16px); white-space: nowrap; }
-  .top-recipes li { font-size: clamp(12px, 1.35vw, 14px); }
+  .top-recipes h2 { font-size: clamp(14px, 1.5vw, 16px); white-space: nowrap; }
+  .top-recipes li { font-size: clamp(14px, 1.35vw, 16px); }
   .top-recipes li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .top-recipes li em { padding-left: 6px; }
 }
 
 /* 兩張常煮排名卡上下排列，共用右側欄位。 */
-.top-recipes .top-recipes__empty { padding: 28px 0; border: 0; background: none; color: var(--text-placeholder); font-size: 13px; text-align: center; }
+.top-recipes .top-recipes__empty { padding: 28px 0; border: 0; background: none; color: var(--text-placeholder); font-size: 14px; text-align: center; }
 .top-recipes-stack { display: grid; min-width: 0; align-self: start; gap: 16px; }
 
 /* iPhone 16 等 400px 以下螢幕：日誌料理卡與日曆沿用同一個緊湊尺度，
@@ -648,7 +648,7 @@ watch(selectedDate, async () => {
 @media (max-width: 400px) {
   .journal-page :deep(.page-title) { padding: 24px 16px 20px; }
   .journal-page :deep(.page-title__heading) { font-size: 22px; line-height: 1.25; letter-spacing: .06em; }
-  .journal-page :deep(.page-title__desc) { font-size: 11px; line-height: 1.55; }
+  .journal-page :deep(.page-title__desc) { font-size: 14px; line-height: 1.55; }
   .journal-layout, .history-layout { gap: 14px; padding: 16px 12px 28px; }
 
   .planned-meal { gap: 9px; margin-top: 9px; }
@@ -658,27 +658,27 @@ watch(selectedDate, async () => {
   .dish-placeholder { font-size: 15px; }
   .planned-dish__copy { min-height: 68px; }
   .planned-dish__heading { gap: 6px; }
-  .planned-dish__heading p { font-size: 9px; }
+  .planned-dish__heading p { font-size: 14px; }
   .planned-dish h3 { margin-top: 1px; font-size: 15px; line-height: 1.25; }
-  .dish-time { padding: 3px 5px; font-size: 9px; white-space: nowrap; }
-  .dish-intro { margin-top: 3px; font-size: 10px; line-height: 1.35; }
+  .dish-time { padding: 3px 5px; font-size: 14px; white-space: nowrap; }
+  .dish-intro { margin-top: 3px; font-size: 14px; line-height: 1.35; }
   .dish-ingredients { gap: 4px; margin-top: 4px; }
-  .dish-ingredients span { padding: 3px 5px; font-size: 9px; }
+  .dish-ingredients span { padding: 3px 5px; font-size: 14px; }
   .dish-guide { gap: 6px; padding: 6px 7px; }
-  .dish-guide p { font-size: 10px; line-height: 1.35; }
-  .dish-guide button { padding: 4px 5px; font-size: 9px; }
+  .dish-guide p { font-size: 14px; line-height: 1.35; }
+  .dish-guide button { padding: 4px 5px; font-size: 14px; }
 
   .side-card { padding: 10px; }
-  .month-day { height: 24px; font-size: 9px; }
+  .month-day { height: 24px; font-size: 14px; }
   .history-ledger > li { padding: 10px 0; }
 
   /* 393px 寬度仍讓餐期、份量與預估時間留在同一閱讀列。 */
   .meal-banner { gap: 4px; min-height: 0; padding: 0 8px; }
-  .meal-banner__copy { flex-wrap: nowrap; gap: 4px; font-size: 11px; white-space: nowrap; }
+  .meal-banner__copy { flex-wrap: nowrap; gap: 4px; font-size: 14px; white-space: nowrap; }
   .meal-banner__copy h2 { font-size: 15px; letter-spacing: 0; }
-  .meal-banner__copy i { font-size: 10px; }
+  .meal-banner__copy i { font-size: 14px; }
   .meal-banner__actions { padding-top: 0; }
-  .edit-menu { padding: 5px 7px; font-size: 9px; }
+  .edit-menu { padding: 5px 7px; font-size: 14px; }
 }
 
 /* 行動版把「編輯餐單」固定在餐期標題同一行；人份與時間自然落到標題下方。 */

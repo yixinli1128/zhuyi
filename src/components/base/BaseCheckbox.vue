@@ -37,7 +37,7 @@ const model = defineModel({ type: Boolean, default: false })
   border: 1px solid var(--brand-primary-border);
   border-radius: 2px;
   background: var(--bg-surface);
-  font-size: 11px;
+  font-size: 14px;
   color: transparent;
   transition:
     background-color 0.2s,

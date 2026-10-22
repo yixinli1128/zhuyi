@@ -189,7 +189,7 @@ onBeforeUnmount(stop)
 }
 
 .season-carousel__label {
-  font-size: clamp(13px, 1.6vw, 16px);
+  font-size: clamp(14px, 1.6vw, 16px);
   color: var(--text-title);
 }
 

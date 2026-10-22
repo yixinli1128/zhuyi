@@ -142,7 +142,7 @@ const dashFrame = computed(() => {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 2px var(--space-8);
-  font-size: clamp(10px, 3.8cqw, 12px);
+  font-size: clamp(14px, 3.8cqw, 16px);
   color: var(--text-special);
 }
 
@@ -199,7 +199,7 @@ const dashFrame = computed(() => {
 }
 
 .veg-card__intro {
-  font-size: clamp(12px, 4.4cqw, 14px);
+  font-size: clamp(14px, 4.4cqw, 16px);
   line-height: 1.6;
   text-indent: 2em;
   color: var(--text-body);

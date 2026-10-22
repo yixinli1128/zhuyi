@@ -275,14 +275,14 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 16px;
   color: var(--text-placeholder);
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .onboarding-tour__popover header i { gap: 5px; }
 .onboarding-tour__popover header b { width: 7px; height: 7px; border-radius: 50%; background: var(--brand-secondary); }
 .onboarding-tour__popover header b.is-current { background: var(--brand-primary); }
 .onboarding-tour__popover h2 { margin-top: 10px; color: var(--text-title); font-size: 19px; font-weight: 400; line-height: 1.35; }
-.onboarding-tour__popover p { min-height: 58px; margin-top: 9px; color: var(--text-secondary); font-size: 12px; line-height: 1.6; }
+.onboarding-tour__popover p { min-height: 58px; margin-top: 9px; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
 
 .onboarding-tour__popover footer {
   justify-content: space-between;
@@ -290,9 +290,9 @@ onBeforeUnmount(() => {
   margin-top: 14px;
 }
 
-.onboarding-tour__popover footer > button:first-child { color: var(--text-secondary); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
-.onboarding-tour__action { min-height: 36px; padding: 7px 13px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 13px; }
-.onboarding-tour__hint { color: var(--text-secondary); font-size: 12px; }
+.onboarding-tour__popover footer > button:first-child { color: var(--text-secondary); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+.onboarding-tour__action { min-height: 36px; padding: 7px 13px; border-radius: 999px; background: var(--brand-primary); color: var(--text-on-primary); font-size: 14px; }
+.onboarding-tour__hint { color: var(--text-secondary); font-size: 14px; }
 
 .tour-fade-enter-active,
 .tour-fade-leave-active { transition: opacity 0.18s ease; }
@@ -311,6 +311,6 @@ onBeforeUnmount(() => {
 
   .onboarding-tour__popover::before { display: none; }
   .onboarding-tour__popover h2 { font-size: 18px; }
-  .onboarding-tour__popover p { min-height: 0; font-size: 11px; }
+  .onboarding-tour__popover p { min-height: 0; font-size: 14px; }
 }
 </style>

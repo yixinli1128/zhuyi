@@ -47,7 +47,7 @@ function onAction() {
 
 .toast__icon {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .toast__action {
@@ -81,12 +81,12 @@ function onAction() {
     gap: var(--space-8);
     max-width: calc(100vw - 24px);
     padding: 8px 14px;
-    font-size: 12px;
+    font-size: 14px;
     white-space: nowrap;
   }
 
   .toast__icon {
-    font-size: 10px;
+    font-size: 14px;
   }
 
   .toast__message {

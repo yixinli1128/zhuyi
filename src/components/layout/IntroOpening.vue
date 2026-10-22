@@ -498,7 +498,7 @@ onBeforeUnmount(() => cleanup?.())
 
 .opening__title-en {
   margin-top: 6px;
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 0.5em;
 }
 
@@ -506,7 +506,7 @@ onBeforeUnmount(() => cleanup?.())
   top: 22%;
   left: 7%;
   writing-mode: vertical-rl;
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.5em;
   animation-delay: 1.4s;
 }
@@ -517,7 +517,7 @@ onBeforeUnmount(() => cleanup?.())
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.25em;
   animation-delay: 1.7s;
 }
@@ -531,7 +531,7 @@ onBeforeUnmount(() => cleanup?.())
   left: 0;
   right: 0;
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: 1.2em;
   animation-delay: 2.6s;
 }
@@ -611,11 +611,11 @@ onBeforeUnmount(() => cleanup?.())
     top: auto;
     bottom: 22%;
     right: 6%;
-    font-size: 10px;
+    font-size: 14px;
   }
 
   .opening__tagline {
-    font-size: 12px;
+    font-size: 14px;
     letter-spacing: 0.6em;
   }
 }

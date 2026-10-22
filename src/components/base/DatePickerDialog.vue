@@ -182,7 +182,7 @@ function confirm() {
   place-items: center;
   border-radius: 50%;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .date-picker__header button:hover {
@@ -199,7 +199,7 @@ function confirm() {
 .date-picker__weekdays {
   margin-bottom: 6px;
   color: var(--text-placeholder);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .date-picker__weekdays span {
