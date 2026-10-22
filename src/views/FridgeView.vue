@@ -286,10 +286,10 @@ function addRecipeToToday(recipe) {
 .view-switch img{width:24px;height:24px}
 .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px}
 .metrics article{display:grid;gap:8px;min-height:126px;padding:21px;border:1px solid var(--brand-secondary);border-radius:12px 0 12px;background:#fff}
-.metrics span,.metrics small{color:var(--text-secondary);font-size:10px}
+.metrics span,.metrics small{color:var(--text-secondary);font-size:14px}
 .metrics div{display:flex;align-items:baseline;gap:8px}
 .metrics strong{color:var(--text-title);font-size:32px;font-weight:400;line-height:1}
-.metrics b{color:var(--text-body);font-size:10px;font-weight:400}
+.metrics b{color:var(--text-body);font-size:14px;font-weight:400}
 .inventory{margin-top:40px}
 .inventory__tools{display:flex;align-items:center;justify-content:space-between;gap:24px}
 .tabs{display:flex;flex-wrap:wrap;gap:4px;padding:4px;border-radius:12px;background:var(--brand-secondary-light)}
@@ -472,8 +472,8 @@ function addRecipeToToday(recipe) {
 
 .metrics article{box-sizing:border-box;min-height:0;height:112px;padding:14px 16px;gap:4px}
 .metrics strong{font-size:24px}
-.metrics b{font-size:10px}
-.metrics span,.metrics small{font-size:10px}
+.metrics b{font-size:14px}
+.metrics span,.metrics small{font-size:14px}
 .metrics small{line-height:1.35}
 
 /* 冰箱頁首完全沿用家庭管理頁的 PageTitle 尺寸，避免頁面各自偏移。 */
@@ -493,7 +493,7 @@ function addRecipeToToday(recipe) {
 @media (min-width:641px) and (max-width:1024px) {
 .content{padding:24px 28px 48px}
 .metrics{gap:16px}
-.metrics article{height:108px;min-height:0;padding:14px}
+.metrics article{height:auto;min-height:136px;padding:16px;gap:6px}
 .metrics strong{font-size:24px}
 .inventory{margin-top:28px}
 .recipe-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
