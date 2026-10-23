@@ -120,15 +120,21 @@ onMounted(() => {
   // 漩渦：分成幾圈，內圈轉得快、外圈慢
   const bands = [150, 185, 225, 270, 320, 380, 450, 530]
   // 手機（窄螢幕）的 CPU 比較弱，漩渦點數減半；畫面小，看起來密度差不多
-  const ringCount = W < 768 ? 1300 : 2600
-  const rings = Array.from({ length: ringCount }, () => {
+  const ringCount = W < 768 ? 1900 : 3800
+  const rings = Array.from({ length: ringCount }, (_, index) => {
+    // 約兩成的點落在鍋底到第一圈之間，讓漩渦一路轉到鍋底，鍋子像坐在漩渦中間
+    const inner = rand() < 0.2
+    // 多出來的點平均鋪在中間幾圈（150–320），補滿鍋子把手兩側到漩渦之間的空白
+    const filler = index >= ringCount * 0.68
     const band = bands[Math.floor(rand() ** 1.3 * bands.length)]
-    const rx = band + (rand() + rand() + rand() - 1.5) * 18
+    const rx = filler
+      ? 150 + rand() * 170
+      : inner ? 60 + rand() * 100 : band + (rand() + rand() + rand() - 1.5) * 18
     return {
       rx,
       a: rand() * Math.PI * 2,
       w: (0.5 + rand() * 0.3) * (170 / rx),
-      alpha: 0.25 + 0.65 * (1 - (rx - 150) / 420) * rand() ** 0.5,
+      alpha: 0.25 + 0.65 * clamp(1 - (rx - 150) / 420) * rand() ** 0.5,
       size: rand() < 0.02 ? 2.6 : 1 + rand() * 0.8,
       phase: rand(),
       tangent: rand() * 2 - 1,
@@ -270,8 +276,19 @@ onMounted(() => {
         const spread = 1 + 1.6 * (1 - gather) + 1.1 * ringOut
         let x = cx + Math.cos(p.a) * p.rx * spread * s
         let y = cy + (78 + sin * p.rx * 0.27 * spread) * s
-        // 鍋子成形後，被鍋身擋住的後排點就不畫
-        if (!front && potIn > 0.5 && Math.abs(x - cx) < R * s && y < cy + BOT_Y * s) continue
+        // 鍋子成形後，被鍋身擋住的點就不畫：後排在鍋底線以上都擋住，
+        // 前排只擋鍋身範圍內，鍋底以下照常畫，漩渦才會貼著鍋底轉
+        if (potIn > 0.5) {
+          const lx = (x - cx) / s
+          const ly = (y - cy) / s
+          // 鍋身上寬下窄：依高度算出這一行的鍋身半寬，鍋身旁邊的點才不會被多擋掉
+          const wall = R2 + (R - R2) * clamp((BOT_Y - ly) / (BOT_Y - RIM_Y))
+          const half = front ? R2 : wall * 1.02
+          if (Math.abs(lx) < half) {
+            const bottom = BOT_Y + RY * 0.9 * Math.sqrt(1 - (lx / half) ** 2)
+            if (ly < bottom) continue
+          }
+        }
         ctx.globalAlpha = p.alpha * fadeIn * ringFade
         ctx.fillRect(x, y, p.size, p.size)
       }
