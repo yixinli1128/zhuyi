@@ -300,7 +300,8 @@ function addRecipeToToday(recipe) {
 .search:focus-within{border-color:var(--brand-primary)}
 .search img{width:16px;height:16px}
 .search input,.search input:focus{width:100%;min-width:0;height:21px;border:0;outline:0;background:transparent;color:var(--text-body);font-size:16px;text-align:left}
-.search input:focus{border-color:transparent!important;box-shadow:none!important}
+/* 搜尋框的焦點由外層 .search:focus-within 呈現；覆蓋共用 input 焦點環，避免雙框。 */
+.search input:not([type='checkbox']):not([type='radio']):not([type='file']):focus{border-color:transparent!important;box-shadow:none!important}
 .search input::placeholder{color:var(--text-placeholder)}
 .button-icon{display:block;width:20px;height:20px}
 .empty-inventory,.empty-recipes,.no-results{display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--brand-secondary);border-radius:12px 0 12px;text-align:center}
