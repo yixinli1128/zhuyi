@@ -300,6 +300,8 @@ function addRecipeToToday(recipe) {
 .search:focus-within{border-color:var(--brand-primary)}
 .search img{width:16px;height:16px}
 .search input,.search input:focus{width:100%;min-width:0;height:21px;border:0;outline:0;background:transparent;color:var(--text-body);font-size:16px;text-align:left}
+/* 搜尋框的焦點由外層 .search:focus-within 呈現；覆蓋共用 input 焦點環，避免雙框。 */
+.search input:not([type='checkbox']):not([type='radio']):not([type='file']):focus{border-color:transparent!important;box-shadow:none!important}
 .search input::placeholder{color:var(--text-placeholder)}
 .button-icon{display:block;width:20px;height:20px}
 .empty-inventory,.empty-recipes,.no-results{display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--brand-secondary);border-radius:12px 0 12px;text-align:center}
@@ -613,13 +615,14 @@ function addRecipeToToday(recipe) {
 @media (max-width:640px) {
 
   /* iPhone 寬度下，數量控制與單位欄必須各佔同一欄寬。 */
-  .ingredient-dialog{grid-template-rows:70px minmax(0,1fr) 62px;height:auto;max-height:calc(100dvh - 24px)}
+  /* 標題與說明可依文字換行撐開，避免說明被 70px 固定列高截斷。 */
+  .ingredient-dialog{grid-template-rows:auto minmax(0,1fr) 62px;height:auto;max-height:calc(100dvh - 24px)}
 
-  .ingredient-dialog__header{padding-top:13px;padding-bottom:12px}
+  .ingredient-dialog__header{min-height:82px;padding-top:13px;padding-bottom:12px}
 
-  .ingredient-dialog__header h2{font-size:22px;line-height:27px}
+  .ingredient-dialog__header h2{font-size:22px;line-height:27px;overflow-wrap:anywhere}
 
-  .ingredient-dialog__header p{font-size:14px;line-height:14px}
+  .ingredient-dialog__header p{margin-top:3px;font-size:12px;line-height:17px;overflow-wrap:anywhere}
 
   .ingredient-dialog .dialog__body{gap:10px;overflow-y:auto;padding:14px 16px}
 

@@ -391,7 +391,7 @@ const pillars = [
   border-radius: 12px;
   background: var(--brand-primary);
   /* 手機公告只是輔助資訊，避免和首頁主內容搶視覺焦點 */
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text-on-primary);
 }
 
@@ -418,7 +418,7 @@ const pillars = [
   overflow: hidden;
   white-space: nowrap;
   /* 公告內文比標籤再小一級，避免在窄手機上顯得像正文。 */
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.5;
   color: var(--text-secondary);
   mask-image: linear-gradient(to right, transparent, #000 12px, #000 calc(100% - 24px), transparent);

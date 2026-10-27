@@ -1375,6 +1375,25 @@ function chooseOtherDate() {
 }
 
 @media (max-width: 640px) {
+  /* 用餐設定的提示與欄位標籤在手機上不能沿用全站 10px 最小字，
+     否則日期／人數等操作資訊太小、不易辨識。 */
+  .field-label,
+  .members-empty,
+  .custom-dish-field,
+  .fields :deep(.select-field__label) {
+    font-size: 12px;
+  }
+
+  .members-empty {
+    line-height: 1.65;
+  }
+
+  .custom-dish-field input,
+  .fields :deep(.select-field__control),
+  .fields :deep(.select-field__date-value) {
+    font-size: 14px;
+  }
+
   .members { gap: 8px; }
   .block {
     gap: var(--space-16);

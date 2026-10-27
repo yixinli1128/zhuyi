@@ -669,7 +669,8 @@ watch(selectedDate, async () => {
   .dish-guide button { padding: 4px 5px; font-size: 14px; }
 
   .side-card { padding: 10px; }
-  .month-day { height: 24px; font-size: 14px; }
+  /* 月曆日期不隨欄寬拉伸；所有日期（含選取日）維持同一個正圓。 */
+  .month-day { width: 24px; height: 24px; min-width: 24px; padding: 0; aspect-ratio: 1 / 1; font-size: 14px; }
   .history-ledger > li { padding: 10px 0; }
 
   /* 393px 寬度仍讓餐期、份量與預估時間留在同一閱讀列。 */
