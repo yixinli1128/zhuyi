@@ -7304,6 +7304,26 @@
 .contribution-grid--six article{display:flex!important;flex-direction:column;justify-content:center;gap:10px}
 .contribution-grid--six article h3{font-size:24px!important;margin:0!important;line-height:1.35}
 section.slide .contribution-grid.contribution-grid--six article{padding:30px 28px!important;gap:16px!important;min-height:150px}
+.rwd-bars{display:flex;flex-direction:column;gap:10px;margin-top:28px}
+.rwd-row{display:grid;grid-template-columns:150px minmax(0,1fr) 300px;align-items:center;gap:24px;padding:10px 20px;border-radius:12px 0 12px}
+.rwd-row--base{background:#fff;border:1px solid #e9e1d9}
+.rwd-name{display:flex;align-items:center;gap:8px}
+.rwd-name h3{margin:0!important;color:#34261c;font-size:20px!important;white-space:nowrap}
+.rwd-badge{font-style:normal;padding:2px 9px;border-radius:999px;background:#7a6350;color:#fff;font-weight:700;font-size:12px;white-space:nowrap}
+.rwd-track{height:40px;background:#f1ece7;border-radius:8px}
+.rwd-bar{display:flex;align-items:center;height:100%;padding:0 14px;box-sizing:border-box;min-width:fit-content;background:#d9cdc2;border-radius:8px}
+.rwd-row--base .rwd-bar{background:#7a6350}
+.rwd-bar .rwd-w{font-size:19px!important;font-weight:800;color:#34261c;white-space:nowrap}
+.rwd-row--base .rwd-w{color:#fff}
+.rwd-note p{margin:0;color:#34261c;font-weight:600;line-height:1.35}
+.rwd-note small{color:#716c6c}
+.rwd-keys{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px}
+.rwd-keys div{display:flex;align-items:baseline;gap:14px;padding:14px 20px;background:#f8f5f2;border-radius:12px 0 12px}
+.rwd-keys b{color:#34261c;font-size:19px!important;white-space:nowrap}
+.rwd-keys span{color:#716c6c}
+
+.rwd-table td b.rwd-w{display:inline;color:#7a6350;font-weight:800;font-size:22px!important}
+.rwd-table mark.rwd-hl{color:#7a6350;font-weight:700;background:linear-gradient(transparent 62%,#e9e1d9 62%);padding:0 2px}
 </style>
 </head>
   <body>
@@ -9822,32 +9842,32 @@ window.addEventListener('click', play)
           <tbody>
             <tr>
               <td><b>窄手機</b><small>iPhone 等小螢幕</small></td>
-              <td>≤ 400px</td>
-              <td>以 393px 驗收，不橫向裁切</td>
+              <td><b class="rwd-w">≤ 400px</b></td>
+              <td>以 393px 驗收，<mark class="rwd-hl">不橫向裁切</mark></td>
               <td>字級與內距收緊，卡片縮小</td>
             </tr>
             <tr>
               <td><b>手機</b><small>一般手機</small></td>
-              <td>401–640px</td>
-              <td>頂欄＋底部導覽，單欄或兩欄</td>
+              <td><b class="rwd-w">401–640px</b></td>
+              <td>頂欄＋<mark class="rwd-hl">底部導覽</mark>，單欄或兩欄</td>
               <td>卡片兩欄，彈窗置中</td>
             </tr>
             <tr>
               <td><b>平板</b><small>橫直向過渡</small></td>
-              <td>641–1024px</td>
-              <td>增加欄位與留白，維持層級</td>
+              <td><b class="rwd-w">641–1024px</b></td>
+              <td><mark class="rwd-hl">增加欄位與留白</mark>，維持層級</td>
               <td>雙欄資訊區、彈性 Grid</td>
             </tr>
             <tr>
               <td><b>桌機</b><small>完整工作區</small></td>
-              <td>≥ 1025px</td>
-              <td>左側導覽＋寬內容區</td>
+              <td><b class="rwd-w">≥ 1025px</b></td>
+              <td><mark class="rwd-hl">左側導覽</mark>＋寬內容區</td>
               <td>同時查看餐單、庫存與細節</td>
             </tr>
             <tr>
               <td><b>寬桌機</b><small>1920 設計基準</small></td>
-              <td>≥ 1920px</td>
-              <td>固定欄位比例，不無限拉寬</td>
+              <td><b class="rwd-w">≥ 1920px</b></td>
+              <td>固定欄位比例，<mark class="rwd-hl">不無限拉寬</mark></td>
               <td>Navbar 固定 240px</td>
             </tr>
           </tbody>
