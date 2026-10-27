@@ -13905,7 +13905,7 @@ lb.addEventListener('wheel',e=>e.stopPropagation(),{passive:true});})();</script
 })();
 </script>
 <style id="demo-fullscreen-fix-css">
-#opening-live-frame.demo-pseudo-full, #refresh-live-frame.demo-pseudo-full { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483000 !important; margin: 0 !important; border-radius: 0 !important; }
+#opening-live-frame.demo-pseudo-full, #refresh-live-frame.demo-pseudo-full { position: fixed !important; inset: 0 !important; width: calc(100vw / var(--deck-zoom, 1)) !important; height: calc(100vh / var(--deck-zoom, 1)) !important; z-index: 2147483000 !important; margin: 0 !important; border-radius: 0 !important; }
 </style>
 <script id="toc-nav">
 (() => {
