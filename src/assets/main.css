@@ -7,6 +7,13 @@
   margin: 0;
 }
 
+/* iPhone Safari 會自動放大「看起來是長段文字」的字（例如單行跑馬燈公告），
+   關掉自動放大，讓手機上的字級和 CSS 設定一致。 */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   min-height: 100vh;
   background: var(--bg-default);
@@ -27,6 +34,8 @@ button {
   color: inherit;
   background: none;
   border: none;
+  /* iPhone Safari 的按鈕預設左右內距很大，會把固定寬度的小按鈕撐開、icon 擠偏。 */
+  padding: 0;
   cursor: pointer;
 }
 
