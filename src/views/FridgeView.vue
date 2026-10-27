@@ -613,13 +613,14 @@ function addRecipeToToday(recipe) {
 @media (max-width:640px) {
 
   /* iPhone 寬度下，數量控制與單位欄必須各佔同一欄寬。 */
-  .ingredient-dialog{grid-template-rows:70px minmax(0,1fr) 62px;height:auto;max-height:calc(100dvh - 24px)}
+  /* 標題與說明可依文字換行撐開，避免說明被 70px 固定列高截斷。 */
+  .ingredient-dialog{grid-template-rows:auto minmax(0,1fr) 62px;height:auto;max-height:calc(100dvh - 24px)}
 
-  .ingredient-dialog__header{padding-top:13px;padding-bottom:12px}
+  .ingredient-dialog__header{min-height:82px;padding-top:13px;padding-bottom:12px}
 
-  .ingredient-dialog__header h2{font-size:22px;line-height:27px}
+  .ingredient-dialog__header h2{font-size:22px;line-height:27px;overflow-wrap:anywhere}
 
-  .ingredient-dialog__header p{font-size:14px;line-height:14px}
+  .ingredient-dialog__header p{margin-top:3px;font-size:12px;line-height:17px;overflow-wrap:anywhere}
 
   .ingredient-dialog .dialog__body{gap:10px;overflow-y:auto;padding:14px 16px}
 
