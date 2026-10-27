@@ -7304,6 +7304,23 @@
 .contribution-grid--six article{display:flex!important;flex-direction:column;justify-content:center;gap:10px}
 .contribution-grid--six article h3{font-size:24px!important;margin:0!important;line-height:1.35}
 section.slide .contribution-grid.contribution-grid--six article{padding:30px 28px!important;gap:16px!important;min-height:150px}
+.rwd-bars{display:flex;flex-direction:column;gap:10px;margin-top:28px}
+.rwd-row{display:grid;grid-template-columns:150px minmax(0,1fr) 300px;align-items:center;gap:24px;padding:10px 20px;border-radius:12px 0 12px}
+.rwd-row--base{background:#fff;border:1px solid #e9e1d9}
+.rwd-name{display:flex;align-items:center;gap:8px}
+.rwd-name h3{margin:0!important;color:#34261c;font-size:20px!important;white-space:nowrap}
+.rwd-badge{font-style:normal;padding:2px 9px;border-radius:999px;background:#7a6350;color:#fff;font-weight:700;font-size:12px;white-space:nowrap}
+.rwd-track{height:40px;background:#f1ece7;border-radius:8px}
+.rwd-bar{display:flex;align-items:center;height:100%;padding:0 14px;box-sizing:border-box;min-width:fit-content;background:#d9cdc2;border-radius:8px}
+.rwd-row--base .rwd-bar{background:#7a6350}
+.rwd-bar .rwd-w{font-size:19px!important;font-weight:800;color:#34261c;white-space:nowrap}
+.rwd-row--base .rwd-w{color:#fff}
+.rwd-note p{margin:0;color:#34261c;font-weight:600;line-height:1.35}
+.rwd-note small{color:#716c6c}
+.rwd-keys{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px}
+.rwd-keys div{display:flex;align-items:baseline;gap:14px;padding:14px 20px;background:#f8f5f2;border-radius:12px 0 12px}
+.rwd-keys b{color:#34261c;font-size:19px!important;white-space:nowrap}
+.rwd-keys span{color:#716c6c}
 </style>
 </head>
   <body>
@@ -9809,55 +9826,8 @@ window.addEventListener('click', play)
     <section class="slide">
       <div class="kicker">28 / RESPONSIVE DESIGN <span class="kicker-zh">響應式設計</span></div>
       <h2>RWD 斷點設計</h2>
-      <div class="rwd-table-wrap">
-        <table class="rwd-table">
-          <thead>
-            <tr>
-              <th>裝置情境</th>
-              <th>寬度規則</th>
-              <th>版面策略</th>
-              <th>關鍵調整</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><b>窄手機</b><small>iPhone 等小螢幕</small></td>
-              <td>≤ 400px</td>
-              <td>以 393px 驗收，最緊湊時也不橫向裁切。</td>
-              <td>標題 22px、說明 11px、內距收緊；成員卡、月曆與餐單卡縮小</td>
-            </tr>
-            <tr>
-              <td><b>手機</b><small>一般手機</small></td>
-              <td>401–640px</td>
-              <td>行動頂欄＋底部導覽，內容依元件單欄或兩欄。</td>
-              <td>食譜卡、成員卡兩欄；彈窗置中、左右留 16px</td>
-            </tr>
-            <tr>
-              <td><b>平板</b><small>橫直向過渡</small></td>
-              <td>641–1024px</td>
-              <td>保留內容層級，增加欄位與留白，避免只放大手機版。</td>
-              <td>頁首統一、雙欄資訊區與彈性 Grid</td>
-            </tr>
-            <tr>
-              <td><b>桌機</b><small>完整工作區</small></td>
-              <td>≥ 1025px</td>
-              <td>左側導覽＋寬內容區，支援同時查看餐單、庫存與細節。</td>
-              <td>桌機 Navbar、最大內容寬度與更高資訊密度</td>
-            </tr>
-            <tr>
-              <td><b>寬桌機</b><small>1920 設計基準</small></td>
-              <td>≥ 1920px</td>
-              <td>維持既定欄位比例，不讓內容隨螢幕無限制拉寬。</td>
-              <td>Navbar 固定 240px、內容保持閱讀舒適度</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="rwd-principles">
-        <article><b>一致</b><span>共用 PageTitle、色彩與間距 Token，跨頁維持同一個閱讀節奏。</span></article>
-        <article><b>可觸及</b><span>手機版保留明確操作尺寸與可辨識狀態，降低誤觸。</span></article>
-        <article><b>可延展</b><span>以 Grid、Flex 與變數調整欄位，不為單一尺寸寫死版面。</span></article>
-      </div>
+      <div class="rwd-bars"><div class="rwd-row"><div class="rwd-name"><h3>窄手機</h3></div><div class="rwd-track"><span class="rwd-bar" style="width:21%"><b class="rwd-w">≤ 400px</b></span></div><div class="rwd-note"><p>以 393px 驗收不裁切</p><small>字級與內距收緊</small></div></div><div class="rwd-row"><div class="rwd-name"><h3>手機</h3></div><div class="rwd-track"><span class="rwd-bar" style="width:33%"><b class="rwd-w">401–640px</b></span></div><div class="rwd-note"><p>頂欄＋底部導覽</p><small>卡片兩欄，彈窗置中</small></div></div><div class="rwd-row"><div class="rwd-name"><h3>平板</h3></div><div class="rwd-track"><span class="rwd-bar" style="width:53%"><b class="rwd-w">641–1024px</b></span></div><div class="rwd-note"><p>增加欄位與留白</p><small>雙欄資訊區、彈性 Grid</small></div></div><div class="rwd-row"><div class="rwd-name"><h3>桌機</h3></div><div class="rwd-track"><span class="rwd-bar" style="width:75%"><b class="rwd-w">≥ 1025px</b></span></div><div class="rwd-note"><p>左側導覽＋寬內容區</p><small>餐單、庫存同時查看</small></div></div><div class="rwd-row"><div class="rwd-name"><h3>寬桌機</h3></div><div class="rwd-track"><span class="rwd-bar" style="width:100%"><b class="rwd-w">≥ 1920px</b></span></div><div class="rwd-note"><p>固定比例，不無限拉寬</p><small>Navbar 固定 240px</small></div></div></div>
+      <div class="rwd-keys"><div><b>一致</b><span>共用標題、色彩與間距 Token</span></div><div><b>可觸及</b><span>按鈕好點、狀態清楚</span></div><div><b>可延展</b><span>以 Grid、Flex 彈性調整欄位</span></div></div>
     </section>
     <section class="slide future-slide">
       <div class="kicker">29 / FUTURE OUTLOOK <span class="kicker-zh">未來展望</span></div>
