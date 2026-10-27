@@ -11938,7 +11938,7 @@ window.addEventListener('click', play)
     </script>
     <script id="demo-fullscreen-exit">
       window.addEventListener('message', (event) => {
-        if (event.data && event.data.type === 'zhuyi-exit-demo-fullscreen' && document.fullscreenElement) {
+        if (event.data && event.data.type === 'zhuyi-exit-demo-fullscreen' && document.fullscreenElement && document.fullscreenElement.tagName === 'IFRAME') {
           document.exitFullscreen().catch(() => {});
         }
       });
@@ -13836,26 +13836,41 @@ lb.addEventListener('wheel',e=>e.stopPropagation(),{passive:true});})();</script
   const tell = (frame, visible) => frame?.contentWindow?.postMessage({ type: 'zhuyi-set-demo-fullscreen-control', visible }, '*');
   const isOpen = (frame) => fsEl() === frame || pseudo === frame;
   const syncAll = () => ids.forEach(([fid]) => { const f = document.getElementById(fid); if (f) tell(f, isOpen(f)); });
+  let home = null;
   function enterPseudo(frame) {
     pseudo = frame;
+    // 移到 body 底下，避免投影片的 transform 讓 fixed 定位跑掉
+    home = { parent: frame.parentNode, next: frame.nextSibling };
+    document.body.appendChild(frame);
     frame.classList.add('demo-pseudo-full');
     document.body.style.overflow = 'hidden';
     tell(frame, true);
   }
+  function closePseudo() {
+    if (!pseudo) return;
+    pseudo.classList.remove('demo-pseudo-full');
+    const f = pseudo; pseudo = null; document.body.style.overflow = '';
+    if (home) { home.parent.insertBefore(f, home.next); home = null; }
+    tell(f, false);
+  }
   function exitAll() {
-    if (pseudo) { pseudo.classList.remove('demo-pseudo-full'); const f = pseudo; pseudo = null; document.body.style.overflow = ''; tell(f, false); }
-    if (fsEl()) (document.exitFullscreen || document.webkitExitFullscreen).call(document)?.catch?.(() => {});
+    if (pseudo) { closePseudo(); return; }
+    // 舊版是讓動畫本身全螢幕；這種情況退回到簡報（若簡報原本就全螢幕會維持）。
+    const el = fsEl();
+    if (el && el.tagName === 'IFRAME') (document.exitFullscreen || document.webkitExitFullscreen).call(document)?.catch?.(() => {});
   }
   ids.forEach(([fid, bid]) => {
     const frame = document.getElementById(fid), btn = document.getElementById(bid);
     if (!frame || !btn) return;
     btn.textContent = '放大播放';
     btn.onclick = async () => {
-      const req = frame.requestFullscreen || frame.webkitRequestFullscreen;
-      try {
-        if (!req) throw new Error('no fullscreen');
-        await req.call(frame);
-      } catch { enterPseudo(frame); }
+      // 放大播放：讓整份簡報進入全螢幕，再把動畫鋪滿畫面；返回時只收起動畫，簡報維持全螢幕。
+      const root = document.documentElement;
+      const req = root.requestFullscreen || root.webkitRequestFullscreen;
+      if (!fsEl() && req) {
+        try { await req.call(root); } catch {}
+      }
+      enterPseudo(frame);
       setTimeout(syncAll, 50);
     };
   });
@@ -13865,8 +13880,8 @@ lb.addEventListener('wheel',e=>e.stopPropagation(),{passive:true});})();</script
     if (d.type === 'zhuyi-exit-demo-fullscreen') exitAll();
     if (d.type === 'zhuyi-demo-ready') ids.forEach(([fid]) => { const f = document.getElementById(fid); if (f && f.contentWindow === event.source) tell(f, isOpen(f)); });
   });
-  document.addEventListener('fullscreenchange', syncAll);
-  document.addEventListener('webkitfullscreenchange', syncAll);
+  document.addEventListener('fullscreenchange', () => { if (!fsEl()) closePseudo(); syncAll(); });
+  document.addEventListener('webkitfullscreenchange', () => { if (!fsEl()) closePseudo(); syncAll(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && pseudo) exitAll(); }, true);
 })();
 </script>
