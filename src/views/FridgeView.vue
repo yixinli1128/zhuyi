@@ -75,7 +75,7 @@ const suggestedUnits = {
   鹽: '包', 白糖: '包', 砂糖: '包', 冰糖: '包', 白胡椒: '罐', 黑胡椒: '罐', 五香粉: '罐', 太白粉: '包', 白米: 'kg（公斤）', 水餃: '包', 海帶芽: '包', 乾紫菜: '包', 菜脯: '包',
 }
 const unitGroups = [
-  { label: '常用單位（家庭備餐優先）', units: ['顆', '個', '根', '把', '束', '片', '塊', '條', '份'] },
+  { label: '常用單位', units: ['顆', '個', '根', '把', '束', '片', '塊', '條', '份'] },
   { label: '包裝單位', units: ['包', '袋', '盒', '罐', '瓶'] },
   { label: '重量單位（精準秤重）', units: ['g（公克）', 'kg（公斤）'] },
   { label: '容量單位（液態飲品）', units: ['ml（毫升）', 'L（公升）', '大匙', '茶匙', '杯'] },
@@ -573,7 +573,7 @@ function addRecipeToToday(recipe) {
 .unit-picker__trigger.placeholder{color:#a39d9a}
 .unit-picker__trigger img{width:12px;height:24px;transform:rotate(90deg)}
 .unit-picker__trigger.open img{transform:rotate(-90deg)}
-.unit-picker__menu{position:absolute;z-index:50;top:52px;right:0;left:0;min-width:141px;max-height:min(340px,calc(100dvh - 180px));overflow-y:auto;padding:12px 0;border:1px solid #cbc4be;border-radius:20px;background:#fff;box-shadow:0 20px 30px rgba(52,38,28,.2)}
+.unit-picker__menu{position:absolute;z-index:50;top:52px;right:0;left:0;min-width:141px;max-height:min(340px,calc(100dvh - 180px));overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;padding:12px 0;border:1px solid #cbc4be;border-radius:20px;background:#fff;box-shadow:0 20px 30px rgba(52,38,28,.2)}
 .unit-picker__group{display:grid;gap:0;padding:0 0 8px}
 .unit-picker__group+ .unit-picker__group{padding-top:8px}
 .unit-picker__group p{display:flex;align-items:center;gap:10px;margin:0 12px 4px;color:#a39d9a;font-size:14px;white-space:nowrap}
@@ -651,7 +651,10 @@ function addRecipeToToday(recipe) {
 
   .unit-picker__group+ .unit-picker__group{padding-top:4px}
 
-  .unit-picker__group p{margin:0 10px 2px;font-size:14px}
+  /* 選單和按鈕等寬，分組標題要收得進去，選單只能上下捲動。 */
+  .unit-picker__group p{justify-content:center;gap:4px;margin:0 6px 2px;font-size:13px;letter-spacing:0}
+
+  .unit-picker__group p span{min-width:4px}
 
   .unit-picker__group button{height:30px;font-size:14px;line-height:30px}
 
@@ -1034,7 +1037,7 @@ function addRecipeToToday(recipe) {
 
   .page :deep(.page-title) { padding: 24px 16px 20px; }
 
-  .page :deep(.page-title__heading) { font-size: 22px; line-height: 1.25; letter-spacing: .06em; }
+  .page :deep(.page-title__heading) { line-height: 1.25; }
 
   .page :deep(.page-title__desc) { font-size: 14px; line-height: 1.55; }
 
@@ -1133,4 +1136,7 @@ function addRecipeToToday(recipe) {
 
 }
 
+
+/* 375px 等更窄的手機：單位分組標題拿掉兩側裝飾線，讓文字完整放進選單。 */
+@media (max-width: 400px){.unit-picker__group p span{display:none}}
 </style>

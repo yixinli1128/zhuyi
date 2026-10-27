@@ -134,6 +134,13 @@ defineProps({
 }
 
 @media (max-width: 640px) {
+  /* 標題字級跟著螢幕寬度變化（約 21–26px），402px 這類寬度不會因為突然跳到 26px
+     而被右側按鈕擠到換行。 */
+  .page-title__heading {
+    font-size: clamp(20px, 5.8vw, 26px);
+    letter-spacing: .04em;
+  }
+
   .page-title__actions--empty {
     /* 行動版保留與右側 icon 操作同寬的空白槽位。 */
     min-width: 36px;
@@ -141,8 +148,7 @@ defineProps({
   }
 }
 
-/* 393px 等小螢幕（如 iPhone 16 的 CSS 可視寬度）不直接沿用 480px 的比例。
-   長標題要先維持同一行閱讀節奏，說明與右側操作也一起收緊。 */
+/* 393px 等小螢幕（如 iPhone 16 的 CSS 可視寬度）再收緊上下留白與說明行距。 */
 @media (max-width: 400px) {
   .page-title {
     row-gap: 10px;
@@ -150,9 +156,7 @@ defineProps({
   }
 
   .page-title__heading {
-    font-size: 22px;
     line-height: 1.25;
-    letter-spacing: .06em;
   }
 
   .page-title__desc {

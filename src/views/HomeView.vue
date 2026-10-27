@@ -418,8 +418,9 @@ const pillars = [
   overflow: hidden;
   white-space: nowrap;
   /* 公告內文比標籤再小一級，避免在窄手機上顯得像正文。 */
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.5;
+  letter-spacing: 0.02em;
   color: var(--text-secondary);
   mask-image: linear-gradient(to right, transparent, #000 12px, #000 calc(100% - 24px), transparent);
 }

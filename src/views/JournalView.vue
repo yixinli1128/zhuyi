@@ -647,7 +647,7 @@ watch(selectedDate, async () => {
    避免大縮圖與 17px 菜名把單欄卡片撐得過高。 */
 @media (max-width: 400px) {
   .journal-page :deep(.page-title) { padding: 24px 16px 20px; }
-  .journal-page :deep(.page-title__heading) { font-size: 22px; line-height: 1.25; letter-spacing: .06em; }
+  .journal-page :deep(.page-title__heading) { line-height: 1.25; }
   .journal-page :deep(.page-title__desc) { font-size: 14px; line-height: 1.55; }
   .journal-layout, .history-layout { gap: 14px; padding: 16px 12px 28px; }
 
