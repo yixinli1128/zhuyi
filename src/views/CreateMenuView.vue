@@ -1423,4 +1423,9 @@ function chooseOtherDate() {
     display: none;
   }
 }
+
+/* 手機兩欄餐單卡：每一列都跟最高的卡片同高，搭配主要食材固定兩行，整份餐單的卡片高度一致。 */
+@media (max-width: 640px) {
+  .recipes { align-items: stretch; grid-auto-rows: 1fr; }
+}
 </style>

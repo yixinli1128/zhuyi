@@ -11,7 +11,7 @@ defineProps({
   <p class="recipe-meta">
     <span><i class="fa-regular fa-clock" aria-hidden="true"></i>{{ minutes }} 分鐘</span>
     <span v-if="divider" class="recipe-meta__divider" aria-hidden="true">|</span>
-    <span><i class="fa-solid fa-fire-flame-curved" aria-hidden="true"></i>{{ kcal }} 大卡／份</span>
+    <span><i class="fa-solid fa-fire-flame-curved" aria-hidden="true"></i>{{ kcal }} 大卡<small class="recipe-meta__unit">／份</small></span>
   </p>
 </template>
 
@@ -35,6 +35,10 @@ defineProps({
 .recipe-meta i {
   font-size: 14px;
   color: var(--text-body);
+}
+
+.recipe-meta__unit {
+  font-size: inherit;
 }
 
 .recipe-meta__divider {

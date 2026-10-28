@@ -154,11 +154,23 @@ defineEmits(['swap', 'view'])
   .recipe-card__body { gap: 8px; padding: 10px; }
   .recipe-card__name { font-size: 14px; line-height: 1.3; }
   .recipe-card__ingredients { gap: 4px; font-size: 14px; line-height: 1.35; }
-  .recipe-card__fridge { gap: 4px; font-size: 14px; }
+  /* 手機版主要食材固定兩行，放不下的以「…」省略，每張卡的高度才會一致。 */
+  .recipe-card__ingredients p:not(.recipe-card__label):not(.recipe-card__fridge) {
+    display: -webkit-box;
+    height: calc(2em * 1.35);
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+  .recipe-card__fridge { gap: 4px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
   /* 兩欄餐單卡的時間／熱量必須同列，字級與 icon 同步縮小。 */
-  .recipe-card :deep(.recipe-meta) { flex-wrap: nowrap; gap: 5px; font-size: 14px; white-space: nowrap; }
-  .recipe-card :deep(.recipe-meta span) { gap: 3px; }
-  .recipe-card :deep(.recipe-meta i) { font-size: 14px; }
+  /* 手機版時間／熱量縮成 12px、省略「／份」，讓兩項留在同一列；
+     真的太窄時熱量換到下一行，不會被切掉。 */
+  .recipe-card :deep(.recipe-meta) { flex-wrap: wrap; gap: 2px 6px; font-size: 12px; letter-spacing: 0; white-space: nowrap; }
+  .recipe-card :deep(.recipe-meta span) { gap: 2px; }
+  .recipe-card :deep(.recipe-meta i) { font-size: 10px; }
+  .recipe-card :deep(.recipe-meta__unit) { display: none; }
   /* 兩個操作同列，避免窄版餐單卡因直排按鈕變得又高又窄。 */
   .recipe-card__actions { flex-direction: row; gap: 5px; }
   .recipe-card__actions :deep(.btn) { width: auto; min-width: 0; flex: 1; min-height: 32px; padding: 5px 4px; font-size: 14px; white-space: nowrap; }

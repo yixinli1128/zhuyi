@@ -497,16 +497,22 @@ watch(selectedDate, async () => {
   .planned-meal{gap:12px;margin-top:12px}
   .planned-dish{gap:10px;padding:14px}
   .planned-dish__main{gap:12px}
-  .planned-dish__main>img,.dish-placeholder{width:92px;height:82px;flex-basis:92px;border-radius:10px}
+  /* 圖片高度跟著右側文字區撐滿，手機上縮圖不再只是一小塊。 */
+  .planned-dish__main>img,.dish-placeholder{align-self:stretch;width:104px;height:auto;min-height:88px;flex-basis:104px;border-radius:10px}
   .dish-placeholder{font-size:18px}
   .planned-dish__copy{min-height:82px}
   .planned-dish__heading{gap:8px}
   .planned-dish__heading p{font-size:14px}
-  .planned-dish h3{margin-top:2px;font-size:17px}
+  .planned-dish h3{margin-top:2px;font-size:16px}
+  /* 縮圖變大後右側變窄：預估時間移到「今日菜色」同一列，菜名獨佔整行不被擠到換行。 */
+  .planned-dish__heading{display:grid;grid-template-columns:minmax(0,1fr) auto;row-gap:2px;align-items:center}
+  .planned-dish__heading>div{display:contents}
+  .planned-dish__heading h3{grid-column:1/-1;grid-row:2}
   .dish-time{padding:4px 6px;font-size:14px}
   .dish-intro{margin-top:4px;font-size:14px}
   .dish-ingredients{gap:5px;margin-top:5px}
-  .dish-ingredients span{min-width:0;padding:4px 6px;font-size:14px}
+  /* 待買／現有只是輔助標籤，手機版比菜名與介紹小一級。 */
+  .dish-ingredients span{min-width:0;padding:3px 6px;font-size:12px}
   .dish-guide{gap:8px;padding:7px 9px}
   .dish-guide p{font-size:14px}
   .dish-guide button{padding:5px 6px;font-size:14px}
@@ -654,7 +660,7 @@ watch(selectedDate, async () => {
   .planned-meal { gap: 9px; margin-top: 9px; }
   .planned-dish { gap: 8px; padding: 10px; }
   .planned-dish__main { gap: 8px; }
-  .planned-dish__main > img, .dish-placeholder { width: 76px; height: 68px; flex-basis: 76px; border-radius: 8px; }
+  .planned-dish__main > img, .dish-placeholder { width: 104px; height: auto; min-height: 88px; flex-basis: 104px; border-radius: 8px; }
   .dish-placeholder { font-size: 15px; }
   .planned-dish__copy { min-height: 68px; }
   .planned-dish__heading { gap: 6px; }
@@ -663,7 +669,7 @@ watch(selectedDate, async () => {
   .dish-time { padding: 3px 5px; font-size: 14px; white-space: nowrap; }
   .dish-intro { margin-top: 3px; font-size: 14px; line-height: 1.35; }
   .dish-ingredients { gap: 4px; margin-top: 4px; }
-  .dish-ingredients span { padding: 3px 5px; font-size: 14px; }
+  .dish-ingredients span { padding: 2px 5px; font-size: 12px; }
   .dish-guide { gap: 6px; padding: 6px 7px; }
   .dish-guide p { font-size: 14px; line-height: 1.35; }
   .dish-guide button { padding: 4px 5px; font-size: 14px; }
